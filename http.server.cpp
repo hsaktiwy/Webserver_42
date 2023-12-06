@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/06 20:04:20 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/06 20:10:42 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ void    proccess_tokens(std::vector<std::pair<std::string, std::string> > &token
         else if (!type.compare("close_block"))
         {
             closed.pop();
+            
         }
         it++;
     }

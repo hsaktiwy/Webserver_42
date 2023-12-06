@@ -7,11 +7,11 @@
 #include <unistd.h>
 #include <strings.h>
 
-#define DOMAIN		AF_INET
+#define TMP_DOMAIN		AF_INET
 #define TYPE		SOCK_STREAM
 #define PROTOCOL	0// this is related to the protocol that support thr TYPE in our normal case SOCK_STREAM
 #define BACKLOG		1
-
+#define DEFAUL_THEADER_RESPONSE  "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!"
 #define RED "\033[34m"
 #define RED2 "\033[45m"
 #define COLOR_END "\033[00m"
@@ -47,12 +47,12 @@ int main(int argc, char **argv)
 		/*Converte the Port input (char *) to int value*/
 		PortId = std::atoi(argv[1]);
 		/*Create SOCKET*/
-		ServerId = socket(DOMAIN, TYPE, PROTOCOL);
+		ServerId = socket(TMP_DOMAIN, TYPE, PROTOCOL);
 		if (ServerId == -1)
 			return (std::cerr << "Error : Fail to Creat the Socket" << std::endl, 1);
 		std::cout << RED << "------>Socket is created (id == " << ServerId << ")."  << COLOR_END << std::endl;
 		/*Bind our Socket with a name(adresse)*/
-		address.sin_family = DOMAIN;
+		address.sin_family = TMP_DOMAIN;
 		address.sin_port = htons(PortId);
 		address.sin_addr.s_addr = INADDR_ANY;
 		bzero(address.sin_zero, sizeof(address.sin_zero));
@@ -75,10 +75,15 @@ int main(int argc, char **argv)
 				return (std::cerr << "Error : Fail to Accept Client connection" << std::endl, 1);
 			std::cout << RED << "------>Connect to Client " << CSocket << "." << COLOR_END << std::endl;
 			/*Read In Comming that*/
-			char	buff;
+			char	buff[4046];
 			std::cout << RED << "Resived message : " << std::endl;
-			while (read(CSocket, &buff, 1))
-				write(1, &buff, 1);
+			read(CSocket, &buff, 4046);
+			
+			// gave the client its proper response
+			std::cout << "Send the Response to the client\n" << std::endl;
+			std::string response = DEFAUL_THEADER_RESPONSE;
+			std::cout << response << std::endl;
+			write(CSocket, response.c_str(), response.length());
 			std::cout << COLOR_END << "\nEnded" << std::endl;
 			close(CSocket);
 		}

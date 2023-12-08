@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/06 20:01:36 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/08 15:58:13 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,14 +19,19 @@
 #include <fstream>
 #include <stdio.h>
 #include <vector>
+#include <list>
 #include <sstream>
 #include <string>
 #include <iterator>
 #include <algorithm> 
-
-
+#include <map> 
 #include <vector>
 #include <string>
+
+typedef std::vector<std::pair<std::string, std::string> > vectors_type;
+typedef std::multimap<int, std::vector<std::pair<std::string, std::string> > > tokens_map;
+typedef std::vector<std::pair<std::string, int> > tokens_iterator;
+
 
 class Directives
 {
@@ -59,6 +64,7 @@ class LocationsBlock
     private:
         std::string path;
         std::vector<Directives> directives;
+        std::stack<LocationsBlock*> nestedLocations;
     public:
         LocationsBlock()
         {
@@ -79,6 +85,17 @@ class LocationsBlock
         std::vector<Directives> &getDirective()
         {
             return this->directives;
+        }
+        void    setPath(std::string &path)
+        {
+            this->path = path;
+        }
+        void AddNestedLocation(LocationsBlock& nestedLocation) {
+            nestedLocations.push(&nestedLocation);
+        }
+
+        LocationsBlock& GetLastNestedLocation() {
+            return *nestedLocations.top();
         }
 };
 
@@ -109,12 +126,18 @@ class ServerBlocks
         }
 };
 
-void    parse_line(const std::string &line, std::vector<std::pair<std::string, std::string> > &tokens);
-void    parse_config(std::vector<std::string> &lines);
-void    print_tokens(std::vector<std::pair<std::string, std::string> > &tokens);
-void    proccess_tokens(std::vector<std::pair<std::string, std::string> > &tokens);
+void    parse_line(const std::string &line,  tokens_map &tokens, int line_number);
+void    parse_config(tokens_iterator  &lines);
+void    print_tokens(vectors_type &tokens);
+void    proccess_tokens(vectors_type &tokens);
 void    print_args(std::vector<std::string> &args);
 void    print_dir(std::vector<Directives> &dir);
 void    print_server(std::vector<ServerBlocks> &serverBlocks);
+void    getarguments(vectors_type::iterator &it,Directives &directive);
+void    proccess_tokens(tokens_map &tokens);
+void    print_location(std::vector<LocationsBlock> &locations);
+
+
+
 
 #endif

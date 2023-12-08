@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/06 20:12:19 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/08 16:28:49 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,85 +41,64 @@ void    getarguments(std::vector<std::pair<std::string, std::string> >::iterator
         type = it->second;
     }
 }
-
-void    proccess_tokens(std::vector<std::pair<std::string, std::string> > &tokens)
+void    print_(std::vector<std::pair<std::string, std::string> > &tokens_vector)
 {
-    int inside_block_location;
-    
-    std::vector<std::pair<std::string, std::string> >::iterator it = tokens.begin();
-    std::vector<std::pair<std::string, std::string> >::iterator ite = tokens.end();
+    std::vector<std::pair<std::string, std::string> >::iterator it_vec = tokens_vector.begin();
+    std::vector<std::pair<std::string, std::string> >::iterator ite_vec = tokens_vector.end();
 
-    std::string token;
-    std::string type;
-    std::stack<std::string> closed;
-    std::vector<ServerBlocks> serverBlocks;
-    ServerBlocks sr;
-    while (it != ite)
+    while (it_vec != ite_vec)
     {
-        token = it->first;
-        type = it->second;
-        ServerBlocks *sr_ptr; 
-        if (!type.compare("block") && !token.compare("server"))
-        {
-            sr = ServerBlocks();
-            serverBlocks.push_back(sr);
-            sr_ptr = &serverBlocks.back();
-        }
-        else if (!type.compare("open_block"))
-        {
-            closed.push("{");
-        }
-        else if (!type.compare("directive"))
-        {
-            it++;
-            Directives dir(token);
-            getarguments(it,dir);
-            sr_ptr->AddDirective(dir);
-        }
-        else if (!type.compare("close_block"))
-        {
-            closed.pop();
-            
-        }
-        it++;
+        printf("token %s type %s\n",(*it_vec).first.c_str(),(*it_vec).second.c_str());
+        it_vec++;
     }
-    if (closed.size() > 0)
-    {
-        printf("error\n");
-    }
-    else
-    {
-        print_server(serverBlocks);
-    }
+    
 }
 
-void    print_tokens(std::vector<std::pair<std::string, std::string> > &tokens)
+void    print_tokens(std::multimap<int,std::vector<std::pair<std::string, std::string> > > &tokens)
 {
-    std::vector<std::pair<std::string, std::string> >::iterator it = tokens.begin();
-    std::vector<std::pair<std::string, std::string> >::iterator ite = tokens.end();
-    
+    std::multimap<int, std::vector<std::pair<std::string, std::string> > >::iterator it = tokens.begin();
+    std::multimap<int, std::vector<std::pair<std::string, std::string> > >::iterator ite = tokens.end();
+    std::vector<std::pair<std::string, std::string> > tokens_vector;
+  
+    int value;
     while (it != ite)
     {
-        printf("Token %s ",it->first.c_str());
-        printf("Type %s \n",it->second.c_str());
+        tokens_vector = it->second;
+        value = it->first; 
+        print_(tokens_vector);
         it++;
     }
+    
+    // printf("size of token %lu\n",tokens.size());
+    // int i = 0;
+    // while(i < tokens.size())
+    // {
+    //     i++;
+    // }
+    // std::vector<std::pair<std::string, std::string> >::iterator it = tokens.;
+    // std::vector<std::pair<std::string, std::string> >::iterator ite = tokens.end();
+    
+    // while (it != ite)
+    // {
+    //     printf("Token %s ",it->first.c_str());
+    //     printf("Type %s \n",it->second.c_str());
+    //     it++;
+    // }
 }
 
 
-void    parse_config(std::vector<std::string> &lines)
+void    parse_config(tokens_iterator  &lines)
 {
-    std::vector<std::string>::iterator it = lines.begin();
-    std::vector<std::string>::iterator ite = lines.end();
-    std::vector<std::pair<std::string, std::string> > tokens;
+    tokens_iterator::iterator it = lines.begin();
+    tokens_iterator::iterator ite = lines.end();
+    tokens_map tokens;
 
     while (it != ite)
     {
-        parse_line(*it, tokens);
+        parse_line((*it).first, tokens,(*it).second);
         it++;
     }
     proccess_tokens(tokens);
-
 }
 
 void    clear_token(std::string &str, std::string &result)
@@ -197,7 +176,7 @@ std::string gettype(std::string &token)
     }
 }
 
-void    tokenize(std::string &token,std::vector<std::pair<std::string, std::string> > &tokens)
+void    tokenize(std::string &token,tokens_map &tokens, int line_number)
 {
     std::string result;
     clear_token(token, result);
@@ -208,28 +187,29 @@ void    tokenize(std::string &token,std::vector<std::pair<std::string, std::stri
     std::string type;
     while (getline(iss, string, ' '))
     {
+        vectors_type tokens_vec;
         if (flag_location == 1 && string.length() >= 1)
         {
             if(!string.compare("{"))
             {
-                tokens.push_back(std::make_pair(string, gettype(string)));
+                tokens_vec.push_back(std::make_pair(string, gettype(string)));
                 flag_location = 0;
             }
             else
             {
-                tokens.push_back(std::make_pair(string, "path"));  
+                tokens_vec.push_back(std::make_pair(string, "path"));  
             }
         }
         else if (flag == 1 && string.length() >= 1)
         {
             if(!string.compare(";"))
             {
-                tokens.push_back(std::make_pair(string, gettype(string)));  
+                tokens_vec.push_back(std::make_pair(string, gettype(string)));  
                 flag = 0;
             }
             else
             {
-                tokens.push_back(std::make_pair(string, "argument"));  
+                tokens_vec.push_back(std::make_pair(string, "argument"));  
             }
         }
         else
@@ -237,7 +217,7 @@ void    tokenize(std::string &token,std::vector<std::pair<std::string, std::stri
             if (string.length() >= 1)
             {
                 type = gettype(string);
-                tokens.push_back(std::make_pair(string, type));       
+                tokens_vec.push_back(std::make_pair(string, type));       
                 if (!type.compare("directive"))
                 {
                     flag = 1;
@@ -248,10 +228,11 @@ void    tokenize(std::string &token,std::vector<std::pair<std::string, std::stri
                 }
             }
         }
+        tokens.insert(std::make_pair(line_number,tokens_vec));
     }
 }
 
-void    parse_line(const std::string &line,std::vector<std::pair<std::string, std::string> > &tokens)
+void    parse_line(const std::string &line, tokens_map &tokens,int line_number)
 {
     std::stringstream string_object(line);
     std::string token;
@@ -260,7 +241,7 @@ void    parse_line(const std::string &line,std::vector<std::pair<std::string, st
         if (token.length() >= 1)
         {
             std::string trim = trimString(token);
-            tokenize(trim, tokens);
+            tokenize(trim, tokens, line_number);
         }
     }
 }

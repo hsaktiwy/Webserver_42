@@ -66,13 +66,19 @@
         "tuple": "cpp",
         "type_traits": "cpp",
         "typeinfo": "cpp",
-        "unordered_map": "cpp",
+        "unordered_multimap": "cpp",
         "utility": "cpp",
         "vector": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "list": "cpp",
+        "__tree": "cpp",
+        "multimap": "cpp",
+        "map": "cpp",
+        "unordered_map": "cpp"
     },
     "cSpell.words": [
         "getarguments",
         "locationblock"
-    ]
+    ],
+    "editor.fontWeight": "bold"
 }

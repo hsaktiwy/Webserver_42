@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:40 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/08 16:26:28 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/12 11:00:41 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ int main(int c,char **argv)
             std::string line;
             while (std::getline(file, line))
             { 
-                lines.push_back(std::make_pair(line,line_number));
+                lines.push_back(std::make_pair(line + '\n',line_number));
                 line_number++;
             }
             file.close(); 

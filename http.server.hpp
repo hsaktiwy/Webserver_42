@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/08 15:58:13 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/09 12:17:57 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,6 +136,7 @@ void    print_server(std::vector<ServerBlocks> &serverBlocks);
 void    getarguments(vectors_type::iterator &it,Directives &directive);
 void    proccess_tokens(tokens_map &tokens);
 void    print_location(std::vector<LocationsBlock> &locations);
+void    handle_errors(tokens_map tokens);
 
 
 

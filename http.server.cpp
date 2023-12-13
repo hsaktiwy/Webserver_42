@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/12 20:00:18 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/13 22:52:30 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,9 +96,9 @@ void    parse_config(tokens_iterator  &lines)
         parse_line((*it).first, tokens, (*it).second);
         it++;
     }
-    // handle_errors(tokens);
-    print_tokens(tokens);
-    // proccess_tokens(tokens);
+    handle_errors(tokens);
+    // print_tokens(tokens);
+    proccess_tokens(tokens);
 }
 
 void    clear_token(const std::string &str, std::string &result)
@@ -115,6 +115,34 @@ void    clear_token(const std::string &str, std::string &result)
         }
     }
 }
+
+
+std::string getTokenType(const std::string& token) {
+    std::map<std::string, std::string> tokenTypes;
+    tokenTypes.insert(std::make_pair("server", "block"));
+    tokenTypes.insert(std::make_pair("location", "block"));
+    tokenTypes.insert(std::make_pair("listen", "directive"));
+    tokenTypes.insert(std::make_pair("client_max_body_size", "directive"));
+    tokenTypes.insert(std::make_pair("error_page", "directive"));
+    tokenTypes.insert(std::make_pair("autoindex", "directive"));
+    tokenTypes.insert(std::make_pair("allow_methods", "directive"));
+    tokenTypes.insert(std::make_pair("index", "directive"));
+    tokenTypes.insert(std::make_pair("access_log", "directive"));
+    tokenTypes.insert(std::make_pair("error_log", "directive"));
+    tokenTypes.insert(std::make_pair("root", "directive"));
+    tokenTypes.insert(std::make_pair("server_name", "directive"));
+    tokenTypes.insert(std::make_pair("{", "open_block"));
+    tokenTypes.insert(std::make_pair("}", "close_block"));
+    tokenTypes.insert(std::make_pair(";", "semi_colon"));
+    std::map<std::string, std::string>::iterator it = tokenTypes.find(token);
+    if (it != tokenTypes.end())
+    {
+        return it->second;
+    } else {
+        return "unknown";
+    }
+}
+
 
 std::string gettype(std::string &token)
 {
@@ -204,28 +232,29 @@ void tokenize(std::string &token, tokens_map &tokens, int line_number)
     }
     else if (!token.compare(";"))
     {
-        tokens_vec.push_back(std::make_pair(token, gettype(token)));
+        tokens_vec.push_back(std::make_pair(token, getTokenType(token)));
+        flag = 0;
     }
     // while (tokenPtr != NULL) {
     //     std::string string(tokenPtr);
     else if (flag_location == 1 && token.length() >= 1)
     {
         if (!token.compare("{")) {
-            tokens_vec.push_back(std::make_pair(token, gettype(token)));
+            tokens_vec.push_back(std::make_pair(token, getTokenType(token)));
             flag_location = 0;
         } else {
             tokens_vec.push_back(std::make_pair(token, "path"));
         }
     } else if (flag == 1 && token.length() >= 1) {
         if (!token.compare(";")) {
-            tokens_vec.push_back(std::make_pair(token, gettype(token)));
+            tokens_vec.push_back(std::make_pair(token, getTokenType(token)));
             flag = 0;
         } else {
             tokens_vec.push_back(std::make_pair(token, "argument"));
         }
     } else {
         if (token.length() >= 1) {
-            std::string type = gettype(token);
+            std::string type = getTokenType(token);
             tokens_vec.push_back(std::make_pair(token, type));
             if (!type.compare("directive")) {
                 flag = 1;

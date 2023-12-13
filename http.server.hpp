@@ -6,12 +6,29 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/09 12:17:57 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/13 13:27:02 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTP_SERVER_HPP
 #define HTTP_SERVER_HPP
+
+typedef enum tokens_type
+{
+    server,
+    listen,
+    client_max_body_size,
+    error_page,
+    autoindex,
+    allow_methods,
+    error_log,
+    access_log,
+    index_directive,
+    semi_colon,
+    open_block,
+    close_block,
+    location
+}   tokens_type;
 
 #include <string.h>
 #include <iostream>
@@ -27,6 +44,8 @@
 #include <map> 
 #include <vector>
 #include <string>
+
+const std::string DEFAULT_CONFIG_PATH = "/Users/adardour/Desktop/webserver/configs/default.conf";
 
 typedef std::vector<std::pair<std::string, std::string> > vectors_type;
 typedef std::multimap<int, std::vector<std::pair<std::string, std::string> > > tokens_map;

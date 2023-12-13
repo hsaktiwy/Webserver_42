@@ -6,18 +6,11 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/09 12:17:44 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/12 19:43:32 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/13 22:41:46 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
-
-typedef struct error
-{
-    unsigned int line;
-    std::string token;
-    std::string type_error;    
-}   t_error;
 
 void    handle_errors(tokens_map tokens)
 {
@@ -30,10 +23,11 @@ void    handle_errors(tokens_map tokens)
     int is_path = 0;
     int is_directive = 0;
     int opening = 0;
+    int number_of_path = 0;
     std::stack<std::string> closed;
     int line = 0;
 
-    std::vector<t_error> error;
+    // std::vector<t_error> error;
     for (tokens_map::iterator it = tokens.begin(); it != tokens.end(); it++)
     {
         vectors = it->second;
@@ -99,24 +93,40 @@ void    handle_errors(tokens_map tokens)
                             exit(1);
                         }
                         is_location_block = 1;
+                        number_of_path = 0;
                     }
                 }
                 else if (!type.compare("open_block"))
                 {
                     if (is_location_block)
                     {
+                        if (!is_path)
+                        {
+                            printf("error missing path %d\n",line);
+                            exit(1);
+                        }
+                        else if (number_of_path > 1)
+                        {
+                            printf("error duplicate path %d\n",line);
+                            exit(1);
+                        }
                         opening = 1;
                     }
-                    else if (is_location_block && !is_path)
+                    else if (!closed.empty() && !is_location_block)
                     {
-                        printf("error missing path %d\n",line);
+                        printf("unexpected } %d\n",line);
                         exit(1);
                     }
                     closed.push("{");
                 }
                 else if (!type.compare("close_block"))
                 {
-                    if (is_location_block)
+                    if (closed.empty())
+                    {
+                        printf("unexpected } %d\n",line);
+                        exit(1);
+                    }
+                    else if (is_location_block)
                     {
                         is_location_block = 0;
                     }
@@ -128,15 +138,15 @@ void    handle_errors(tokens_map tokens)
                         is_path = 0;
                         is_directive = 0;
                         opening = 0;
+                        number_of_path = 0;
                     }
                     closed.pop();
                 }
                 else if (!type.compare("directive"))
                 {
-                    
                     if (closed.empty() || (!opening && is_location_block))
                     {
-                        printf("error missing %d\n",line);
+                        printf("unexpected } %d\n",line);
                         exit(1);
                     }
                     is_directive = 1;
@@ -144,6 +154,12 @@ void    handle_errors(tokens_map tokens)
                 }
                 else if (!type.compare("semi_colon"))
                 {
+
+                    if (!is_directive)
+                    {
+                        printf("error duplicate semi colone at %d\n",line);
+                        exit (1);
+                    }
                     if (is_location_block && !opening)
                     {
                         printf("directive location has no opening { %d\n",line);
@@ -154,6 +170,7 @@ void    handle_errors(tokens_map tokens)
                 else if (!type.compare("path"))
                 {
                     is_path = 1;
+                    number_of_path++;
                 }
             }
             it_v++;

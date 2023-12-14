@@ -6,17 +6,27 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/09 12:17:44 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/13 22:41:46 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/14 14:01:15 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
 
+const std::string convertToString(long long line)
+{
+    std::ostringstream convert;
+    convert << line;
+
+    return convert.str();
+}
+
 void    handle_errors(tokens_map tokens)
 {
-    vectors_type vectors;
+    vectors_type token_vectors;
     std::string token;
     std::string type;
+    std::string error;
+
     int is_server_block = 0;
     int is_not_semi_colone = 0;
     int is_location_block = 0;
@@ -24,24 +34,25 @@ void    handle_errors(tokens_map tokens)
     int is_directive = 0;
     int opening = 0;
     int number_of_path = 0;
-    std::stack<std::string> closed;
-    int line = 0;
+    std::string directive;
 
-    // std::vector<t_error> error;
+    std::stack<std::string> closed;
+    long long line = 0;
+    
     for (tokens_map::iterator it = tokens.begin(); it != tokens.end(); it++)
     {
-        vectors = it->second;
+        token_vectors = it->second;
         line = it->first;
-        vectors_type::iterator it_v = vectors.begin();
-        vectors_type::iterator ite_v = vectors.end();
+        vectors_type::iterator it_v = token_vectors.begin();
+        vectors_type::iterator ite_v = token_vectors.end();
         while (it_v != ite_v)
         {   
             token = it_v->first;
             type = it_v->second;
             if (!type.compare("unknown"))
             {
-                printf("unknown directive %d\n",line);
-                exit(1);
+                error = "unknown directive \"" + token + "\" in " + convertToString(line);
+                throw error;
             }
             else if (is_directive)
             {
@@ -50,10 +61,15 @@ void    handle_errors(tokens_map tokens)
                     is_directive = 0;
                     is_not_semi_colone = 1;
                 }
+                else if (!type.compare("directive") || !type.compare("block"))
+                {
+                    error = "invalid parameter " + token + " " + convertToString(line);
+                    throw error;
+                }
                 else if (!type.compare("close_block") && !is_not_semi_colone)
                 {
-                    printf("error %d\n",line);
-                    exit(1);
+                    error = "unexpected } " + convertToString(line);
+                    throw error;
                 }
                 else if (!type.compare("directive") || !type.compare("block"))
                 {
@@ -61,14 +77,14 @@ void    handle_errors(tokens_map tokens)
                     {
                         if (!token.compare("location") && !is_not_semi_colone)
                         {
-                            printf("error %d\n",line);
-                            exit(1);
+                            error = "directive " + directive + " is not terminated by ; " + convertToString(line);
+                            throw error;
                         }
                     }
-                    if (!type.compare("directive") && !is_not_semi_colone)
+                    else if (!type.compare("directive") && !is_not_semi_colone)
                     {
-                        printf("error %d\n",line);
-                        exit(1);
+                        error = "directive " + directive + " is not terminated by ; " + convertToString(line);
+                        throw error;
                     }
                 }
             }
@@ -80,8 +96,8 @@ void    handle_errors(tokens_map tokens)
                     {
                         if (is_server_block)
                         {
-                            printf("inside server block %d\n",line);
-                            exit(1);
+                            error = "server directive is not allowed here in " + convertToString(line);
+                            throw error;
                         }
                         is_server_block = 1;
                     }
@@ -89,8 +105,8 @@ void    handle_errors(tokens_map tokens)
                     {
                         if  (!is_server_block)
                         {
-                            printf("location directive is not allowed here %d\n",line);
-                            exit(1);
+                            error = "location directive is not allowed here in " + convertToString(line);
+                            throw error;
                         }
                         is_location_block = 1;
                         number_of_path = 0;
@@ -100,22 +116,17 @@ void    handle_errors(tokens_map tokens)
                 {
                     if (is_location_block)
                     {
-                        if (!is_path)
+                        if (number_of_path > 1 || !is_path)
                         {
-                            printf("error missing path %d\n",line);
-                            exit(1);
-                        }
-                        else if (number_of_path > 1)
-                        {
-                            printf("error duplicate path %d\n",line);
-                            exit(1);
+                            error = "invalid number of arguments in location directive in " + convertToString(line);
+                            throw error;
                         }
                         opening = 1;
                     }
                     else if (!closed.empty() && !is_location_block)
                     {
-                        printf("unexpected } %d\n",line);
-                        exit(1);
+                        error = "unexpected } in " + convertToString(line);
+                        throw error;
                     }
                     closed.push("{");
                 }
@@ -123,12 +134,20 @@ void    handle_errors(tokens_map tokens)
                 {
                     if (closed.empty())
                     {
-                        printf("unexpected } %d\n",line);
+                        printf("unexpected } %lld",line);
                         exit(1);
                     }
                     else if (is_location_block)
                     {
+                        if (!opening)
+                        {
+                            error = "directive location has no opening { " + convertToString(line);
+                            throw error;
+                        }
                         is_location_block = 0;
+                        opening = 0;
+                        is_path = 0;
+                        number_of_path = 0;
                     }
                     else if (is_server_block)
                     {
@@ -144,26 +163,26 @@ void    handle_errors(tokens_map tokens)
                 }
                 else if (!type.compare("directive"))
                 {
+                    directive = token;
                     if (closed.empty() || (!opening && is_location_block))
                     {
-                        printf("unexpected } %d\n",line);
-                        exit(1);
+                        error = "unexpected } in " + convertToString(line);
+                        throw error;
                     }
                     is_directive = 1;
                     is_not_semi_colone = 0;
                 }
                 else if (!type.compare("semi_colon"))
                 {
-
                     if (!is_directive)
                     {
-                        printf("error duplicate semi colone at %d\n",line);
-                        exit (1);
+                        error = "unexpected ; in " + convertToString(line);
+                        throw error;
                     }
-                    if (is_location_block && !opening)
+                    else if (is_location_block && !opening)
                     {
-                        printf("directive location has no opening { %d\n",line);
-                        exit(1);
+                        error = "directive location has no opening { " + convertToString(line);
+                        throw error;
                     }
                     is_not_semi_colone = 1;
                 }
@@ -178,11 +197,7 @@ void    handle_errors(tokens_map tokens)
     }
     if (!closed.empty())
     {
-        printf("error\n");
-        exit(1);
-    }
-    else
-    {
-        printf("ok\n");
+        error = "correct your config file in " + convertToString(line);
+        throw error;
     }
 }

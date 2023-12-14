@@ -6,20 +6,19 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:40 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/13 13:12:09 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/14 13:54:57 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
 
-void    readAndParseConfig(int c, char **argv)
+void    readAndParseConfig(int c, char **argv,tokens_iterator &lines)
 {
     int line_number = 1;
 
     std::string     path;
     std::string     line;
     std::ifstream   configfile;
-    tokens_iterator lines;
 
     if (c == 1)
         path = DEFAULT_CONFIG_PATH;
@@ -36,7 +35,6 @@ void    readAndParseConfig(int c, char **argv)
             line_number++;
         }
         file.close(); 
-        parse_config(lines);
     }
     else
     {
@@ -47,6 +45,21 @@ void    readAndParseConfig(int c, char **argv)
 
 int main(int c,char **argv)
 {
-    readAndParseConfig(c,argv);
+    tokens_iterator lines;
+    tokens_map tokens;
+
+    try
+    {
+        readAndParseConfig(c,argv,lines);
+        parse_config(lines,tokens);
+        print_tokens(tokens);
+        // handle_errors(tokens);
+        // proccess_tokens(tokens);
+        // start_listening_and_accept_request(tokens);
+    }
+    catch(std::string & e)
+    {
+        std::cerr << e << '\n';
+    }
     return (0);
 }

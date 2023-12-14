@@ -6,20 +6,23 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/13 22:52:30 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/14 13:56:31 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
 
-std::string trimString(const std::string& str) {
+std::string trimString(const std::string& str)
+{
     size_t start = 0;
     size_t end = str.length();
 
-    while (start < end && str[start] == ' ') {
+    while (start < end && str[start] == ' ')
+    {
         start++;
     }
-    while (end > start && str[end - 1] == ' ') {
+    while (end > start && str[end - 1] == ' ')
+    {
         end--;
     }
     return str.substr(start, end - start);
@@ -67,49 +70,29 @@ void    print_tokens(std::multimap<int,std::vector<std::pair<std::string, std::s
         print_(tokens_vector);
         it++;
     }
-    
-    // printf("size of token %lu\n",tokens.size());
-    // int i = 0;
-    // while(i < tokens.size())
-    // {
-    //     i++;
-    // }
-    // std::vector<std::pair<std::string, std::string> >::iterator it = tokens.;
-    // std::vector<std::pair<std::string, std::string> >::iterator ite = tokens.end();
-    
-    // while (it != ite)
-    // {
-    //     printf("Token %s ",it->first.c_str());
-    //     printf("Type %s \n",it->second.c_str());
-    //     it++;
-    // }
 }
 
-void    parse_config(tokens_iterator  &lines)
+void    parse_config(tokens_iterator  &lines, tokens_map &tokens)
 {
     tokens_iterator::iterator it = lines.begin();
     tokens_iterator::iterator ite = lines.end();
-    tokens_map tokens;
 
     while (it != ite)
     {
         parse_line((*it).first, tokens, (*it).second);
         it++;
     }
-    handle_errors(tokens);
-    // print_tokens(tokens);
-    proccess_tokens(tokens);
 }
 
 void    clear_token(const std::string &str, std::string &result)
 {
     for (size_t i = 0; i < str.length(); ++i) {
-        if ((str[i] == '{' || str[i] == '}' || str[i] == ';' || str[i] == '\n') &&
+        if ((str[i] == '{' || str[i] == '}' || str[i] == ';' || str[i] == '\n' || str[i] == '\"' || str[i] == '\'') &&
             (i == 0 || str[i - 1] != ' ')) {
             result += ' ';
         }
         result += str[i];
-        if ((str[i] == '{' || str[i] == '}' || str[i] == ';' || str[i] == '\n') &&
+        if ((str[i] == '{' || str[i] == '}' || str[i] == ';' || str[i] == '\n' || str[i] == '\"' || str[i] == '\'') &&
             (i == str.length() - 1 || str[i + 1] != ' ')) {
             result += ' ';
         }
@@ -117,7 +100,9 @@ void    clear_token(const std::string &str, std::string &result)
 }
 
 
-std::string getTokenType(const std::string& token) {
+std::string getTokenType(const std::string& token)
+{
+
     std::map<std::string, std::string> tokenTypes;
     tokenTypes.insert(std::make_pair("server", "block"));
     tokenTypes.insert(std::make_pair("location", "block"));
@@ -134,7 +119,11 @@ std::string getTokenType(const std::string& token) {
     tokenTypes.insert(std::make_pair("{", "open_block"));
     tokenTypes.insert(std::make_pair("}", "close_block"));
     tokenTypes.insert(std::make_pair(";", "semi_colon"));
+    tokenTypes.insert(std::make_pair("\'", "single_quote"));
+    tokenTypes.insert(std::make_pair("\"", "double_quote"));
+
     std::map<std::string, std::string>::iterator it = tokenTypes.find(token);
+
     if (it != tokenTypes.end())
     {
         return it->second;
@@ -144,86 +133,13 @@ std::string getTokenType(const std::string& token) {
 }
 
 
-std::string gettype(std::string &token)
-{
-    if (token == "server")
-    {
-        return "block";
-    } 
-    else if (token == "listen")
-    {
-        return "directive";
-    }
-    else if (token == "client_max_body_size")
-    {
-        return "directive";
-    }
-    else if (token == "error_page")
-    {
-        return "directive";
-    }
-    else if (token == "autoindex")
-    {
-        return "directive";
-    }
-    else if (token == "allow_methods")
-    {
-        return "directive";
-    }
-    else if (token == "access_log")
-    {
-        return "directive";
-    }
-    else if (token == "error_log")
-    {
-        return "directive";
-    }
-    else if (token == "root")
-    {
-        return "directive";
-    }
-    else if (token == "index")
-    {
-        return "directive";
-    }
-    else if (token == "server_name")
-    {
-        return "directive";
-    }
-    else if (token == ";") 
-    {
-        return "semi_colon";
-    }
-    else if (token == "{") 
-    {
-        return "open_block";
-    }
-    else if (token == "}") 
-    {
-        return "close_block";
-    } 
-    else if (token == "location")
-    {
-        return "block";
-    }
-    else
-    {
-        return "unknown";
-    }
-}
-
 void tokenize(std::string &token, tokens_map &tokens, int line_number)
 {
-    // std::string result;
-    // clear_token(token, result);
+
     static int flag = 0;
     static int flag_location = 0;
     vectors_type tokens_vec;
 
-    // char *cstr = new char[result.length() + 1];
-    // std::strcpy(cstr, result.c_str());
-
-    // char *tokenPtr = std::strtok(cstr, " ");
     if (!token.compare("\n"))
     {
         flag = 0;
@@ -235,8 +151,6 @@ void tokenize(std::string &token, tokens_map &tokens, int line_number)
         tokens_vec.push_back(std::make_pair(token, getTokenType(token)));
         flag = 0;
     }
-    // while (tokenPtr != NULL) {
-    //     std::string string(tokenPtr);
     else if (flag_location == 1 && token.length() >= 1)
     {
         if (!token.compare("{")) {
@@ -250,23 +164,33 @@ void tokenize(std::string &token, tokens_map &tokens, int line_number)
             tokens_vec.push_back(std::make_pair(token, getTokenType(token)));
             flag = 0;
         } else {
-            tokens_vec.push_back(std::make_pair(token, "argument"));
+            if (!token.compare("\'") || !token.compare("\"") )
+            {
+                tokens_vec.push_back(std::make_pair(token, getTokenType(token)));
+                
+            }
+            else
+            {
+                tokens_vec.push_back(std::make_pair(token, "argument"));
+            }
         }
     } else {
-        if (token.length() >= 1) {
+        if (token.length() >= 1)
+        {
             std::string type = getTokenType(token);
             tokens_vec.push_back(std::make_pair(token, type));
-            if (!type.compare("directive")) {
+            if (!type.compare("directive"))
+            {
                 flag = 1;
-            } else if (!type.compare("block") && !token.compare("location")) {
+            } else if (!type.compare("block") && !token.compare("location"))
+            {
                 flag_location = 1;
             }
         }
     }
-
     tokens.insert(std::make_pair(line_number, tokens_vec));
-    // delete[] cstr;
 }
+
 void    parse_line(const std::string &line, tokens_map &tokens, int line_number)
 {
     std::string result;

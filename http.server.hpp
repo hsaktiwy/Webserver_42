@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/13 13:27:02 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/14 13:27:38 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ typedef enum tokens_type
 #include <map> 
 #include <vector>
 #include <string>
+
 
 const std::string DEFAULT_CONFIG_PATH = "/Users/adardour/Desktop/webserver/configs/default.conf";
 
@@ -145,18 +146,20 @@ class ServerBlocks
         }
 };
 
-void    parse_line(const std::string &line,  tokens_map &tokens, int line_number);
-void    parse_config(tokens_iterator  &lines);
-void    print_tokens(vectors_type &tokens);
-void    proccess_tokens(vectors_type &tokens);
-void    print_args(std::vector<std::string> &args);
-void    print_dir(std::vector<Directives> &dir);
-void    print_server(std::vector<ServerBlocks> &serverBlocks);
-void    getarguments(vectors_type::iterator &it,Directives &directive);
-void    proccess_tokens(tokens_map &tokens);
-void    print_location(std::vector<LocationsBlock> &locations);
-void    handle_errors(tokens_map tokens);
-
+void        start_listening_and_accept_request(tokens_map &token);
+void        parse_line(const std::string &line,  tokens_map &tokens, int line_number);
+void        parse_config(tokens_iterator  &lines, tokens_map &tokens);
+void        print_tokens(vectors_type &tokens);
+void        proccess_tokens(vectors_type &tokens);
+void        print_args(std::vector<std::string> &args);
+void        print_dir(std::vector<Directives> &dir);
+void        print_server(std::vector<ServerBlocks> &serverBlocks);
+void        getarguments(vectors_type::iterator &it,Directives &directive);
+void        proccess_tokens(tokens_map &tokens);
+void        print_location(std::vector<LocationsBlock> &locations);
+void        handle_errors(tokens_map tokens);
+void        print_tokens(std::multimap<int,std::vector<std::pair<std::string, std::string> > > &tokens);
+std::string getTokenType(const std::string& token);
 
 
 

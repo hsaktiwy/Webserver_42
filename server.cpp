@@ -80,6 +80,7 @@ int main(int argc, char **argv)
 			read(CSocket, &buff, 4046);
 			
 			// gave the client its proper response
+			std::cout << buff << std::endl;
 			std::cout << "Send the Response to the client\n" << std::endl;
 			std::string response = DEFAUL_THEADER_RESPONSE;
 			std::cout << response << std::endl;

@@ -7,7 +7,7 @@ Have Fun.
 [ ] exemple 3:          <- line width width tab are counted as error while it shouldn't
 [ ok ] exemple 4_1: location /test ()<- this exemple parse with no error even thought that you parsing doesn't count it.
 [ ok ] exem[le 3_2: location /test -- <- i thing this is related to 4_1 it can be good start to find the problem
-[ ] exemple 5 : 
+[ ok ] exemple 5 : 
             server 
             {
                 listen 8080;

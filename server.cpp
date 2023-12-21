@@ -1,12 +1,12 @@
-#include <iostream>
 #include <cstdlib>
+#include <iostream>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <strings.h>
-
+#include <vector>
 #define TMP_DOMAIN		AF_INET
 #define TYPE		SOCK_STREAM
 #define PROTOCOL	0// this is related to the protocol that support thr TYPE in our normal case SOCK_STREAM
@@ -67,6 +67,8 @@ int main(int argc, char **argv)
 		std::cout << RED << "------>We are listing."  << COLOR_END << std::endl;
 		/*Accepting connection*/
 		socklen_t addlen = sizeof(address);
+		char	buff[4046];
+		std::vector<int> clients;
 		while (true)
 		{
 			std::cout << RED << "------>Waiting ... " << COLOR_END << std::endl;
@@ -75,7 +77,7 @@ int main(int argc, char **argv)
 				return (std::cerr << "Error : Fail to Accept Client connection" << std::endl, 1);
 			std::cout << RED << "------>Connect to Client " << CSocket << "." << COLOR_END << std::endl;
 			/*Read In Comming that*/
-			char	buff[4046];
+			bzero(buff, 4046);
 			std::cout << RED << "Resived message : " << std::endl;
 			read(CSocket, &buff, 4046);
 			

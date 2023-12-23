@@ -56,14 +56,15 @@ int main(int argc, char **argv)
 		address.sin_port = htons(PortId);
 		address.sin_family = DOMAIN;
 		bzero(address.sin_zero, sizeof(address.sin_zero));
-		int conneted = connect(clientId, (const sockaddr*) &address, sizeof(address));
-		if (conneted == -1)
-			return(std::cerr << "Error : Fail to establish Connect width the host localhost in port " << PortId << std::endl, 1);
-		std::cout << RED << "------>Connection established width the localhost in port "<< PortId << "."  << COLOR_END << std::endl;
-		/*Accepting connection*/
-		socklen_t addlen = sizeof(address);
+		char buff[4098];
 		while (true)
 		{
+			int conneted = connect(clientId, (const sockaddr*) &address, sizeof(address));
+			if (conneted == -1)
+				return(std::cerr << "Error : Fail to establish Connect width the host localhost in port " << PortId << std::endl, 1);
+			std::cout << RED << "------>Connection established width the localhost in port "<< PortId << "."  << COLOR_END << std::endl;
+			/*Accepting connection*/
+			// socklen_t addlen = sizeof(address);
 			std::string message;
 			std::getline(std::cin, message);
 			std::cout << "\'" << message << "\'" << std::endl;
@@ -71,6 +72,9 @@ int main(int argc, char **argv)
 				return (close(clientId));
 			write(clientId, message.c_str(), message.length());
 			write(clientId, "\r\n", 2);
+			read(clientId, buff, 4098);
+			std::cout << RED << "------> responce : "  << COLOR_END << std::endl;
+			std::cout << buff << std::endl;
 		}
 	}
 	else

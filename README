@@ -74,6 +74,38 @@ Request parsing notes :
         [*]  . LWS = [CRLF] 1*( SP | HT )
         [*]  . HEX = "A" | "B" | "C" | "D" | "E" | "F"
                 | "a" | "b" | "c" | "d" | "e" | "f" | DIGIT
+   -request form :
+   * A request message from a client to a server includes, within the
+   first line of that message, the method to be applied to the resource,
+   the identifier of the resource, and the protocol version in use.
+            [0]  . Request = Request-Line
+                  *(( general-header | request-header | entity-header ) CRLF) 
+                  CRLF
+                  [ message-body ]
+
+   * The Request-Line begins with a method token, followed by the
+   Request-URI and the protocol version, and ending with CRLF. The
+   elements are separated by SP characters. No CR or LF is allowed
+   except in the final CRLF sequence.
+            [0]  . Request-Line = Method SP Request-URI SP HTTP-Version CRLF
+            [*]  .   Method = "OPTIONS" ; Section 9.2
+                  | "GET" ; Section 9.3
+                  | "HEAD" ; Section 9.4
+                  | "POST" ; Section 9.5
+                  | "PUT" ; Section 9.6
+                  | "DELETE" ; Section 9.7
+                  | "TRACE" ; Section 9.8
+                  | "CONNECT" ; Section 9.9
+                  | extension-method
+            [*]  . extension-method = token
+   * The Request-URI is a Uniform Resource Identifier (section 3.2) and
+       identifies the resource upon which to apply the request.
+            [0]  . Request-URI = "*" | absoluteURI | abs_path | authority
+   - parsing status code:
+      * 405  : Method Not Allowed.
+      * 501  : Not Implemented. (if the method is known by the origin server but not allowed for the
+          requested resource, and 501 (Not Implemented) if the method is
+          unrecognized or not implemented by the origin server. )
 Terminology :
 
 This specification uses a number of terms to refer to the roles

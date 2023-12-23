@@ -66,10 +66,11 @@ int main(int argc, char **argv)
 		{
 			std::string message;
 			std::getline(std::cin, message);
+			std::cout << "\'" << message << "\'" << std::endl;
 			if (message == "exit")
 				return (close(clientId));
 			write(clientId, message.c_str(), message.length());
-			write(clientId, "\n", 1);
+			write(clientId, "\r\n", 2);
 		}
 	}
 	else

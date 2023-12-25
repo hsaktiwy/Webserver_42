@@ -1,0 +1,1 @@
+[0] I create a **client** that will play the rule of our client and creat a **custumised request** to the server and print the server responce.

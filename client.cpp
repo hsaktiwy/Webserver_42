@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <fstream>
+#include <fcntl.h>
 
 #define MY_DOMAIN		AF_INET
 #define TYPE		SOCK_STREAM
@@ -57,11 +58,12 @@ int main(int argc, char **argv)
 		address.sin_port = htons(PortId);
 		address.sin_family = MY_DOMAIN;
 		bzero(address.sin_zero, sizeof(address.sin_zero));
-		char buff;
+		char buff[4400];
 			int conneted = connect(clientId, (const sockaddr*) &address, sizeof(address));
 			if (conneted == -1)
 				return(std::cerr << "Error : Fail to establish Connect width the host localhost in port " << PortId << std::endl, 1);
 			std::cout << RED << "------>Connection established width the localhost in port "<< PortId << "."  << COLOR_END << std::endl;
+		fcntl(clientId, F_SETFL, O_NONBLOCK);
 		while (true)
 		{
 			std::string message, tmp;
@@ -81,14 +83,36 @@ int main(int argc, char **argv)
 			}
 			else
 				std::cerr  << "Error :\n	Couldn't ope the file there is problem fix it! waiting for a hint? no i want gave it to you!" << std::endl;
+			file.close();
 			std::cout << "\nMessage : \n" << message << "\n\n" << std::endl;
-			if (message == "exit")
-				return (close(clientId));
-			write(clientId, message.c_str(), message.length());
+			// if (message == "exit")
+			// 	return (close(clientId));
+			write(clientId, message.c_str(), message.length());// we may think to change write with send.
 			write(clientId, "\r\n", 2);
 			std::cout << RED << "------> responce : "  << COLOR_END << std::endl;
-			while (read(clientId, &buff, 1) != -1)
+			std::ofstream outfile("outputResponce.txt");
+			bzero(buff, 4400);
+			if (outfile.is_open())
+			{
+				std::cout << "Output is in the outputResponce.txt file:";
+				ssize_t bit = recv(clientId, &buff, 4400, MSG_DONTWAIT);
+				if (bit ==  -1)
+					std::cerr << "Fail to recv!" << std::endl;
+				else
+					outfile << buff;
+				outfile.close();
+			}
+			else
+			{
+				std::cout << "Unable to open the file, so let display on the console (stdout): \n";
+				ssize_t bit = recv(clientId, &buff, 4400, MSG_DONTWAIT);
+				if (bit ==  -1)
+					std::cerr << "Fail to recv!" << std::endl;
+				else
+					std::cout << buff;
 				std::cout << buff << std::endl;
+			}
+			std::cout << std::endl;
 		}
 	}
 	else

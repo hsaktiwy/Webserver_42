@@ -2,6 +2,7 @@
 #define REQUEST_HPP
 
 #include <vector>
+#include <set>
 #include <iostream>
 #include <list>
 #include <math.h>
@@ -37,6 +38,8 @@ class request {
         std::string http;
         std::vector<HTTPHeader> headers;
         std::string req;
+        bool    error;
+        int     status;
         request();
     public:
         request(char *request);

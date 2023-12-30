@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/30 18:17:46 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/30 18:39:41 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,14 +31,17 @@ void    get_port_host(ServerBlocks &serverBlocks,t_port_host &port_host)
     }
 }
 
-
-void    handle_request(unsigned int clientSocket)
-{
+void handle_request(unsigned int clientSocket) {
     char buffer[1024];
     int bytesRead = read(clientSocket, buffer, 1024);
-    buffer[bytesRead] = '\0';
-    printf("received: %s\n", buffer);
+    if (bytesRead > 0) {
+        buffer[bytesRead] = '\0';
+        printf("received: %s\n", buffer);
+    } else {
+        // Handle no data read or error appropriately
+    }
 }
+
 
 void    start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks)
 {
@@ -57,7 +60,7 @@ void    start_listening_and_accept_request(std::vector<ServerBlocks> &serverBloc
             exit(1);   
         }
         if (serverSocket == -1) {
-            std::cerr << "Error in creating socket\n";
+            std::cout << "Error in creating socket\n";
             exit(EXIT_FAILURE);
         }
         struct sockaddr_in serverAddr;
@@ -67,23 +70,27 @@ void    start_listening_and_accept_request(std::vector<ServerBlocks> &serverBloc
 
         int option = 1;
         if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) == -1) {
-            std::cerr << "Error setting socket options\n";
+            std::cout << "Error setting socket options\n";
             close(serverSocket);
             exit(EXIT_FAILURE);
         }
         if (bind(serverSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1) {
-            std::cerr << "Error in binding\n";
+            std::cout << "Error in binding\n";
             close(serverSocket);
             exit(EXIT_FAILURE);
         }
         
         if (listen(serverSocket, SOMAXCONN) == -1)
         {
-            std::cerr << "Error in listening\n";
+            std::cout << "Error in listening\n";
             close(serverSocket);
             exit(EXIT_FAILURE);
         }
         sockets.push_back(serverSocket);
+    }
+    
+    for (size_t i = 0; i < serverBlocks.size(); i++)
+    {
         pollfds[i].fd = sockets[i];
         pollfds[i].events = POLLIN;
         pollfds[i].revents = 0;  
@@ -92,37 +99,34 @@ void    start_listening_and_accept_request(std::vector<ServerBlocks> &serverBloc
     while (true)
     {
         int ret = poll(&pollfds[0], serverBlocks.size(), -1);
-        if (ret == -1)
-        {
+        if (ret == -1) {
             perror("poll");
             exit(1);
         }
         for (size_t i = 0; i < serverBlocks.size(); i++)
         {
             if (pollfds[i].revents & POLLIN) {
-                if (pollfds[i].fd != -1) {
-                        struct sockaddr_in clientAddr;
-                        socklen_t clientAddrLen = sizeof(clientAddr);
-                        clientSocket = accept(pollfds[i].fd, (struct sockaddr *)&clientAddr, &clientAddrLen);
-                        if (clientSocket == -1)
+                if (pollfds[i].fd != -1)
+                {
+                    struct sockaddr_in clientAddr;
+                    socklen_t clientAddrLen = sizeof(clientAddr);
+                    clientSocket = accept(pollfds[i].fd, (struct sockaddr *)&clientAddr, &clientAddrLen);
+                    if (clientSocket == -1)
+                    {
+                        if (errno == EWOULDBLOCK || errno == EAGAIN)
                         {
-                            if (errno == EWOULDBLOCK || errno == EAGAIN)
-                            {
-                                continue;
-                            } else
-                            {
-                                std::cerr << "Error in accepting connection\n";
-                                break;
-                            }
+                            continue;
+                        } else {
+                            std::cout << "Error in accepting connection\n";
+                            break;
                         }
-                        else
-                        {   
-                            handle_request(clientSocket);
-                            close(clientSocket);
-                        }
+                    } else {
+                        handle_request(clientSocket);
+                        close(clientSocket); 
                     }
                 }
             }
+        }
     }
 
     for (size_t i = 0; i < sockets.size(); i++)

@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/30 17:38:12 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/30 18:17:46 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,7 +119,6 @@ void    start_listening_and_accept_request(std::vector<ServerBlocks> &serverBloc
                         {   
                             handle_request(clientSocket);
                             close(clientSocket);
-                            printf("dd = %d\n",pollfds[i].revents);
                         }
                     }
                 }

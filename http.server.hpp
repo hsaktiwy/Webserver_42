@@ -3,32 +3,32 @@
 /*                                                        :::      ::::::::   */
 /*   http.server.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/14 13:27:38 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/27 18:23:48 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTP_SERVER_HPP
 #define HTTP_SERVER_HPP
 
-typedef enum tokens_type
-{
-    server,
-    listen,
-    client_max_body_size,
-    error_page,
-    autoindex,
-    allow_methods,
-    error_log,
-    access_log,
-    index_directive,
-    semi_colon,
-    open_block,
-    close_block,
-    location
-}   tokens_type;
+// typedef enum tokens_type
+// {
+//     server,
+//     listen,
+//     client_max_body_size,
+//     error_page,
+//     autoindex,
+//     allow_methods,
+//     error_log,
+//     access_log,
+//     index_directive,
+//     semi_colon,
+//     open_block,
+//     close_block,
+//     location
+// }   tokens_type;
 
 #include <string.h>
 #include <iostream>
@@ -44,9 +44,21 @@ typedef enum tokens_type
 #include <map> 
 #include <vector>
 #include <string>
-
+#include <stack>
+#include <netinet/in.h>
+#include <arpa/inet.h> 
+#include <sys/socket.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <poll.h>
 
 const std::string DEFAULT_CONFIG_PATH = "/Users/adardour/Desktop/webserver/configs/default.conf";
+
+typedef struct 
+{
+    unsigned int port;
+    struct in_addr sin_addr;
+}   t_port_host;
 
 typedef std::vector<std::pair<std::string, std::string> > vectors_type;
 typedef std::multimap<int, std::vector<std::pair<std::string, std::string> > > tokens_map;
@@ -146,16 +158,15 @@ class ServerBlocks
         }
 };
 
-void        start_listening_and_accept_request(tokens_map &token);
+void    start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks);
 void        parse_line(const std::string &line,  tokens_map &tokens, int line_number);
 void        parse_config(tokens_iterator  &lines, tokens_map &tokens);
 void        print_tokens(vectors_type &tokens);
-void        proccess_tokens(vectors_type &tokens);
 void        print_args(std::vector<std::string> &args);
 void        print_dir(std::vector<Directives> &dir);
 void        print_server(std::vector<ServerBlocks> &serverBlocks);
 void        getarguments(vectors_type::iterator &it,Directives &directive);
-void        proccess_tokens(tokens_map &tokens);
+void        proccess_tokens(tokens_map &tokens,std::vector<ServerBlocks> &serverBlocks);
 void        print_location(std::vector<LocationsBlock> &locations);
 void        handle_errors(tokens_map tokens);
 void        print_tokens(std::multimap<int,std::vector<std::pair<std::string, std::string> > > &tokens);

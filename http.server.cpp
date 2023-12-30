@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   http.server.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/14 13:56:31 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/26 18:11:38 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,12 +196,12 @@ void    parse_line(const std::string &line, tokens_map &tokens, int line_number)
     std::string result;
     clear_token(line, result);
     char *line_copy = new char[result.size() + 1];
-    std::strcpy(line_copy, result.c_str());
-    char *token = std::strtok(line_copy, " ");
+    strcpy(line_copy, result.c_str());
+    char *token = strtok(line_copy, " ");
     while (token != NULL)
     {
         std::string trim = trimString(token);
         tokenize(trim, tokens, line_number);
-        token = std::strtok(NULL, " ");
+        token = strtok(NULL, " ");
     }
 }

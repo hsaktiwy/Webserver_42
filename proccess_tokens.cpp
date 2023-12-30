@@ -3,18 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   proccess_tokens.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/07 10:23:31 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/14 13:32:52 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/26 18:26:31 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
 
-void proccess_tokens(tokens_map &tokens)
+void proccess_tokens(tokens_map &tokens,std::vector<ServerBlocks> &serverBlocks)
 {
-    std::vector<ServerBlocks> serverBlocks;
+
     std::stack<std::string> closed;
     std::vector<LocationsBlock> locationblock;
     int inside_location_block = 0;
@@ -97,9 +97,5 @@ void proccess_tokens(tokens_map &tokens)
     if (!closed.empty())
     {
         std::cout << "error\n";
-    }
-    else
-    {
-        print_server(serverBlocks);
     }
 }

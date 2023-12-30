@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:40 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/14 13:54:57 by adardour         ###   ########.fr       */
+/*   Updated: 2023/12/26 19:17:49 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ void    readAndParseConfig(int c, char **argv,tokens_iterator &lines)
     else 
         path = argv[1];
 
-    std::ifstream file(path);
+    std::ifstream file(path.c_str());
     if (file.is_open())
     { 
         std::string line;
@@ -47,15 +47,16 @@ int main(int c,char **argv)
 {
     tokens_iterator lines;
     tokens_map tokens;
+    std::vector<ServerBlocks> serverBlocks;
 
     try
     {
         readAndParseConfig(c,argv,lines);
         parse_config(lines,tokens);
-        print_tokens(tokens);
-        // handle_errors(tokens);
-        // proccess_tokens(tokens);
-        // start_listening_and_accept_request(tokens);
+        handle_errors(tokens);
+        proccess_tokens(tokens,serverBlocks);
+        print_server(serverBlocks);
+        start_listening_and_accept_request(serverBlocks);
     }
     catch(std::string & e)
     {

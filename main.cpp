@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:40 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/26 19:17:49 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/06 13:26:37 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,6 @@ int main(int c,char **argv)
         parse_config(lines,tokens);
         handle_errors(tokens);
         proccess_tokens(tokens,serverBlocks);
-        print_server(serverBlocks);
         start_listening_and_accept_request(serverBlocks);
     }
     catch(std::string & e)

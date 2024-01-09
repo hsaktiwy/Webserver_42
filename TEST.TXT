@@ -1,0 +1,47 @@
+bool isThewaySafe(int x, int y, int vx, int vy, int x2, int y2, int vx2, int vy2)
+{
+    int px,py,px2,py2;
+    int stepx, stepy,stepx2, stepy2;
+    int dx, dy,dx2,dy2;
+    int go = 10;
+
+    dx = (vx >= 0) ? 1 : -1;
+    dy = (vy >= 0) ? 1 : -1;
+    dx2 = (vx2 >= 0) ? 1 : -1;
+    dy2 = (vy2 >= 0) ? 1 : -1;
+    stepx = abs(vx) / go;
+    stepy = abs(vy) / go;
+    stepx2 = abs(vx2) / go;
+    stepy2 = abs(vy2) / go;
+    px = x;
+    py = y;
+    px2 = x2;
+    py2 = y2;
+    int dis = distance(px, py, px2, py2);
+    if (dis <= 520)
+        return (false);
+    px = x + dx % go;
+    py = y + dy % go;
+    px2 = x2 + dx2 % go;
+    py2 = y2 + dy2 % go;
+    dis = distance(px, py, px2, py2);
+    if (dis <= 520)
+        return (false);
+    while (stepx > 0 || stepy > 0 || stepx2 > 0 || stepy2 > 0)
+    {
+        if (stepx > 0)
+            px +=dx * go, stepx--;
+        if (stepy > 0)
+            py +=dy * go, stepy--;
+        if (stepx2 > 0)
+            px2 +=dx2 * go, stepx2--;
+        if (stepy2 > 0)
+            py2 +=dy2 * go, stepy2--;
+        if (dis <= 520)
+            return (false);
+    }
+    // dis = distance(px, py, px2, py2);
+    // if (dis <= 500)
+    //     return (false);
+    return (true);
+}

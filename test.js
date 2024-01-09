@@ -1,4 +1,4 @@
-const ports = [7000, 7001, 7002, 7003, 7004, 7005, 7006];
+const ports = [8000,8001,8002];
 const serverUrl = 'http://127.0.0.1'; // Replace with your server's URL
 
 // Function to fetch data from a specific port

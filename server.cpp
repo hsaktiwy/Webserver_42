@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <strings.h>
 #include <vector>
+#include "request.hpp"
 #define TMP_DOMAIN		AF_INET
 #define TYPE		SOCK_STREAM
 #define PROTOCOL	0// this is related to the protocol that support thr TYPE in our normal case SOCK_STREAM
@@ -83,6 +84,9 @@ int main(int argc, char **argv)
 			
 			// gave the client its proper response
 			std::cout << buff << std::endl;
+			std::cout << "\n -------> REQUEST\n";
+			request req(buff);
+			(void) req;
 			std::cout << "Send the Response to the client\n" << std::endl;
 			std::string response = DEFAUL_THEADER_RESPONSE;
 			std::cout << response << std::endl;

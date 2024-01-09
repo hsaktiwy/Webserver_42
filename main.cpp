@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:40 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/06 13:26:37 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/09 21:16:47 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@ void    readAndParseConfig(int c, char **argv,tokens_iterator &lines)
         path = DEFAULT_CONFIG_PATH;
     else 
         path = argv[1];
-
     std::ifstream file(path.c_str());
     if (file.is_open())
     { 

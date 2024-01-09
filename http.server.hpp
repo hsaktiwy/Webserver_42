@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   http.server.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/27 18:23:48 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/09 21:15:49 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@
 #include <fcntl.h>
 #include <poll.h>
 
-const std::string DEFAULT_CONFIG_PATH = "/Users/adardour/Desktop/webserver/configs/default.conf";
+const std::string DEFAULT_CONFIG_PATH = "/Users/adardour/Desktop/www/configs/default.conf";
 
 typedef struct 
 {

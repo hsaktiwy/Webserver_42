@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/09 20:49:39 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/09 21:13:12 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,7 +270,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks)
                     {
                         handle_read(poll_fds,i,&ready_to_write,&size_fd);
                     }
-                    if (poll_fds[i].revents & POLLOUT && ready_to_write)
+                    if ((poll_fds[i].revents & POLLOUT) && ready_to_write)
                     {
                         handle_response(poll_fds,i,&ready_to_write,&size_fd);
                     }                    

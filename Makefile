@@ -1,6 +1,6 @@
 C = c++
 flag = -Wall -Wextra -Werror -std=c++98 -g
-src = server.cpp
+src = server.cpp request.cpp
 client = client.cpp
 obj_client = $(client:.cpp=.o)
 obj = $(src:.cpp=.o)
@@ -9,7 +9,7 @@ all : $(Name)
 
 $(Name) : $(obj)
 	$(C) $(flag) $(obj) -o $@
-%.o : %.cpp
+%.o : %.cpp request.hpp
 		$(C) $(flag) -c $< -o $@
 client: $(obj_client)
 	$(C) $(flag) $(obj_client) -o $@

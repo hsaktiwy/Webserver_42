@@ -3,14 +3,44 @@
 /*                                                        :::      ::::::::   */
 /*   proccess_tokens.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/07 10:23:31 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/26 18:26:31 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/10 17:40:00 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
+
+int is_allowed(ServerBlocks &serverBlocks)
+{
+    for (size_t i = 0; i < serverBlocks.getDirectives().size(); i++)
+    {
+        if (!serverBlocks.getDirectives()[i].getDirective().compare("allow_methods") ||
+        !serverBlocks.getDirectives()[i].getDirective().compare("to") ||
+        !serverBlocks.getDirectives()[i].getDirective().compare("autoindex") ||
+        !serverBlocks.getDirectives()[i].getDirective().compare("index")
+        )
+        {
+            return (0);
+        }
+    }
+    
+    return (1);
+}
+
+int check_allowed_directive(std::vector<ServerBlocks> &serverBlocks)
+{
+
+    for (size_t i = 0; i < serverBlocks.size(); i++)
+    {
+        if (!is_allowed(serverBlocks[i]))
+        {
+            return (0);
+        }
+    }
+    return (1);
+}
 
 void proccess_tokens(tokens_map &tokens,std::vector<ServerBlocks> &serverBlocks)
 {
@@ -97,5 +127,6 @@ void proccess_tokens(tokens_map &tokens,std::vector<ServerBlocks> &serverBlocks)
     if (!closed.empty())
     {
         std::cout << "error\n";
+        exit(0);
     }
 }

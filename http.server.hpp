@@ -1,14 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   http.server.hpp                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/10 19:35:45 by hsaktiwy         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
 
 #ifndef HTTP_SERVER_HPP
 #define HTTP_SERVER_HPP
@@ -178,7 +167,11 @@ void        print_location(std::vector<LocationsBlock> &locations);
 void        handle_errors(tokens_map tokens);
 void        print_tokens(std::multimap<int,std::vector<std::pair<std::string, std::string> > > &tokens);
 std::string getTokenType(const std::string& token);
-
-
+std::string trim(const std::string& str);
+ServerBlocks get_server_block(std::string &host,std::vector<ServerBlocks> &serverBlocks);
+std::string get_index(std::vector<Directives> &directives);
+std::string get_root(std::vector<Directives> &directives);
+std::string check_root(ServerBlocks &block);
+std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> &serverBlocks,std::string &response);
 
 #endif

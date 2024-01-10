@@ -204,7 +204,10 @@ void	request::ParseRequest(char *r)
 
 void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks)
 {
-	std::string root =  
+	ServerBlocks block = get_server_block(host, serverBlocks);
+	std::string root =  get_root(block.getDirectives());
+	std::string Accept[] = {};
+
 }
 
 void	request::RequestDisplay( void )

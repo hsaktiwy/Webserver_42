@@ -1,15 +1,14 @@
 const http = require('http');
 
-const totalRequests = 2; // Number of requests to send
-const port = 8000; // Replace with your server's port
+const totalRequests = 1000;
+const port = 8000;
 
-// Function to send a single request
 function sendRequest() {
     return new Promise((resolve, reject) => {
         const options = {
-            hostname: '127.0.0.1', // Replace with your server's hostname
+            hostname: '127.0.0.1',
             port: port,
-            path: '/', // Replace with your server's endpoint
+            path: '/',
             method: 'GET'
         };
 
@@ -31,15 +30,12 @@ function sendRequest() {
     });
 }
 
-// Array to hold all the request promises
 const requests = [];
 
-// Create multiple requests and store their promises in the array
 for (let i = 0; i < totalRequests; i++) {
     requests.push(sendRequest());
 }
 
-// Execute all the requests simultaneously
 Promise.all(requests)
     .then((results) => {
         console.log('All requests completed successfully!');

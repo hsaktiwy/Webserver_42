@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/09 21:56:46 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/10 10:45:21 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,6 +168,7 @@ int create_socket_client(std::vector<int> &sockets,std::vector<struct pollfd> &p
     sockaddr_in client;
     socklen_t socklen = sizeof(client);
     client_socket = accept(sockets[i], (struct sockaddr *)&client, &socklen);
+    printf("new connection\n");
     if (client_socket < 0)
     {
         if (errno == EWOULDBLOCK || errno == EAGAIN)
@@ -250,7 +251,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks)
         {
             if (poll_fds[i].revents & (POLLIN | POLLOUT))
             {
-                if (poll_fds[i].fd == sockets[i])
+                if (poll_fds[i].fd == sockets[i] && (poll_fds[i].revents & POLLIN))
                 {
                     client_socket = create_socket_client(sockets, poll_fds, &size_fd,i);
                     if (client_socket == 35 || client_socket == -1)

@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/09 21:15:49 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/10 19:33:54 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,7 +171,11 @@ void        print_location(std::vector<LocationsBlock> &locations);
 void        handle_errors(tokens_map tokens);
 void        print_tokens(std::multimap<int,std::vector<std::pair<std::string, std::string> > > &tokens);
 std::string getTokenType(const std::string& token);
-
-
+std::string trim(const std::string& str);
+ServerBlocks get_server_block(std::string &host,std::vector<ServerBlocks> &serverBlocks);
+std::string get_index(std::vector<Directives> &directives);
+std::string get_root(std::vector<Directives> &directives);
+std::string check_root(ServerBlocks &block);
+std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> &serverBlocks,std::string &response);
 
 #endif

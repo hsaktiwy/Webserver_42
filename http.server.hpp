@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/10 17:34:32 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/10 19:35:45 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,16 +74,17 @@ class Directives
         Directives () {};
 
         Directives(std::string &dir): directive(dir){};
-        
+
         void    setArguments(std::string argument)
         {
             arguments.push_back(argument);
         }
-        
+
         std::vector<std::string> &getArgument()
         {
             return this->arguments;
         }
+
         std::string getDirective() const
         {
             return directive;
@@ -102,26 +103,32 @@ class LocationsBlock
         {
             
         };
+
         LocationsBlock(std::string &path)
         {
             this->path = path;
         };
+
         void    AddDirective(Directives &directive)
         {
             directives.push_back(directive);
         }
+
         std::string& getPath()
         {
             return this->path;
         }
+
         std::vector<Directives> &getDirective()
         {
             return this->directives;
         }
+
         void    setPath(std::string &path)
         {
             this->path = path;
         }
+
         void AddNestedLocation(LocationsBlock& nestedLocation) {
             nestedLocations.push(&nestedLocation);
         }

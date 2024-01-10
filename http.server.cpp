@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   http.server.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/26 18:11:38 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/10 15:01:35 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,6 +121,8 @@ std::string getTokenType(const std::string& token)
     tokenTypes.insert(std::make_pair(";", "semi_colon"));
     tokenTypes.insert(std::make_pair("\'", "single_quote"));
     tokenTypes.insert(std::make_pair("\"", "double_quote"));
+    tokenTypes.insert(std::make_pair("to", "directive"));
+    
 
     std::map<std::string, std::string>::iterator it = tokenTypes.find(token);
 

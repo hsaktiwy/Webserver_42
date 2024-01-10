@@ -1,26 +1,53 @@
-const ports = [8000,8001,8002];
-const serverUrl = 'http://127.0.0.1'; // Replace with your server's URL
+const http = require('http');
 
-// Function to fetch data from a specific port
-async function fetchDataFromPort(port) {
-    try {
-        const response = await fetch(`${serverUrl}:${port}`);
-        const data = await response.json();
-        console.log(`Data from port ${port}:`, data);
-        return data;
-    } catch (error) {
-        console.error(`Error fetching data from port ${port}:`, error);
-        return null;
-    }
+const totalRequests = 50; // Number of requests to send
+const port = 8000; // Replace with your server's port
+
+// Function to send a single request
+function sendRequest() {
+    return new Promise((resolve, reject) => {
+        const options = {
+            hostname: '127.0.0.1', // Replace with your server's hostname
+            port: port,
+            path: '/', // Replace with your server's endpoint
+            method: 'POST'
+        };
+
+        const req = http.request(options, (res) => {
+            let data = '';
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
+            res.on('end', () => {
+                resolve(data);
+            });
+        });
+
+        req.on('error', (error) => {
+            reject(error);
+        });
+
+        req.end();
+    });
 }
 
-// Array to hold all the promises for fetching data
-const fetchPromises = ports.map(port => fetchDataFromPort(port));
+// Array to hold all the request promises
+const requests = [];
 
-// Execute all requests concurrently
-Promise.all(fetchPromises)
-    .then(results => {
-        console.log('All requests completed:', results);
-        // Do something with the collected results here
+// Create multiple requests and store their promises in the array
+for (let i = 0; i < totalRequests; i++) {
+    requests.push(sendRequest());
+}
+
+// Execute all the requests simultaneously
+Promise.all(requests)
+    .then((results) => {
+        console.log('All requests completed successfully!');
+        console.log('Response data from each request:');
+        results.forEach((data, index) => {
+            console.log(`Request ${index + 1}: ${data}`);
+        });
     })
-    .catch(error => console.error('Error fetching data:', error));
+    .catch((error) => {
+        console.error('An error occurred during requests:', error);
+    });

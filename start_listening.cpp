@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   start_listening.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/10 10:45:21 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/10 17:41:22 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
+#include "request.hpp"
 
 bool parse_each_segment(std::string &segment)
 {
@@ -192,7 +193,7 @@ int create_socket_client(std::vector<int> &sockets,std::vector<struct pollfd> &p
     return (client_socket);
 }
 
-void handle_read(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd)
+void handle_read(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd, request &http_request)
 {
     char buffer[1024];
     int bytes_read = read(poll_fds[i].fd, buffer, sizeof(buffer) - 1);
@@ -200,6 +201,7 @@ void handle_read(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write,
     {
         buffer[bytes_read] = '\0';
         printf("Received from client %d: %s\n", poll_fds[i].fd, buffer);
+        http_request.ParseRequest(buffer);
         poll_fds[i].events = POLLOUT;
         *ready_to_write = 1;
     } else if (bytes_read == 0)
@@ -267,9 +269,10 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks)
                 }
                 else
                 {
+                    request http_request;
                     if (poll_fds[i].revents & POLLIN)
                     {
-                        handle_read(poll_fds,i,&ready_to_write,&size_fd);
+                        handle_read(poll_fds,i,&ready_to_write,&size_fd, http_request);
                     }
                     if ((poll_fds[i].revents & POLLOUT) && ready_to_write)
                     {

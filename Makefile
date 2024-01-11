@@ -1,34 +1,16 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: adardour <adardour@student.42.fr>          +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2023/12/13 12:12:25 by adardour          #+#    #+#              #
-#    Updated: 2023/12/13 12:14:46 by adardour         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
-CC = c++ -std=c++98
-CFLAGS = -Wall -Wextra -Werror
-
-SRC = $(wildcard *.cpp)
-HPP = $(wildcard *.hpp)
+NAME = webserv
+SRC = main.cpp requestHandler.cpp responseHandler.cpp
+CC = c++
+CFLAGS = -Wall -Wextra -Werror -std=c++98
 
 OBJ = $(SRC:.cpp=.o)
-
-TARGET = webserv
-
-all: $(TARGET)
-
-$(TARGET): $(OBJ)  $(HPP)
-	$(CC) $(OBJ) -o $@
-
-.cpp.o: $(HPP)
-	$(CC) -c $< -o $@
-
+all : $(NAME)
+$(NAME) : $(OBJ)
+	$(CC) $(OBJ) $(CFLAGS) -o $(NAME)
+%.o: %.cpp server.hpp
+	$(CC) $(CFLAGS) -c $< -o $@
 clean:
-	rm -f $(OBJ) $(TARGET)
-
-re: clean all
+	rm -f $(OBJ)
+fclean: clean
+	rm -f $(NAME)
+re: fclean all

@@ -69,7 +69,17 @@ std::string spliter(std::string &str, const std::string & delimiter, size_t &ind
 	return (line);
 }
 
-static void	ParseHeaders(std::vector<HTTPHeader> &headers, std::string &request, size_t &index, bool &error, int &status)
+static bool CheckForBody(std::string &request, size_t index)
+{
+	if (request[index] && request[index] == '\r'
+		&& request[index + 1] && request[index + 1] == '\n'
+		&& request[index + 2] && request[index + 2] == '\r'
+		&& request[index + 3] && request[index + 3] == '\n')
+			return (true);
+	return (false);
+}
+
+static void	ParseHeaders(std::vector<HTTPHeader> &headers, std::string &request, std::string &body, size_t &index, bool &error, int &status)
 {
 	std::string KnownHeaders[] = {"Host", "Accept", "Accept-Language", "Accept-Encoding", "Connection", "Referer"};
 	std::string tmp;
@@ -83,39 +93,47 @@ static void	ParseHeaders(std::vector<HTTPHeader> &headers, std::string &request,
 			HTTPHeader 	header;
 			size_t i = 0;
 			// get a header
-			tmp = spliter(request, delimiter, index);
-			if (tmp.size() == 0)
-				continue;
-			// surpace space if it was at first i think this was allow
-			if (tmp[i] == ' ')
-				i++;
-			while (tmp[i] && tmp[i] != ' ' && tmp[i] != ':')
-				header.name += tmp[i++];
-			if (tmp[i] == ' ')
-				i++;
-			// check for the known header then define it rigth values syntaxe
-			if (tmp[i] != ':')
-				error = true, status = 400;
-			else
-				i++;
-			std::string	value;
-			if (tmp[i] == ' ')
-				i++;
-			// should i handle seperators ? 
-			while (tmp[i])
+			if (!CheckForBody(request, index))
 			{
+				tmp = spliter(request, delimiter, index);
+				if (tmp.size() == 0)
+					continue;
+				// surpace space if it was at first i think this was allow
 				if (tmp[i] == ' ')
-				{
-					if (value.size() > 0)
-						header.values.push_back(value), value = "";
 					i++;
+				while (tmp[i] && tmp[i] != ' ' && tmp[i] != ':')
+					header.name += tmp[i++];
+				if (tmp[i] == ' ')
+					i++;
+				// check for the known header then define it rigth values syntaxe
+				if (tmp[i] != ':')
+					error = true, status = 400;
+				else
+					i++;
+				std::string	value;
+				if (tmp[i] == ' ')
+					i++;
+				// should i handle seperators ? 
+				while (tmp[i])
+				{
+					if (tmp[i] == ' ')
+					{
+						if (value.size() > 0)
+							header.values.push_back(value), value = "";
+						i++;
+					}
+					value += tmp[i++];
+					if (!tmp[i])
+						if (value.size() > 0)
+							header.values.push_back(value), value = "";
 				}
-				value += tmp[i++];
-				if (!tmp[i])
-					if (value.size() > 0)
-						header.values.push_back(value), value = "";
+				headers.push_back(header);
 			}
-			headers.push_back(header);
+			else
+			{
+				body = &request[index + 4];
+				stop = true;
+			}
 		}
 		else
 			stop = true;
@@ -149,7 +167,7 @@ static void	MethodParsing(bool &error, int &status, std::string &HTTPrequest, st
 		std::set<std::string>::iterator iter = ValideMethodes.find(method);
 		if (iter == ValideMethodes.end())
 		{
-			error = true,status = 400;// is there another way to say undefine ? 
+			error = true,status = 501;// is there another way to say undefine ?(501 : Not Implemented, if the method is unrecognized or not implemented by the origin server) 
 		}
 	}
 	// get the uri
@@ -170,6 +188,7 @@ static void	MethodParsing(bool &error, int &status, std::string &HTTPrequest, st
 	if (http != "HTTP/1.1")
 		error = true,status = 400;
 }
+
 static void	GetRequestHost(std::vector<HTTPHeader> &headers, std::string &host)
 {
 	for(std::vector<HTTPHeader>::iterator iter = headers.begin(); iter != headers.end(); iter++)
@@ -196,18 +215,69 @@ void	request::ParseRequest(char *r)
 	// Define the method  ?
 	MethodParsing(error, status, HTTPrequest, method, uri, http, index);
 	// parsthe headers
-	ParseHeaders(headers, req, index, error, status);
+	ParseHeaders(headers, req, body, index, error, status);
 	GetRequestHost(headers, host);
 	// files, plus check the syntaxe
 	RequestDisplay();
+}
+
+static bool absoluteURI(std::string &uri)
+{
+	if (uri.size() > 4)
+	{
+		bool http = (uri.find("http:://") == 0) ? true : false, https = (uri.find("http:://") == 0) ? true : false;
+		if (http || https)
+			return (true);
+	}
+	return (false);
+}
+
+static bool CharacterUri(char c)
+{
+	if ((c == 'a' && c == 'z') || (c == 'A' && c == 'Z') || c == ':'
+		|| (c == '0' && c == '9') ||   c == '/' || c == ';' || c == '?'
+		|| c == '#' || c == '$' || c == '-' || c == '_' || c == '.'
+		|| c == '+' || c == '!' || c == '*' || c == '\'' || c == '('
+		|| c == ')' || c == ',' || c == '~' || c == '@' || c == '&'
+		|| c == '=' || c == '%')
+		return (true);
+	return (false);
+}
+
+static bool CheckUriFormat(std::string &uri)
+{
+	for(int i = 0; uri[i]; i++)
+	{
+		if (!CharacterUri(uri[i]))
+			return (false);
+	}
+	return (true);
+}
+
+static URI UriFormat(std::string &uri, std::string &root)// 1 for absolute 2 for relative 3 for autority 
+{
+	std::string path;
+	// check it the uri start with http or https
+	//[scheme]://[authority]/[path]?[query]#[fragment]
+	bool	absoluteUri = absoluteURI(uri);
+	if (absoluteUri == true)
+	{
+		if (uri.find("http:://") == 0)
+			path = uri.substr(8);
+		else
+			path = uri.substr(9);
+	}
 }
 
 void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks)
 {
 	ServerBlocks block = get_server_block(host, serverBlocks);
 	std::string root =  get_root(block.getDirectives());
-	std::string Accept[] = {};
+	std::string mimeType[] = {"image/avif", "image/avif", "image/jpeg", "image/gif", "image/png", "text/csv",  "text/html",   "text/javascript", "text/plain", "text/xml", "text/plain", "audio/mpeg", "video/mp4", "video/mpeg", "application/xml"};
 
+	// check if the uri is available
+	bool uri_parse = CheckUriFormat(uri);
+	
 }
 
 void	request::RequestDisplay( void )
@@ -223,6 +293,8 @@ void	request::RequestDisplay( void )
 		}
 		std::cout << std::endl;
 	}
+	std::cout << "Body : \n";
+	std::cout << body;
 }
 
 request::~request()

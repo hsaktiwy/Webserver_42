@@ -3,14 +3,14 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+         #
+#    By: lol <lol@student.42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/13 12:12:25 by adardour          #+#    #+#              #
-#    Updated: 2024/01/10 17:06:16 by hsaktiwy         ###   ########.fr        #
+#    Updated: 2024/01/12 18:13:53 by lol              ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-CC = c++ -std=c++98
+CC = c++ #-std=c++98
 CFLAGS = -Wall -Wextra -Werror
 
 SRC = $(wildcard *.cpp)

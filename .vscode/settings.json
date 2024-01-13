@@ -5,6 +5,7 @@
         "titleBar.activeForeground": "#F9FCFA"
     },
     "files.associations": {
+        "*.c": "c",
         "fstream": "cpp",
         "__bit_reference": "cpp",
         "__config": "cpp",
@@ -75,7 +76,13 @@
         "multimap": "cpp",
         "map": "cpp",
         "unordered_map": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "*.tcc": "cpp",
+        "clocale": "cpp",
+        "memory_resource": "cpp",
+        "numeric": "cpp",
+        "random": "cpp",
+        "cinttypes": "cpp"
     },
     "cSpell.words": [
         "getarguments",

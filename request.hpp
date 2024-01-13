@@ -32,6 +32,12 @@ typedef  enum{
     DELETE
 }   Method;
 
+typedef  enum{
+    ABS,
+    REL,
+    AUTO
+}  URI;
+
 class request {
     private:
         std::string method;
@@ -39,6 +45,7 @@ class request {
         std::string http;
         std::string host;
         std::vector<HTTPHeader> headers;
+        std::string body;
         std::string req;
         bool    error;
         int     status;

@@ -183,7 +183,7 @@ int create_socket_client(std::vector<int> &sockets,std::vector<struct pollfd> &p
     return (client_socket);
 }
 
-void handle_read(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::vector<ServerBlocks> &serverBlocks,std::string &response, request& http_request)
+void    handle_read(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::vector<ServerBlocks> &serverBlocks,std::string &response, request& http_request)
 {
     char buffer[1024];
     int bytes_read = read(poll_fds[i].fd, buffer, sizeof(buffer) - 1);
@@ -208,7 +208,7 @@ void handle_read(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write,
     }
 }
 
-void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &response)
+void    handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &response)
 {
     int length = response.length();
     response = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + std::to_string(length) + "\n\n" + response;
@@ -223,7 +223,7 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
     (*size_fd)--;
 }
 
-void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks)
+void    start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks)
 {
     std::string response;
     std::vector<int> sockets;

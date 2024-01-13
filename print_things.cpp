@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/06 19:50:44 by adardour          #+#    #+#             */
-/*   Updated: 2023/12/08 18:42:41 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/13 18:55:13 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ void    print_location(std::vector<LocationsBlock> &locations)
     {   
         printf("location %d\t",i);
         printf("path %s\n",locations[i].getPath().c_str());
-        print_dir(locations[i].getDirective());
+        print_dir(locations[i].getDirectives());
         i++;
     }
 }
@@ -59,18 +59,18 @@ void    print_dir(std::vector<Directives> &dir)
    }
 }
 
-void    print_server(std::vector<ServerBlocks> &serverBlocks)
-{
-    int index = 0;
+// void    print_server(std::vector<ServerBlocks> &serverBlocks)
+// {
+//     int index = 0;
     
-    while (index < serverBlocks.size())
-    {
-        printf("Server %d ================================== \n\n",index);
-        print_dir(serverBlocks[index].getDirectives());
-        printf("\n");
-        print_location(serverBlocks[index].getLocations());
-        printf("\n");
-        index++;
-        printf("===========================================\n\n");
-    }
-}
+//     while (index < serverBlocks.size())
+//     {
+//         printf("Server %d ================================== \n\n",index);
+//         print_dir(serverBlocks[index].getDirectives());
+//         printf("\n");
+//         print_location(serverBlocks[index].getLocations());
+//         printf("\n");
+//         index++;
+//         printf("===========================================\n\n");
+//     }
+// }

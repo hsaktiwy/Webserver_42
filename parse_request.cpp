@@ -6,179 +6,158 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/10 19:33:18 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/13 21:53:05 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
 
-std::string trim(const std::string& str)
+template<typename T>
+void    set(Worker &worker, T& Directives,int flag)
 {
-    
-    size_t start = str.find_first_not_of(" \t\n\r");
-    if (start == std::string::npos) {
-        return "";
-    }
-    size_t end = str.find_last_not_of(" \t\n\r");
-    return str.substr(start, end - start + 1);
-}
+    std::string directive;
 
-
-ServerBlocks get_server_block(std::string &host,std::vector<ServerBlocks> &serverBlocks)
-{
-    int i = 0;
-    ServerBlocks block;
-    while (i < serverBlocks.size())
+    directive = (flag == 0) ? "root" : "index";
+    for (size_t i = 0; i < Directives.size(); i++)
     {
-        int j = 0;
-        while (j < serverBlocks[i].getDirectives().size())
+        if (!Directives[i].getDirective().compare(directive))
         {
-            if (!serverBlocks[i].getDirectives()[j].getDirective().compare("listen") && !serverBlocks[i].getDirectives()[j].getArgument()[0].compare(trim(host).c_str()))
+            if (flag == 0)
             {
-                block = serverBlocks[i];
-            }
-            j++;
-        }
-        
-        i++;
-    }
-    
-    return block;
-}
-std::string get_index(std::vector<Directives> &directives)
-{
-    for (size_t i = 0; i < directives.size(); i++)
-    {
-        if (!directives[i].getDirective().compare("index"))
-        {
-            for (size_t j = 0; j < directives[j].getArgument().size(); j++)
-            {
-                return (directives[i].getArgument()[j]);
+                
+                worker.setRoot(Directives[i].getArgument()[0]);
                 break;
             }
-            
-        }
-    }
-    
-    return "NULL";
-}
-
-std::string get_root(std::vector<Directives> &directives)
-{
-    for (size_t i = 0; i < directives.size(); i++)
-    {
-        if (!directives[i].getDirective().compare("root"))
-        {
-            for (size_t j = 0; j < directives[i].getArgument().size(); j++)
+            else if (flag == 1)
             {
-                return directives[i].getArgument()[0];
-            }
-        }
-    }
-    return ("NULL");
-}
-
-std::string check_root(ServerBlocks &block)
-{
-    std::string root;
-    for (size_t i = 0; i < block.getDirectives().size(); i++)
-    {
-        root = get_root(block.getDirectives());
-    }
-    return root;
-}
-
-std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> &serverBlocks,std::string &response)
-{
-    std::string method;
-    std::string path;   
-    std::string host;   
-    std::map<std::string,std::string> headers;
-    int find;
-    std::string key;
-    std::string value;
-    std::string first;
-    std::string second;
-    std::string index_path;
-    std::string root;
-    std::string serve;
-    ServerBlocks block;
-
-    
-    std::istringstream iss(buffer);
-    std::string line;
-    if (std::getline(iss, line)) {
-        std::istringstream lineStream(line);
-        lineStream >> method >> path; 
-    }
-    while (std::getline(iss, line))
-    {
-       find = line.find(':');
-       key = line.substr(0,find);
-       value = line.substr(find + 1);
-       headers.insert(std::make_pair(key,value));
-    }
-
-    std::map<std::string,std::string>::iterator it = headers.begin();
-    std::map<std::string,std::string>::iterator ite = headers.end();
-
-    while (it != ite)
-    {
-        first = it->first;
-        second = it->second;
-        if (!first.compare("Host"))
-        {
-            host = second;
-            break;
-        }
-        it++;
-    }
-    
-    // std::cout << host << std::endl;
-    // std::cout << method << std::endl;
-    // std::cout << path << std::endl;
-
-    if (!path.compare("/") || !path.compare("/index.html") || !path.compare("/index.php"))
-    {
-        block = get_server_block(host,serverBlocks);
-        for (size_t i = 0; i < block.getDirectives().size(); i++)
-        {
-            index_path = get_index(block.getDirectives());
-            break;
-        }
-        if (index_path.compare("NULL"))
-        {
-            root = check_root(block);
-            if (root.compare("NULL"))
-            {
-                serve = root + "/" + index_path;
-                std::ifstream myfile;
-                myfile.open(serve);
-                std::string myline;
-                if (myfile.is_open())
+                for (size_t j = 0; j < Directives[i].getArgument().size(); j++)
                 {
-                    while ( myfile )
-                    { 
-                        std::getline (myfile, myline);
-                        response += myline;
+                    if (access((worker.getRoot() + Directives[i].getArgument()[j]).c_str(),F_OK) == 0)
+                    {
+                        worker.setIndex(worker.getRoot() + Directives[i].getArgument()[j]);
+                        break;
                     }
-                    myfile.close();
                 }
-                else
-                {
-                    std::cout << "Couldn't open file\n";
-                }
+                
             }
-            else
+        }
+        }
+    // worker.setRoot("");
+}
+
+void    build_response(Worker &worker,std::string &response)
+{
+    std::ifstream myfile;
+    myfile.open(worker.getIndex());
+    std::string myline;
+    if ( myfile.is_open() )
+    {
+        while ( myfile )
+        {
+            std::getline (myfile, myline);
+            response += myline;
+        }
+        myfile.close();
+    }
+    else {
+        std::cout << "Couldn't open file\n";
+    }
+}
+
+std::string    is_mime_type(std::string &path)
+{
+    int length = path.length();
+    while (length)
+    {
+        if (path[length] == '.')
+        {
+            break;
+        }
+        length--;
+    }
+    return (path.substr(length + 1));
+}
+
+void    response_mime_type(std::string &response, std::string &mime_type, int *status)
+{
+    int length = response.length();
+    response = "HTTP/1.1 200 OK\r\nContent-Type: text/" + mime_type + "\nContent-Length: " + std::to_string(length) + "\n\n" + response;
+    printf("response %s\n",response.c_str());
+    *status = 1;
+}
+
+std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> &serverBlocks,std::string &response,int *flag,int *status)
+{
+    int find;
+
+    std::string host;
+    std::string path;
+    std::string method;
+    std::string version;
+    std::string mime_type;
+
+    std::istringstream httpStream(buffer);
+    std::string line;
+
+    static Worker worker;
+    httpStream >> method >> path >> version;
+    mime_type = is_mime_type(path);
+    if (mime_type.compare("css"))
+    {
+        std::getline(httpStream, line);
+        while (std::getline(httpStream, line))
+        {
+            find = line.find(':');
+            if (!line.substr(0,find).compare("Host"))
             {
-                printf("list 1\n");
+                host = line.substr(find + 1);
+            }
+        }
+        worker = Worker(serverBlocks,host);
+        worker.setLocationWorker(worker.getBlockWorker(),path);
+        set(worker,worker.getLocationWorker().getDirectives(),0);
+        if (worker.getRoot().empty())
+            set(worker,worker.getBlockWorker().getDirectives(),0);
+        if (!worker.getRoot().empty())
+        {
+            set(worker,worker.getLocationWorker().getDirectives(),1);
+            if (worker.getIndex().empty())
+                set(worker,worker.getBlockWorker().getDirectives(),1);
+            if (!worker.getIndex().empty())
+            {
+                build_response(worker, response);
+                *flag = 0;
+            }
+            else 
+            {
+                // printf("404 not found\n");
             }
         }
         else
         {
-            printf("list 2\n");
+            // printf("404 not found\n");
         }
     }
+    else
+    {
 
+        std::ifstream myfile;
+        std::string full_path = worker.getRoot() + path.substr(path.find('/') + 1);
+        myfile.open(full_path);
+        std::string myline;
+        if ( myfile.is_open() )
+        {
+            while ( myfile )
+            {
+                std::getline (myfile, myline);
+                response += myline;
+            }
+            response_mime_type(response,mime_type,status);
+            myfile.close();
+        }
+        else {
+            std::cout << "Couldn't open file\n";
+        }
+    }
     return response;
 }

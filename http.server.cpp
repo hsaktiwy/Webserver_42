@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/10 15:01:35 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/12 17:36:50 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,6 +122,7 @@ std::string getTokenType(const std::string& token)
     tokenTypes.insert(std::make_pair("\'", "single_quote"));
     tokenTypes.insert(std::make_pair("\"", "double_quote"));
     tokenTypes.insert(std::make_pair("to", "directive"));
+    tokenTypes.insert(std::make_pair("cgi", "directive"));
     
 
     std::map<std::string, std::string>::iterator it = tokenTypes.find(token);

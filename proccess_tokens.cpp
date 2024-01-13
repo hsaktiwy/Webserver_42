@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/07 10:23:31 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/10 17:40:00 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/13 18:55:20 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ void proccess_tokens(tokens_map &tokens,std::vector<ServerBlocks> &serverBlocks)
                 }
                 else if (!type.compare("argument") && inside_location_block)
                 {
-                    locationblock.back().getDirective().back().setArguments(token);
+                    locationblock.back().getDirectives().back().setArguments(token);
                     
                 }
                 else if (!type.compare("semi_colone"))

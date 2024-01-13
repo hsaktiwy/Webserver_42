@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:40 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/09 21:16:47 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/13 18:40:24 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ int main(int c,char **argv)
         parse_config(lines,tokens);
         handle_errors(tokens);
         proccess_tokens(tokens,serverBlocks);
+        // print_server(serverBlocks);
         start_listening_and_accept_request(serverBlocks);
     }
     catch(std::string & e)

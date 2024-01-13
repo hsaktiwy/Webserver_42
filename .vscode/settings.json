@@ -77,8 +77,12 @@
         "unordered_map": "cpp"
     },
     "cSpell.words": [
+        "blockworker",
         "getarguments",
-        "locationblock"
+        "locationblock",
+        "locationworker",
+        "nestedlocation",
+        "stacklocation"
     ],
     "editor.fontWeight": "bold"
 }

@@ -6,43 +6,23 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/13 21:53:05 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/14 11:42:26 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
 
 template<typename T>
-void    set(Worker &worker, T& Directives,int flag)
+void    set(T& Directives,Worker &worker)
 {
-    std::string directive;
-
-    directive = (flag == 0) ? "root" : "index";
     for (size_t i = 0; i < Directives.size(); i++)
     {
-        if (!Directives[i].getDirective().compare(directive))
+        if (!Directives[i].getDirective().compare("root"))
         {
-            if (flag == 0)
-            {
-                
-                worker.setRoot(Directives[i].getArgument()[0]);
-                break;
-            }
-            else if (flag == 1)
-            {
-                for (size_t j = 0; j < Directives[i].getArgument().size(); j++)
-                {
-                    if (access((worker.getRoot() + Directives[i].getArgument()[j]).c_str(),F_OK) == 0)
-                    {
-                        worker.setIndex(worker.getRoot() + Directives[i].getArgument()[j]);
-                        break;
-                    }
-                }
-                
-            }
+            worker.setRoot(Directives[i].getArgument()[0]);
+            break;
         }
-        }
-    // worker.setRoot("");
+    }
 }
 
 void    build_response(Worker &worker,std::string &response)
@@ -82,11 +62,88 @@ void    response_mime_type(std::string &response, std::string &mime_type, int *s
 {
     int length = response.length();
     response = "HTTP/1.1 200 OK\r\nContent-Type: text/" + mime_type + "\nContent-Length: " + std::to_string(length) + "\n\n" + response;
-    printf("response %s\n",response.c_str());
     *status = 1;
 }
 
-std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> &serverBlocks,std::string &response,int *flag,int *status)
+bool is_directive(const std::string &directive)
+{
+    std::vector<std::string> tokenTypes;
+    
+    tokenTypes.push_back("client_max_body_size");
+    tokenTypes.push_back("error_page");
+    tokenTypes.push_back("autoindex");
+    tokenTypes.push_back("allow_methods");
+    tokenTypes.push_back("index");
+    tokenTypes.push_back("access_log");
+    tokenTypes.push_back("error_log");
+    tokenTypes.push_back("root");
+    tokenTypes.push_back("to");
+    tokenTypes.push_back("cgi");
+    
+    if (std::find(tokenTypes.begin(), tokenTypes.end(), directive) != tokenTypes.end())
+    {
+        return true;
+    }
+    return false;
+}
+
+void    setDirectives(Worker &worker)
+{
+    for (size_t i = 0; i < worker.getLocationWorker().getDirectives().size(); i++)
+    {
+        for (size_t j = 0; j < worker.getLocationWorker().getDirectives()[i].getArgument().size(); j++)
+        {
+            printf("directive name %s \t",worker.getLocationWorker().getDirectives()[i].getDirective().c_str());
+            printf("args %s\t ",worker.getLocationWorker().getDirectives()[i].getArgument()[j].c_str());
+        }
+        printf("\n");
+    }
+    
+    exit(0);
+    set(worker.getLocationWorker().getDirectives(),worker);
+    if (worker.getRoot().empty())
+        set(worker.getBlockWorker().getDirectives(),worker);
+    
+    int i = 0;
+    while (i < worker.getLocationWorker().getDirectives().size())
+    {
+        if (is_directive(worker.getLocationWorker().getDirectives()[i].getDirective()))
+        {
+            for (size_t j = 0; j < worker.getLocationWorker().getDirectives()[i].getArgument().size(); j++)
+            {
+                if (!worker.getLocationWorker().getDirectives()[i].getDirective().compare("index"))
+                {
+                    worker.setIndex(worker.getLocationWorker().getDirectives()[i].getArgument(),worker.getRoot());
+                }
+                else if (!worker.getLocationWorker().getDirectives()[i].getDirective().compare("autoindex"))
+                {
+                    worker.setAutoIndex(worker.getLocationWorker().getDirectives()[i].getArgument()[0]);
+                }
+                else if (!worker.getLocationWorker().getDirectives()[i].getDirective().compare("to"))
+                {
+                    worker.setRedirect(worker.getLocationWorker().getDirectives()[i].getArgument()[0]);
+                }
+                
+                else if (!worker.getLocationWorker().getDirectives()[i].getDirective().compare("allow_methods"))
+                {
+                    // for (size_t j = 0; j < worker.getLocationWorker().getDirectives()[i].getArgument().size(); j++)
+                    // {
+                        printf("%s\t", worker.getLocationWorker().getDirectives()[i].getArgument()[0].c_str());
+                    // }
+                
+                    // worker.setMethod(worker.getLocationWorker().getDirectives()[i].getArgument());
+                }
+            }
+        }
+    else
+    {
+        
+    }
+    i++;
+    }    
+}
+
+std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> &serverBlocks,std::string &response,int *flag,int *status,std::string &human_status)
 {
     int find;
 
@@ -114,50 +171,33 @@ std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> &serve
             }
         }
         worker = Worker(serverBlocks,host);
-        worker.setLocationWorker(worker.getBlockWorker(),path);
-        set(worker,worker.getLocationWorker().getDirectives(),0);
-        if (worker.getRoot().empty())
-            set(worker,worker.getBlockWorker().getDirectives(),0);
-        if (!worker.getRoot().empty())
-        {
-            set(worker,worker.getLocationWorker().getDirectives(),1);
-            if (worker.getIndex().empty())
-                set(worker,worker.getBlockWorker().getDirectives(),1);
-            if (!worker.getIndex().empty())
-            {
-                build_response(worker, response);
-                *flag = 0;
-            }
-            else 
-            {
-                // printf("404 not found\n");
-            }
-        }
-        else
-        {
-            // printf("404 not found\n");
-        }
-    }
-    else
-    {
+        worker.setLocationWorker(worker.getBlockWorker(), path);
+        setDirectives(worker);
 
-        std::ifstream myfile;
-        std::string full_path = worker.getRoot() + path.substr(path.find('/') + 1);
-        myfile.open(full_path);
-        std::string myline;
-        if ( myfile.is_open() )
-        {
-            while ( myfile )
-            {
-                std::getline (myfile, myline);
-                response += myline;
-            }
-            response_mime_type(response,mime_type,status);
-            myfile.close();
-        }
-        else {
-            std::cout << "Couldn't open file\n";
-        }
+        printf("index = %s\n",worker.getIndex().c_str());
+        printf("auto index = %s\n",worker.getAutoIndex().c_str());
+        printf("redirect = %s\n",worker.getRedirect().c_str());
+        
     }
+    // else
+    // {
+    //     std::ifstream myfile;
+    //     std::string full_path = worker.getRoot() + path.substr(path.find('/') + 1);
+    //     myfile.open(full_path);
+    //     std::string myline;
+    //     if ( myfile.is_open() )
+    //     {
+    //         while ( myfile )
+    //         {
+    //             std::getline (myfile, myline);
+    //             response += myline;
+    //         }
+    //         response_mime_type(response,mime_type,status);
+    //         myfile.close();
+    //     }
+    //     else {
+    //         std::cout << "Couldn't open file\n";
+    //     }
+    // }
     return response;
 }

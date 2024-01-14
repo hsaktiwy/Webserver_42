@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/13 21:54:50 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/14 12:03:56 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,14 +183,14 @@ int create_socket_client(std::vector<int> &sockets,std::vector<struct pollfd> &p
 
 
 void handle_read(std::vector<struct pollfd> &poll_fds, int i, int *ready_to_write, \
-                  nfds_t *size_fd, std::vector<ServerBlocks> &serverBlocks, std::string &response, int *flag,int *status)
+                  nfds_t *size_fd, std::vector<ServerBlocks> &serverBlocks, std::string &response, int *flag,int *status,std::string &human_status)
 {
     char buffer[1024];
     int bytes_read = recv(poll_fds[i].fd, buffer, sizeof(buffer) - 1, 0);
     if (bytes_read > 0)
     {
         buffer[bytes_read] = '\0';
-        parse_request(buffer, serverBlocks, response, flag,status);
+        parse_request(buffer, serverBlocks, response, flag,status,human_status);
         *ready_to_write = 1;
     }
     else if (bytes_read == 0)
@@ -206,12 +206,12 @@ void handle_read(std::vector<struct pollfd> &poll_fds, int i, int *ready_to_writ
     }
 }
 
-void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &response,int *flag,int *status)
+void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &response,int *flag,int *status,std::string &human_status)
 {
     int length = response.length();
     if (*flag == 0)
     {
-        response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\nContent-Length: " + std::to_string(length) + "\n\n" + response;
+        response = "HTTP/1.1 " + std::to_string(*status) + " " + human_status + "\r\nContent-Type: text/html\nContent-Length: " + std::to_string(length) + "\n\n" + response;
         *flag = 1;
     }
     int bytes_written = write(poll_fds[i].fd, response.c_str(), response.size());
@@ -248,7 +248,26 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks)
     int ready_to_write = 0;
     int flag = 0;
     int status;
+    std::string human_status;
+
+
+    for (size_t i = 0; i < serverBlocks.size(); i++)
+    {
+        for (size_t a = 0; a < serverBlocks[i].getLocations().size(); a++)
+        {
+            for (size_t oo = 0; oo < serverBlocks[i].getLocations()[a].getDirectives().size(); oo++)
+            {
+                for (size_t h = 0; h < serverBlocks[i].getLocations()[a].getDirectives()[oo].getArgument().size(); h++)
+                {
+                    printf("%s\t",serverBlocks[i].getLocations()[a].getDirectives()[oo].getDirective().c_str());
+                    printf("args %s\t ",serverBlocks[i].getLocations()[a].getDirectives()[oo].getArgument()[h].c_str());
+                }
+                
+            }
+        }
+    }
     
+    exit(0);
     create_sockets(serverBlocks, sockets);
     init_poll_fds(poll_fds, serverBlocks.size(), sockets);
     std::vector<int> new_connections;
@@ -288,11 +307,11 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks)
                         {
                             printf("new connection from socket %d ...\n",client_socket);
                         }
-                        handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status);
+                        handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status);
                     }
                     if (poll_fds[i].revents & POLLOUT)
                     {
-                        handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status);
+                        handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status);
                         
                     }
                 }

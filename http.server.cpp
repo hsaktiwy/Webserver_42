@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/12 17:36:50 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/14 09:53:48 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,14 +115,14 @@ std::string getTokenType(const std::string& token)
     tokenTypes.insert(std::make_pair("access_log", "directive"));
     tokenTypes.insert(std::make_pair("error_log", "directive"));
     tokenTypes.insert(std::make_pair("root", "directive"));
+    tokenTypes.insert(std::make_pair("to", "directive"));
+    tokenTypes.insert(std::make_pair("cgi", "directive"));
     tokenTypes.insert(std::make_pair("server_name", "directive"));
     tokenTypes.insert(std::make_pair("{", "open_block"));
     tokenTypes.insert(std::make_pair("}", "close_block"));
     tokenTypes.insert(std::make_pair(";", "semi_colon"));
     tokenTypes.insert(std::make_pair("\'", "single_quote"));
     tokenTypes.insert(std::make_pair("\"", "double_quote"));
-    tokenTypes.insert(std::make_pair("to", "directive"));
-    tokenTypes.insert(std::make_pair("cgi", "directive"));
     
 
     std::map<std::string, std::string>::iterator it = tokenTypes.find(token);

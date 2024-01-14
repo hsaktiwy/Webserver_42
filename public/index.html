@@ -10,14 +10,13 @@
 
 <body>
     <div class="container">
-        <h1 class="welcome">Welcome to My web server</h1>
         <header>
-            <h1>Hello, World!</h1>
+            <h1 class="welcome">Welcome to My web server</h1>
             <nav>
                 <ul>
-                    <li><a href="#">Home</a></li>
-                    <li><a href="#">About</a></li>
-                    <li><a href="#">Contact</a></li>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/about">About</a></li>
+                    <li><a href="/contact">Contact</a></li>
                 </ul>
             </nav>
         </header>
@@ -35,6 +34,10 @@
         </section>
 
 
+        <form action="/upload" method="POST" enctype="multipart/form-data" class="upload-form">
+            <input type="file" name="img" id="imgInput" class="file-input">
+            <button type="submit" class="upload-button">Upload</button>
+        </form>
         <footer>
             <p>&copy; 2024 Your Website. All rights reserved.</p>
         </footer>

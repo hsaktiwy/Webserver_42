@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/13 19:17:43 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/14 11:18:02 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,4 +53,32 @@ void    Worker::setLocationWorker(const ServerBlocks& block,std::string &path)
             this->locationworker = block.getLocations()[i];
         }
    }
+}
+
+void Worker::setIndex(const std::vector<std::string>&   args,const std::string &root)
+{
+    printf("root %s\n",root.c_str());
+    if (!root.empty())
+    {
+        for (size_t i = 0; i < args.size(); i++)
+        {
+            if (access((root + args[i]).c_str(),F_OK) == 0)
+            {
+                this->index = root + args[i];
+                break;
+            }
+        }
+        
+    }
+}
+
+
+void Worker::setMethod(const std::vector<std::string>  &method)
+{
+    printf("size %lu\n",method.size());
+    for (size_t i = 0; i < method.size(); i++)
+    {
+        this->allow_methods.push_back(method[i]);
+    }
+    
 }

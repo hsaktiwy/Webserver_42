@@ -74,3 +74,47 @@ footer {
     display: flex;
     justify-content: center;
 }
+
+
+/* Reset some default styles */
+
+body,
+h1,
+h2,
+p,
+form,
+input,
+button {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+}
+
+.upload-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 50px;
+}
+
+.file-input {
+    margin-bottom: 20px;
+    padding: 10px;
+}
+
+.upload-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.upload-button:hover {
+    background-color: #45a049;
+}

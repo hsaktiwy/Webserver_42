@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/13 21:37:33 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/14 11:58:56 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,6 @@ class LocationsBlock
     private:
         std::string path;
         std::vector<Directives> directives;
-        std::stack<LocationsBlock*> nestedLocations;
     public:
         LocationsBlock()
         {
@@ -101,20 +100,13 @@ class LocationsBlock
         {
             return this->path;
         }
-        std::vector<Directives> &getDirectives()
+        std::vector<Directives>  &getDirectives()
         {
             return this->directives;
         }
         void    setPath(std::string &path)
         {
             this->path = path;
-        }
-        void AddNestedLocation(LocationsBlock& nestedLocation) {
-            nestedLocations.push(&nestedLocation);
-        }
-
-        LocationsBlock& GetLastNestedLocation() {
-            return *nestedLocations.top();
         }
 };
 
@@ -135,7 +127,7 @@ class ServerBlocks
         {
             locations.push_back(location);
         }
-        std::vector<LocationsBlock> const & getLocations() const
+        std::vector<LocationsBlock>   getLocations() const // add reference
         {
             return this->locations;
         }
@@ -155,9 +147,11 @@ private:
     std::string root;
     std::string index;
     std::string redirect;
-    std::string error_page;
     std::string host;
     std::string path;
+    std::string autoindex;
+    std::vector<std::string> error_page;
+    std::vector<std::string> allow_methods;
 
 public:
     Worker()
@@ -193,9 +187,7 @@ public:
         return index;
     }
 
-    void setIndex(const std::string& newIndex) {
-        index = newIndex;
-    }
+    void setIndex(const std::vector<std::string>&   args,const std::string &root);
 
     std::string getRedirect() const {
         return redirect;
@@ -205,13 +197,19 @@ public:
         redirect = newRedirect;
     }
 
-    std::string getErrorPage() const {
-        return error_page;
+    std::vector<std::string> const &getAllowMethods() const  
+    {
+        return this->allow_methods;
     }
+    
+    void setMethod(const std::vector<std::string>  &method);
+    // std::string getErrorPage() const {
+    //     return error_page;
+    // }
 
-    void setErrorPage(const std::string& newErrorPage) {
-        error_page = newErrorPage;
-    }
+    // void setErrorPage(const std::string& newErrorPage) {
+    //     error_page = newErrorPage;
+    // }
 
     std::string getHost() const {
         return host;
@@ -226,6 +224,13 @@ public:
     }
 
     void setPath(const std::string& newPath) {
+        path = newPath;
+    }
+    std::string getAutoIndex() const {
+        return path;
+    }
+
+    void setAutoIndex(const std::string& newPath) {
         path = newPath;
     }
 };
@@ -249,6 +254,6 @@ ServerBlocks get_server_block(std::string &host,std::vector<ServerBlocks> &serve
 // std::string get_index(std::vector<Directives> &directives);
 // std::string get_root(std::vector<Directives> &directives);
 std::string check_root(ServerBlocks &block);
-std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> &serverBlocks,std::string &response,int *flag,int *status);
+std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> &serverBlocks,std::string &response,int *flag,int *status,std::string &human_status);
 void    build_response(std::string index_path,std::string &response);
 #endif

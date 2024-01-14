@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/14 12:26:03 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/14 12:34:55 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,6 +150,7 @@ private:
     std::string host;
     std::string path;
     std::string autoindex;
+    std::string max_body_size;
     std::vector<std::string> error_page;
     std::vector<std::string> allow_methods;
 
@@ -232,6 +233,14 @@ public:
 
     void setAutoIndex(const std::string& newPath) {
         path = newPath;
+    }
+    std::string &get_max_body_size() 
+    {
+        return (this->max_body_size);
+    }
+    void set_max_body_size(std::string max_body_size) 
+    {
+        this->max_body_size = max_body_size;
     }
 };
 

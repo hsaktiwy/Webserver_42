@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/14 12:31:12 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/14 12:39:03 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,7 +114,7 @@ void    setDirectives(Worker &worker)
                 }
                 else if (!worker.getLocationWorker().getDirectives()[i].getDirective().compare("client_max_body_size"))
                 {
-                    worker.setRedirect(worker.getLocationWorker().getDirectives()[i].getArgument()[0]);
+                    worker.set_max_body_size(worker.getLocationWorker().getDirectives()[i].getArgument()[0]);
                 }
                 else if (!worker.getLocationWorker().getDirectives()[i].getDirective().compare("allow_methods"))
                 {
@@ -124,29 +124,29 @@ void    setDirectives(Worker &worker)
         }
         else
         {
-            // for (size_t j = 0; j < worker.getBlockWorker().getDirectives()[i].getArgument().size(); j++)
-            // {
-            //     if (!worker.getBlockWorker().getDirectives()[i].getDirective().compare("index"))
-            //     {
-            //         worker.setIndex(worker.getBlockWorker().getDirectives()[i].getArgument(),worker.getRoot());
-            //     }
-            //     else if (!worker.getBlockWorker().getDirectives()[i].getDirective().compare("autoindex"))
-            //     {
-            //         worker.setAutoIndex(worker.getBlockWorker().getDirectives()[i].getArgument()[0]);
-            //     }
-            //     else if (!worker.getBlockWorker().getDirectives()[i].getDirective().compare("to"))
-            //     {
-            //         worker.setRedirect(worker.getBlockWorker().getDirectives()[i].getArgument()[0]);
-            //     }
-            //     else if (!worker.getBlockWorker().getDirectives()[i].getDirective().compare("client_max_body_size"))
-            //     {
-            //         worker.setRedirect(worker.getBlockWorker().getDirectives()[i].getArgument()[0]);
-            //     }
-            //     else if (!worker.getBlockWorker().getDirectives()[i].getDirective().compare("allow_methods"))
-            //     {
-            //         worker.setMethod(worker.getBlockWorker().getDirectives()[i].getArgument());
-            //     }
-            // }
+            for (size_t j = 0; j < worker.getBlockWorker().getDirectives()[i].getArgument().size(); j++)
+            {
+                if (!worker.getBlockWorker().getDirectives()[i].getDirective().compare("index"))
+                {
+                    worker.setIndex(worker.getBlockWorker().getDirectives()[i].getArgument(),worker.getRoot());
+                }
+                else if (!worker.getBlockWorker().getDirectives()[i].getDirective().compare("autoindex"))
+                {
+                    worker.setAutoIndex(worker.getBlockWorker().getDirectives()[i].getArgument()[0]);
+                }
+                else if (!worker.getBlockWorker().getDirectives()[i].getDirective().compare("to"))
+                {
+                    worker.setRedirect(worker.getBlockWorker().getDirectives()[i].getArgument()[0]);
+                }
+                else if (!worker.getBlockWorker().getDirectives()[i].getDirective().compare("client_max_body_size"))
+                {
+                    worker.set_max_body_size(worker.getBlockWorker().getDirectives()[i].getArgument()[0]);
+                }
+                else if (!worker.getBlockWorker().getDirectives()[i].getDirective().compare("allow_methods"))
+                {
+                    worker.setMethod(worker.getBlockWorker().getDirectives()[i].getArgument());
+                }
+            }
         }
         i++;
     }    
@@ -165,7 +165,7 @@ std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> &serve
     std::istringstream httpStream(buffer);
     std::string line;
 
-    static Worker worker;
+    ;
     httpStream >> method >> path >> version;
     mime_type = is_mime_type(path);
     if (mime_type.compare("css"))
@@ -179,13 +179,20 @@ std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> &serve
                 host = line.substr(find + 1);
             }
         }
-        worker = Worker(serverBlocks,host);
+        Worker worker = Worker(serverBlocks,host);
         worker.setLocationWorker(worker.getBlockWorker(), path);
         setDirectives(worker);
 
         printf("index = %s\n",worker.getIndex().c_str());
         printf("auto index = %s\n",worker.getAutoIndex().c_str());
         printf("redirect = %s\n",worker.getRedirect().c_str());
+        printf("max body size = %s\n",worker.get_max_body_size().c_str());
+
+        // for (size_t i = 0; i < worker.getAllowMethods().size(); i++)
+        // {
+        //     printf("%s\n",worker.getAllowMethods()[i].c_str());
+        // }
+        
         
     }
     // else

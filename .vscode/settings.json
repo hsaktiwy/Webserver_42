@@ -82,7 +82,18 @@
         "memory_resource": "cpp",
         "numeric": "cpp",
         "random": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "condition_variable": "cpp",
+        "forward_list": "cpp",
+        "buffer": "cpp",
+        "executor": "cpp",
+        "internet": "cpp",
+        "io_context": "cpp",
+        "netfwd": "cpp",
+        "socket": "cpp",
+        "timer": "cpp",
+        "future": "cpp",
+        "thread": "cpp"
     },
     "cSpell.words": [
         "getarguments",

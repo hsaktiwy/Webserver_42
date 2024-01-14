@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/14 11:58:56 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/14 12:26:03 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,7 +127,7 @@ class ServerBlocks
         {
             locations.push_back(location);
         }
-        std::vector<LocationsBlock>   getLocations() const // add reference
+        std::vector<LocationsBlock> const & getLocations() const
         {
             return this->locations;
         }
@@ -202,7 +202,7 @@ public:
         return this->allow_methods;
     }
     
-    void setMethod(const std::vector<std::string>  &method);
+    void setMethod(std::vector<std::string>  &args);
     // std::string getErrorPage() const {
     //     return error_page;
     // }

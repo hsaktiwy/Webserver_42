@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/14 12:03:56 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/14 12:16:42 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -250,24 +250,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks)
     int status;
     std::string human_status;
 
-
-    for (size_t i = 0; i < serverBlocks.size(); i++)
-    {
-        for (size_t a = 0; a < serverBlocks[i].getLocations().size(); a++)
-        {
-            for (size_t oo = 0; oo < serverBlocks[i].getLocations()[a].getDirectives().size(); oo++)
-            {
-                for (size_t h = 0; h < serverBlocks[i].getLocations()[a].getDirectives()[oo].getArgument().size(); h++)
-                {
-                    printf("%s\t",serverBlocks[i].getLocations()[a].getDirectives()[oo].getDirective().c_str());
-                    printf("args %s\t ",serverBlocks[i].getLocations()[a].getDirectives()[oo].getArgument()[h].c_str());
-                }
-                
-            }
-        }
-    }
-    
-    exit(0);
     create_sockets(serverBlocks, sockets);
     init_poll_fds(poll_fds, serverBlocks.size(), sockets);
     std::vector<int> new_connections;

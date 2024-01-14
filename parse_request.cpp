@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/14 11:42:26 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/14 12:31:12 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,17 +89,6 @@ bool is_directive(const std::string &directive)
 
 void    setDirectives(Worker &worker)
 {
-    for (size_t i = 0; i < worker.getLocationWorker().getDirectives().size(); i++)
-    {
-        for (size_t j = 0; j < worker.getLocationWorker().getDirectives()[i].getArgument().size(); j++)
-        {
-            printf("directive name %s \t",worker.getLocationWorker().getDirectives()[i].getDirective().c_str());
-            printf("args %s\t ",worker.getLocationWorker().getDirectives()[i].getArgument()[j].c_str());
-        }
-        printf("\n");
-    }
-    
-    exit(0);
     set(worker.getLocationWorker().getDirectives(),worker);
     if (worker.getRoot().empty())
         set(worker.getBlockWorker().getDirectives(),worker);
@@ -123,23 +112,43 @@ void    setDirectives(Worker &worker)
                 {
                     worker.setRedirect(worker.getLocationWorker().getDirectives()[i].getArgument()[0]);
                 }
-                
+                else if (!worker.getLocationWorker().getDirectives()[i].getDirective().compare("client_max_body_size"))
+                {
+                    worker.setRedirect(worker.getLocationWorker().getDirectives()[i].getArgument()[0]);
+                }
                 else if (!worker.getLocationWorker().getDirectives()[i].getDirective().compare("allow_methods"))
                 {
-                    // for (size_t j = 0; j < worker.getLocationWorker().getDirectives()[i].getArgument().size(); j++)
-                    // {
-                        printf("%s\t", worker.getLocationWorker().getDirectives()[i].getArgument()[0].c_str());
-                    // }
-                
-                    // worker.setMethod(worker.getLocationWorker().getDirectives()[i].getArgument());
+                    worker.setMethod(worker.getLocationWorker().getDirectives()[i].getArgument());
                 }
             }
         }
-    else
-    {
-        
-    }
-    i++;
+        else
+        {
+            // for (size_t j = 0; j < worker.getBlockWorker().getDirectives()[i].getArgument().size(); j++)
+            // {
+            //     if (!worker.getBlockWorker().getDirectives()[i].getDirective().compare("index"))
+            //     {
+            //         worker.setIndex(worker.getBlockWorker().getDirectives()[i].getArgument(),worker.getRoot());
+            //     }
+            //     else if (!worker.getBlockWorker().getDirectives()[i].getDirective().compare("autoindex"))
+            //     {
+            //         worker.setAutoIndex(worker.getBlockWorker().getDirectives()[i].getArgument()[0]);
+            //     }
+            //     else if (!worker.getBlockWorker().getDirectives()[i].getDirective().compare("to"))
+            //     {
+            //         worker.setRedirect(worker.getBlockWorker().getDirectives()[i].getArgument()[0]);
+            //     }
+            //     else if (!worker.getBlockWorker().getDirectives()[i].getDirective().compare("client_max_body_size"))
+            //     {
+            //         worker.setRedirect(worker.getBlockWorker().getDirectives()[i].getArgument()[0]);
+            //     }
+            //     else if (!worker.getBlockWorker().getDirectives()[i].getDirective().compare("allow_methods"))
+            //     {
+            //         worker.setMethod(worker.getBlockWorker().getDirectives()[i].getArgument());
+            //     }
+            // }
+        }
+        i++;
     }    
 }
 

@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/14 11:18:02 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/14 12:26:16 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,12 +73,10 @@ void Worker::setIndex(const std::vector<std::string>&   args,const std::string &
 }
 
 
-void Worker::setMethod(const std::vector<std::string>  &method)
+void Worker::setMethod(std::vector<std::string>  &args)
 {
-    printf("size %lu\n",method.size());
-    for (size_t i = 0; i < method.size(); i++)
+    for (size_t i = 0; i < args.size(); i++)
     {
-        this->allow_methods.push_back(method[i]);
+        this->allow_methods.push_back(args[i]);
     }
-    
 }

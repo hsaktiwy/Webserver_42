@@ -378,15 +378,15 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks)
 	std::string KnownHeaders[] = {"Host", "Accept", "Accept-Language", "Accept-Encoding", "Connection", "Referer"};
 	ServerBlocks block = get_server_block(host, serverBlocks);
 	std::string root =  get_root(block.getDirectives());
+	std::string index = get_index(block.getDirectives());
 	std::string mimeType[] = {"image/avif", "image/avif", "image/jpeg", "image/gif", "image/png", "text/csv",  "text/html",   "text/javascript", "text/plain", "text/xml", "text/plain", "audio/mpeg", "video/mp4", "video/mpeg", "application/xml"};
-
 	if (error == false)
 	{
 		std::cout << "parse URI" << std::endl;
 		// splite uri to scheme, authority, path, query
 		UriFormat(uri, method_uri, root, host);
 		if (uri.path.size() == 0)
-			
+			uri.path = index;
 		if (!CheckPathExistance(uri, root))
 		{
 			error = true, status = 404;

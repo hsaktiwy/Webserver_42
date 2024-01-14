@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/14 12:26:16 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/14 12:40:12 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,7 @@ void Worker::setMethod(std::vector<std::string>  &args)
 {
     for (size_t i = 0; i < args.size(); i++)
     {
-        this->allow_methods.push_back(args[i]);
+        printf("%s\n",args[i].c_str());
+        allow_methods.push_back(args[i]);
     }
 }

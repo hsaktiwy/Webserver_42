@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/09 12:17:44 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/10 14:45:34 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/12 17:10:57 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,7 +103,7 @@ void    handle_errors(tokens_map tokens)
                     }
                     else
                     {
-                        if  (!is_server_block)
+                        if  (!is_server_block || is_location_block)
                         {
                             error = "location directive is not allowed here in " + convertToString(line);
                             throw error;

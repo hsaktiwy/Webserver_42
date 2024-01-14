@@ -10,28 +10,5 @@
 
 
 </body>
-<script>
-    function testSockets() {
-        for (let port = 7000; port <= 7005; port++) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', `http://127.0.0.1:${port}`, true, {
-
-            });
-
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        console.log(`Port ${port} is active: ${xhr.responseText}`);
-                    } else {
-                        console.log(`Port ${port} returned status: ${xhr.status}`);
-                    }
-                }
-            };
-
-            xhr.send();
-        }
-    }
-    testSockets();
-</script>
 
 </html>

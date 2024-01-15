@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/14 12:40:12 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/15 21:26:32 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,31 +44,42 @@ Worker::Worker(std::vector<ServerBlocks> &blocks,std::string &host)
     }
 }
 
+bool prefix(const std::string &prefix,const std::string &path)
+{   
+    return (path.substr(0, prefix.length())).compare(prefix) == 0;
+}
+
 void    Worker::setLocationWorker(const ServerBlocks& block,std::string &path)
 {
-   for (size_t i = 0; i < block.getLocations().size(); i++)
-   {
+    for (size_t i = 0; i < block.getLocations().size(); i++)
+    {
         if (!block.getLocations()[i].getPath().compare(path))
         {
+            printf("dd\n");
             this->locationworker = block.getLocations()[i];
+            return;
         }
-   }
+    }
+    for (size_t i = 1; i < block.getLocations().size(); i++)
+    {
+        if (prefix(block.getLocations()[i].getPath(),path))
+        {
+            this->locationworker = block.getLocations()[i];
+            return;
+        }
+    }
+    this->locationworker = block.getLocations()[0];
 }
 
 void Worker::setIndex(const std::vector<std::string>&   args,const std::string &root)
 {
-    printf("root %s\n",root.c_str());
-    if (!root.empty())
+    for (size_t i = 0; i < args.size(); i++)
     {
-        for (size_t i = 0; i < args.size(); i++)
+        if (access((root + args[i]).c_str(),F_OK) == 0)
         {
-            if (access((root + args[i]).c_str(),F_OK) == 0)
-            {
-                this->index = root + args[i];
-                break;
-            }
+            this->index = root + args[i];
+            break;
         }
-        
     }
 }
 
@@ -77,7 +88,14 @@ void Worker::setMethod(std::vector<std::string>  &args)
 {
     for (size_t i = 0; i < args.size(); i++)
     {
-        printf("%s\n",args[i].c_str());
         allow_methods.push_back(args[i]);
+    }
+}
+
+void    Worker::setErrorPages(std::vector<std::string>  &args)
+{
+    for (size_t i = 0; i < args.size(); i++)
+    {
+        this->error_page.push_back(args[i]);
     }
 }

@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/14 12:34:55 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/15 12:11:28 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ class Directives
         }
         std::string getDirective() const
         {
-            return directive;
+            return this->directive;
         }
 };
 
@@ -162,30 +162,30 @@ public:
     Worker(std::vector<ServerBlocks> &blocks,std::string &host);
     ServerBlocks getBlockWorker() const
     {
-        return blockworker;
+        return this->blockworker;
     }
 
     void setBlockWorker(const ServerBlocks& blocks)
     {
-        blockworker = blocks;
+        this->blockworker = blocks;
     }
 
     LocationsBlock getLocationWorker() const
     {
-        return locationworker;
+        return this->locationworker;
     }
 
     void setLocationWorker(const ServerBlocks& block,std::string &path);
     std::string getRoot() const {
-        return root;
+        return this->root;
     }
 
     void setRoot(const std::string& newRoot) {
-        root = newRoot;
+        this->root = newRoot;
     }
 
     std::string getIndex() const {
-        return index;
+        return this->index;
     }
 
     void setIndex(const std::vector<std::string>&   args,const std::string &root);
@@ -208,9 +208,13 @@ public:
     //     return error_page;
     // }
 
-    // void setErrorPage(const std::string& newErrorPage) {
-    //     error_page = newErrorPage;
-    // }
+    void setErrorPages(std::vector<std::string>  &args);
+    
+    std::vector<std::string> const &getErrorPages() const  
+    {
+        return this->error_page;
+    }
+    
 
     std::string getHost() const {
         return host;
@@ -231,9 +235,11 @@ public:
         return path;
     }
 
-    void setAutoIndex(const std::string& newPath) {
-        path = newPath;
+    void setAutoIndex(const std::string& newPath)
+    {
+        this->path = newPath;
     }
+
     std::string &get_max_body_size() 
     {
         return (this->max_body_size);

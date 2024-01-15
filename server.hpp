@@ -6,19 +6,21 @@
 /*   By: aalami <aalami@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 10:55:55 by aalami            #+#    #+#             */
-/*   Updated: 2024/01/11 15:59:52 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/13 17:57:08 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_HPP
 #define SERVER_HPP
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <unistd.h>
 #include <netinet/in.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <vector>
+#include <map>
 #include <fcntl.h>
 
 #define RESET   "\033[0m"
@@ -38,6 +40,7 @@ typedef struct s_socket_data
 }t_socket_data;
 
 typedef std::vector<int>::iterator intVect_it;
+typedef std::map<std::string,std::string>::iterator mapstr_it;
 typedef std::vector<t_socket_data>::iterator socket_it;
 template <typename T>
 void closeAllSockets(T &socketsFds)
@@ -56,7 +59,8 @@ void errorHandler(T &socketsFds, const char *error)
     closeAllSockets(socketsFds);
     throw message.c_str();
 }
-void requestHandler(std::vector<struct pollfd> &fds, int index);
-void responseHandler(std::vector<struct pollfd> &fds, int index);
+std::map<std::string, std::string> requestHandler(std::vector<struct pollfd> &fds, int index);
+void responseHandler(std::vector<struct pollfd> &fds, int index, char **env,
+    std::map<std::string, std::string> &request);
 
 #endif

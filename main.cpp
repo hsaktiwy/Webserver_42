@@ -6,7 +6,7 @@
 /*   By: aalami <aalami@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 10:54:52 by aalami            #+#    #+#             */
-/*   Updated: 2024/01/09 18:19:40 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/13 17:57:27 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ socket_it searchForSocketByfd(std::vector<t_socket_data> &socketsFds, int fd)
     }
     return it;
 }
-void waitForIncommingRequests(std::vector<t_socket_data> &socketsFds)
+void waitForIncommingRequests(std::vector<t_socket_data> &socketsFds, char **env)
 {
     std::vector<struct pollfd> fds;
     std::vector<int> vecFds; // save only opened sockets on a vector (useful when working with poll)
@@ -92,6 +92,7 @@ void waitForIncommingRequests(std::vector<t_socket_data> &socketsFds)
         vecFds.push_back(socketsFds[i].fd); // save fds 
         memset(&tmp, 0, sizeof(tmp));
     }
+    std::map<std::string, std::string> request;
     size_t pollFdsSize = socketQueueSize; //intialize the size of pollfds by the number of sockets opened
     std::cout<<GREEN<<"Waiting for an incomming request"<<RESET<<std::endl;
     while (1)
@@ -132,13 +133,14 @@ void waitForIncommingRequests(std::vector<t_socket_data> &socketsFds)
                 if (fds[i].revents & POLLIN)
                 {
                     std::cout<<YELLOW<<"Request sent from Client "<<fds[i].fd<<RESET<<std::endl;
-                    requestHandler(fds, i);
-                    fds[i].events = POLLOUT;
+                    request = requestHandler(fds, i);
+                        fds[i].events = POLLOUT;
                 }
                 else if (fds[i].revents & POLLOUT)
                 {
                     // std::cout<<YELLOW<<"Client "<<fds[i].fd<<" Ready to accept a response....."<<RESET<<std::endl;
-                    responseHandler(fds, i);
+                    // if (f == 0)
+                        responseHandler(fds, i, env, request);
                     close(fds[i].fd);
                     fds.erase(fds.begin() + i);
                     pollFdsSize--;
@@ -156,13 +158,14 @@ void waitForIncommingRequests(std::vector<t_socket_data> &socketsFds)
         }
     }
 }
-int main()
+int main(int argc, char **argv, char **env)
 {
-    
+    argc = 0;
+    (void )argv;
     std::vector<t_socket_data> socketsFds;
     if(createSockets(2, socketsFds))
     {
-        waitForIncommingRequests(socketsFds);
+        waitForIncommingRequests(socketsFds, env);
         
     }
 }

@@ -6,7 +6,7 @@
 /*   By: lol <lol@student.42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/15 19:54:34 by lol              ###   ########.fr       */
+/*   Updated: 2024/01/16 18:01:01 by lol              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -240,7 +240,6 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
         *flag = 1;
     }
     int bytes_written = write(poll_fds[i].fd, response.c_str(), response.size());
-    response.clear();
     if (bytes_written < 0)
     {
         perror("write ");

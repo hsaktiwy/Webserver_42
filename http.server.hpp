@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/15 12:11:28 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/16 12:59:35 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -248,6 +248,9 @@ public:
     {
         this->max_body_size = max_body_size;
     }
+    bool exact_match(const ServerBlocks &block,const std::string &path);
+    bool prefix_match(const ServerBlocks &block,const std::string &path);
+    bool find_root(const ServerBlocks &block,const std::string &path);
 };
 
 

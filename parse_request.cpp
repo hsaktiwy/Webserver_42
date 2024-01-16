@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/15 22:08:38 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/16 13:17:31 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,13 +172,13 @@ std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> \
     setDirectives(worker.getLocationWorker().getDirectives(),worker,1);
     setAllowedmethods(worker,worker.getLocationWorker().getDirectives());
     if (worker.getAllowMethods().size() == 0)
-    {
         setAllowedmethods(worker,worker.getBlockWorker().getDirectives());
-    }
     setErrorPages(worker,worker.getLocationWorker().getDirectives());
     if (worker.getErrorPages().size() == 0)
-    {
         setErrorPages(worker,worker.getBlockWorker().getDirectives());
+    if (!worker.getRoot().empty())
+    {
+        worker.setRoot(worker.getRoot() + path);
     }
     // worker.setPath(worker.getRoot() + worker.getPath());
 
@@ -189,6 +189,7 @@ std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> \
     printf("index %s\n",worker.getIndex().c_str());
     printf("auto index %s\n",worker.getAutoIndex().c_str());
     printf("methods allowed \t");
+    
     for (size_t i = 0; i < worker.getAllowMethods().size(); i++)
     {
         printf("%s \t",worker.getAllowMethods()[i].c_str());
@@ -202,9 +203,6 @@ std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> \
     printf("===============================================\n");
     
 
-
-
-    
     response += "Hello";
     human_status = "OK";
     *status = 200; 

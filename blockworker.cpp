@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/15 21:26:32 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/16 13:15:19 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,27 +48,52 @@ bool prefix(const std::string &prefix,const std::string &path)
 {   
     return (path.substr(0, prefix.length())).compare(prefix) == 0;
 }
-
-void    Worker::setLocationWorker(const ServerBlocks& block,std::string &path)
+bool Worker::exact_match(const ServerBlocks &block,const std::string &path)
 {
     for (size_t i = 0; i < block.getLocations().size(); i++)
     {
         if (!block.getLocations()[i].getPath().compare(path))
         {
-            printf("dd\n");
             this->locationworker = block.getLocations()[i];
-            return;
+            return true;
         }
     }
-    for (size_t i = 1; i < block.getLocations().size(); i++)
+    return false;
+}
+bool Worker::prefix_match(const ServerBlocks &block,const std::string &path)
+{
+    for (size_t i = 0; i < block.getLocations().size(); i++)
     {
         if (prefix(block.getLocations()[i].getPath(),path))
         {
             this->locationworker = block.getLocations()[i];
-            return;
+            return true;
         }
     }
-    this->locationworker = block.getLocations()[0];
+    return false;
+}
+
+bool Worker::find_root(const ServerBlocks &block,const std::string &path)
+{
+    for (size_t i = 0; i < block.getLocations().size(); i++)
+    {
+        if (block.getLocations()[i].getPath().compare("/") == 0)
+        {
+            this->locationworker = block.getLocations()[i];
+            return true;
+        }
+    }
+    return false;
+}
+
+void    Worker::setLocationWorker(const ServerBlocks& block,std::string &path)
+{
+    if (exact_match(block,path))
+        return;
+    else if (prefix_match(block,path))
+        return ;
+    else if (find_root(block,path))
+        return ;
 }
 
 void Worker::setIndex(const std::vector<std::string>&   args,const std::string &root)

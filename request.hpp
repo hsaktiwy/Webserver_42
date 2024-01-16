@@ -74,4 +74,6 @@ class request {
 		const std::vector<std::string>&	getHeaders( void ) const;// get the headers after being prased
 		void							RequestDisplay( void );
 };
+std::vector<std::string> get_index(std::vector<Directives> &directives);
+std::string get_root(std::vector<Directives> &directives, t_uri &uri);
 #endif

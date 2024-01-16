@@ -119,13 +119,13 @@ static void	ParseHeaders(std::vector<HTTPHeader> &headers, std::string &request,
 				tmp = spliter(request, delimiter, index);
 				if (tmp.size() == 0)
 					continue;
-				// surpace space if it was at first i think this was allow
+				// surpace space if it was at first i think this was allowed
 				if (tmp[i] == ' ')
 					i++;
 				while (tmp[i] && tmp[i] != ' ' && tmp[i] != ':')
 					header.name += tmp[i++];
 				if (tmp[i] == ' ')
-					i++;
+					i++,error = true, status = 400;
 				// check for the known header then define it rigth values syntaxe
 				if (tmp[i] != ':')
 					error = true, status = 400;
@@ -284,7 +284,7 @@ static void	FillUriStructor(t_uri& uri, std::string &full_uri, bool authority)//
 		uri.fragment += full_uri[i];
 }
 
-static void UriFormat(t_uri &uri, std::string &full_uri, std::string &root, std::string &host)// 1 for absolute 2 for relative 3 for autority 
+static void UriFormat(t_uri &uri, std::string &full_uri, std::string &host)// 1 for absolute 2 for relative 3 for autority 
 {
 	// check it the uri start with http or https
 	//[scheme]://[authority]/[path]?[query]#[fragment]
@@ -333,21 +333,18 @@ static bool	CheckPathExistance(t_uri &uri, std::string root)
 	size_t s = path.rfind("/");
 	if (s != std::string::npos)
 		path = path.substr(0, s);
-	std::cout << " new Path  ? : " << path << std::endl;
 	dir = opendir(path.c_str());
 	if (dir)
 	{
 		if (s != std::string::npos)
 		{
 			std::string file = src.substr(s + 1);
-			std::cout << "File named " << file << std::endl;
 			bool stop = false;
 			while (!stop)
 			{
 				dirent = readdir(dir);
 				if (dirent)
 				{
-					std::cout << "in" << std::endl;
 					if (dirent->d_type == DT_REG)
 					{
 						std::cout << dirent->d_name << std::endl;
@@ -373,34 +370,108 @@ static bool	CheckPathExistance(t_uri &uri, std::string root)
 	return (false);
 }
 
+std::string	get_root(std::vector<Directives> &directives, std::vector<LocationsBlock>& locations, t_uri& uri)
+{
+	std::string root;
+	std::string locationPrimeRoot;// the prime location  root is the root that in the location block that have '/' as it path
+	std::string locationRoot;
+	size_t	s = 0;
+	// this will try to search for the longest matchs Ex: path :/test/hello/w/fil.txt, and we have 3 locations with paths
+	// as follow /test, /test/hello/w, /test/hello
+
+	// check if the Directive had a directly root, if it has suppose it is location is / 
+	for (std::vector<Directives>::iterator iter = directives.begin(); iter != directives.end(); iter++)
+	{
+		if (iter->getDirective() == "root")
+		{
+			root = iter->getArgument()[0];
+			break;
+		}
+	}
+	//  check for root in location
+	for(std::vector<LocationsBlock>::iterator iter = locations.begin(); iter != locations.end(); iter++)
+	{
+		std::string path = iter->getPath();
+		size_t size = uri.path.find(path);
+		if (path == "/" || size != std::string::npos)
+		{
+			for (std::vector<Directives>::iterator it = iter->getDirectives().begin(); it != iter->getDirectives().end(); it++)
+			{
+				if (it->getDirective() == "root")
+				{
+					if (path == "/")
+						locationPrimeRoot = it->getArgument()[0];
+					else
+					{
+						if (size > s)
+							locationRoot = it->getArgument()[0], s = size;
+					}
+				}
+			}
+		}
+	}
+	// new let us choose our root
+	if (locationRoot != "")
+		return (locationRoot);
+	if (locationPrimeRoot != "")
+		return (locationPrimeRoot);
+	return (root);
+}
+
+std::string	get_index(std::vector<Directives> &directives, std::vector<LocationsBlock>& locations, std::string &root)
+{
+	// std::vector<std::string> index;
+
+	// //get index from the server block
+	// std::vector<std::string> tmp;
+	// bool inServer = false;
+	// for (std::vector<Directives>::iterator iter = directives.begin(); iter != directives.end(); iter++)
+	// {
+	// 	if (iter->getDirective() == "root" && iter->getArgument()[0] == root)
+	// 		inServer = true;
+	// 	if (iter->getDirective() == "index")
+	// 	{
+	// 		index = iter->getArgument();
+	// 		break;
+	// 	}
+	// }
+	// if (tmp.size() > 0)
+
+	// // get index from the location if we couldn't find it in the server block
+	// if (index.size() == 0)
+	// {
+	// 	for()
+	// }
+	return ("index.html");
+}
 void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks)
 {
 	std::string KnownHeaders[] = {"Host", "Accept", "Accept-Language", "Accept-Encoding", "Connection", "Referer"};
-	ServerBlocks block = get_server_block(host, serverBlocks);
-	std::string root =  get_root(block.getDirectives());
-	std::string index = get_index(block.getDirectives());
+	// ServerBlocks block = get_server_block(host, serverBlocks);
+	Worker worker(serverBlocks, host);
+	ServerBlocks block = worker.getBlockWorker();
 	std::string mimeType[] = {"image/avif", "image/avif", "image/jpeg", "image/gif", "image/png", "text/csv",  "text/html",   "text/javascript", "text/plain", "text/xml", "text/plain", "audio/mpeg", "video/mp4", "video/mpeg", "application/xml"};
 	if (error == false)
 	{
-		std::cout << "parse URI" << std::endl;
 		// splite uri to scheme, authority, path, query
-		UriFormat(uri, method_uri, root, host);
-		if (uri.path.size() == 0)
-			uri.path = index;
+		UriFormat(uri, method_uri, host);
+		std::string root = get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
+		std::string index = get_index(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), root);
+		// if (uri.path.size() == 0)
+		// 	uri.path = index;
 		if (!CheckPathExistance(uri, root))
 		{
 			error = true, status = 404;
 			// return ;
 		}
 		// Check for known headers
-
+		
 	}
 	RequestDisplay();
 }
 
 void	request::RequestDisplay( void )
 {
-	std::cout << "Request :\n" << req <<std::endl;
 	std::cout << "methode : " << method << ", uri " << method_uri << ", http protocol : " << http << " hostname : " << host << " error " << error << " status " << status <<std::endl;
 	for (std::vector<HTTPHeader>::iterator iter = headers.begin();  iter != headers.end(); iter++)
 	{

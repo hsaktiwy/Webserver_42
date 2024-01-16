@@ -6,7 +6,7 @@
 /*   By: lol <lol@student.42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/14 14:08:41 by lol              ###   ########.fr       */
+/*   Updated: 2024/01/15 19:54:34 by lol              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,6 +207,30 @@ void handle_read(std::vector<struct pollfd> &poll_fds, int i, int *ready_to_writ
     }
 }
 
+void    handle_request(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::vector<ServerBlocks> &serverBlocks,std::string &response, request& http_request)
+{
+    char buffer[1024];
+    int bytes_read = recv(poll_fds[i].fd, buffer, sizeof(buffer) - 1, 0);
+    if (bytes_read > 0)
+    {
+        buffer[bytes_read] = '\0';
+        http_request.ParseRequest(buffer);
+        http_request.CheckRequest(serverBlocks);
+        *ready_to_write = 1;
+    }
+    else if (bytes_read == 0)
+    {
+        printf("close client\n");
+        close(poll_fds[i].fd);
+        poll_fds.erase(poll_fds.begin() + i);
+        (*size_fd)--;
+    }
+    else
+    {
+        perror("recv ");
+    }
+}
+
 void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &response,int *flag,int *status,std::string &human_status)
 {
     int length = response.length();
@@ -291,7 +315,8 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks)
                         {
                             printf("new connection from socket %d ...\n",client_socket);
                         }
-                        handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status);
+                        // handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status, http_request);
+                        handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, http_request);
                     }
                     if (poll_fds[i].revents & POLLOUT)
                     {

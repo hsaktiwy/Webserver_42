@@ -6,7 +6,7 @@
 /*   By: lol <lol@student.42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/14 14:07:57 by lol              ###   ########.fr       */
+/*   Updated: 2024/01/15 20:19:25 by lol              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,7 +163,9 @@ public:
     {
         
     }
+
     Worker(std::vector<ServerBlocks> &blocks,std::string &host);
+
     ServerBlocks getBlockWorker() const
     {
         return blockworker;

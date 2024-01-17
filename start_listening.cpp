@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/15 21:01:38 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/16 15:21:03 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,7 +183,7 @@ int create_socket_client(std::vector<int> &sockets,std::vector<struct pollfd> &p
 
 
 void handle_read(std::vector<struct pollfd> &poll_fds, int i, int *ready_to_write, \
-                  nfds_t *size_fd, std::vector<ServerBlocks> &serverBlocks, std::string &response, int *flag,int *status,std::string &human_status)
+                  nfds_t *size_fd, std::vector<ServerBlocks> &serverBlocks, std::string &response, int *flag,int *status,std::string &human_status,std::string &mime_type)
 {
     char buffer[1024];
     int bytes_read = recv(poll_fds[i].fd, buffer, sizeof(buffer) - 1, 0);
@@ -206,15 +206,16 @@ void handle_read(std::vector<struct pollfd> &poll_fds, int i, int *ready_to_writ
     }
 }
 
-void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &response,int *flag,int *status,std::string &human_status)
+void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &response,int *flag,int *status,std::string &human_status,std::string &mime_type)
 {
     int length = response.length();
     if (*flag == 0)
     {
-        response = "HTTP/1.1 " + std::to_string(*status) + " " + human_status + "\r\nContent-Type: text/html\nContent-Length: " + std::to_string(length) + "\n\n" + response;
+        response = "HTTP/1.1 " + std::to_string(*status) + " " + human_status + "\r\nContent-Type: " + mime_type + "text/html\nContent-Length: " + std::to_string(length) + "\n\n" + response;
         *flag = 1;
     }
     int bytes_written = write(poll_fds[i].fd, response.c_str(), response.size());
+    response.clear();
     if (bytes_written < 0)
     {
         perror("write ");
@@ -248,6 +249,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks)
     int flag = 0;
     int status;
     std::string human_status;
+    std::string mime_type;
 
     create_sockets(serverBlocks, sockets);
     init_poll_fds(poll_fds, serverBlocks.size(), sockets);
@@ -288,11 +290,11 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks)
                         {
                             printf("new connection from socket %d ...\n",client_socket);
                         }
-                        handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status);
+                        handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status,mime_type);
                     }
                     if (poll_fds[i].revents & POLLOUT)
                     {
-                        handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status);
+                        handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status,mime_type);
                         
                     }
                 }

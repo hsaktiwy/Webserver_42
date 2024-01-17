@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/16 12:59:35 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/17 12:41:02 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <sys/stat.h>
+#include <dirent.h>
 
 
 const std::string DEFAULT_CONFIG_PATH = "/Users/adardour/Desktop/www/configs/default.conf";
@@ -251,6 +253,7 @@ public:
     bool exact_match(const ServerBlocks &block,const std::string &path);
     bool prefix_match(const ServerBlocks &block,const std::string &path);
     bool find_root(const ServerBlocks &block,const std::string &path);
+    void found_index_file(const std::string &root);
 };
 
 
@@ -274,4 +277,6 @@ ServerBlocks get_server_block(std::string &host,std::vector<ServerBlocks> &serve
 std::string check_root(ServerBlocks &block);
 std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> &serverBlocks,std::string &response,int *flag,int *status,std::string &human_status);
 void    build_response(std::string index_path,std::string &response);
+void start_serving(const Worker &worker,std::string &response,std::string &human_status,int *status,std::string &mime_type);
+int Is_Directory(const std::string &root);
 #endif

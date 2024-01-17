@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/09 12:17:44 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/12 17:10:57 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/16 21:47:24 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,8 @@ void    handle_errors(tokens_map tokens)
     int is_directive = 0;
     int opening = 0;
     int number_of_path = 0;
+    int argument = 0;
+
     std::string directive;
 
     std::stack<std::string> closed;
@@ -56,17 +58,27 @@ void    handle_errors(tokens_map tokens)
             }
             else if (is_directive)
             {
+                if (!type.compare("argument"))
+                {
+                    argument = 1;
+                }
                 if (!type.compare("semi_colon"))
                 {
+                    if (!argument)
+                    {
+                        error = "invalid number of arguments in " + directive + " directive in " + convertToString(line);
+                        throw error;
+                    }
                     is_directive = 0;
                     is_not_semi_colone = 1;
+                    argument = 0;
                 }
                 else if (!type.compare("directive") || !type.compare("block"))
                 {
                     error = "invalid parameter " + token + " " + convertToString(line);
                     throw error;
                 }
-                else if (!type.compare("close_block") && !is_not_semi_colone)
+                else if ((!type.compare("close_block") && !is_not_semi_colone))
                 {
                     error = "unexpected } " + convertToString(line);
                     throw error;
@@ -114,6 +126,11 @@ void    handle_errors(tokens_map tokens)
                 }
                 else if (!type.compare("open_block"))
                 {
+                    if (!is_server_block)
+                    {
+                        error = "unexpected \"" + token + "\"" + " in line "  + convertToString(line);
+                        throw error;
+                    }
                     if (is_location_block)
                     {
                         if (number_of_path > 1 || !is_path)
@@ -194,6 +211,11 @@ void    handle_errors(tokens_map tokens)
             }
             it_v++;
         }
+    }
+    if (is_server_block)
+    {
+        std::string error = "unexpected end of file, expecting \";\" or \"}\" in line " + convertToString(line);
+        throw error;
     }
     if (!closed.empty())
     {

@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/16 13:15:19 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/17 12:41:39 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ bool Worker::prefix_match(const ServerBlocks &block,const std::string &path)
 {
     for (size_t i = 0; i < block.getLocations().size(); i++)
     {
-        if (prefix(block.getLocations()[i].getPath(),path))
+        if (block.getLocations()[i].getPath().compare("/") && prefix(block.getLocations()[i].getPath(),path))
         {
             this->locationworker = block.getLocations()[i];
             return true;
@@ -122,5 +122,26 @@ void    Worker::setErrorPages(std::vector<std::string>  &args)
     for (size_t i = 0; i < args.size(); i++)
     {
         this->error_page.push_back(args[i]);
+    }
+}
+
+void    Worker::found_index_file(const std::string &root)
+{
+    DIR* dir = opendir(root.c_str());
+    if (dir)
+    {
+        struct dirent* start;
+        while ((start = readdir(dir)) != NULL)
+        {
+            if (!strcmp(start->d_name,"index.html") || !strcmp(start->d_name,"index.htm"))
+            {
+                if (Is_Directory(this->getRoot() + "/" +start->d_name) == 1)
+                {
+                    this->setRoot((this->getRoot() + "/" + start->d_name));
+                    this->index = start->d_name;
+                }
+            }
+        }
+        closedir(dir);
     }
 }

@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/16 13:17:31 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/17 12:42:23 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,7 +111,7 @@ bool is_directive(const std::string &directive)
     return false;
 }
 template<typename T>
-void    setDirectives(T &directives,Worker &worker,int flag)
+void    setDirectives(T &directives,Worker &worker)
 {
     for (size_t i = 0; i < directives.size(); i++)
     {
@@ -135,10 +135,30 @@ void    setDirectives(T &directives,Worker &worker,int flag)
     
 }
 
+int Is_Directory(const std::string &root)
+{
+    struct stat fileInfo;
+
+    if (stat(root.c_str(),&fileInfo) == 0)
+    {
+        if (S_ISDIR(fileInfo.st_mode))
+        {
+            return (0);
+        }
+        else if (S_ISREG(fileInfo.st_mode))
+        {
+            return (1);
+        }
+    }
+    return (-1);
+}
+
 std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> \
 &serverBlocks,std::string &response,int *flag,int *status,std::string &human_status)
 {
     int find;
+    int is_dir = 0;
+    int is_regular = 0;
 
     std::string host;
     std::string path;
@@ -163,48 +183,65 @@ std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> \
     }
     worker = Worker(serverBlocks,host);
     worker.setLocationWorker(worker.getBlockWorker(),path);
+
     set(worker.getLocationWorker().getDirectives(),worker);
     if (worker.getRoot().empty())
-    {
         set(worker.getBlockWorker().getDirectives(),worker);
-    }
-    setDirectives(worker.getBlockWorker().getDirectives(),worker,0);
-    setDirectives(worker.getLocationWorker().getDirectives(),worker,1);
+    
+    setDirectives(worker.getBlockWorker().getDirectives(),worker);
+    setDirectives(worker.getLocationWorker().getDirectives(),worker);
     setAllowedmethods(worker,worker.getLocationWorker().getDirectives());
+
     if (worker.getAllowMethods().size() == 0)
         setAllowedmethods(worker,worker.getBlockWorker().getDirectives());
     setErrorPages(worker,worker.getLocationWorker().getDirectives());
     if (worker.getErrorPages().size() == 0)
         setErrorPages(worker,worker.getBlockWorker().getDirectives());
+
     if (!worker.getRoot().empty())
-    {
         worker.setRoot(worker.getRoot() + path);
-    }
-    // worker.setPath(worker.getRoot() + worker.getPath());
 
-
-    printf("path %s =========================\n",path.c_str());
-    printf("root %s\n",worker.getRoot().c_str());
-    printf("body size %s\n",worker.get_max_body_size().c_str());
-    printf("index %s\n",worker.getIndex().c_str());
-    printf("auto index %s\n",worker.getAutoIndex().c_str());
-    printf("methods allowed \t");
-    
-    for (size_t i = 0; i < worker.getAllowMethods().size(); i++)
+    if (Is_Directory(worker.getRoot()) == 0 \
+    || Is_Directory(worker.getRoot()) == 1 \
+    || Is_Directory(worker.getRoot()) == -1)
     {
-        printf("%s \t",worker.getAllowMethods()[i].c_str());
+        if (Is_Directory(worker.getRoot()) == 0)
+        {
+            if (worker.getIndex().empty())
+                worker.found_index_file(worker.getRoot());
+            is_dir = 1;
+        }
+        else if (Is_Directory(worker.getRoot()) == 1)
+            is_regular = 1;
     }
-    printf("\nerror pages \t");
-    for (size_t i = 0; i < worker.getErrorPages().size(); i++)
+    if (is_regular == 1 || is_dir == 1)
     {
-        printf("%s \t",worker.getErrorPages()[i].c_str());
+        printf("path %s =========================\n",path.c_str());
+        printf("root %s\n",worker.getRoot().c_str());
+        printf("body size %s\n",worker.get_max_body_size().c_str());
+        printf("index %s\n",worker.getIndex().c_str());
+        printf("auto index %s\n",worker.getAutoIndex().c_str());
+        printf("methods allowed \t");
+        
+        for (size_t i = 0; i < worker.getAllowMethods().size(); i++)
+        {
+            printf("%s \t",worker.getAllowMethods()[i].c_str());
+        }
+        printf("\nerror pages \t");
+        for (size_t i = 0; i < worker.getErrorPages().size(); i++)
+        {
+            printf("%s \t",worker.getErrorPages()[i].c_str());
+        }
+        printf("\n");
+        printf("===============================================\n");
     }
-    printf("\n");
-    printf("===============================================\n");
-    
 
+    else
+    {
+        printf("not found\n");
+    }
     response += "Hello";
     human_status = "OK";
-    *status = 200; 
+    *status = 200;
     return response;
 }

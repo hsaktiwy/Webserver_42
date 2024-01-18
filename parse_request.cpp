@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/17 12:42:23 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/18 17:48:30 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,6 +153,17 @@ int Is_Directory(const std::string &root)
     return (-1);
 }
 
+void get_query_string(std::string &path, std::string &query_string)
+{
+    size_t position = path.find('?');
+
+    if (position != std::string::npos)
+    {
+        query_string = path.substr(position + 1);
+        path = path.substr(0,position);
+    }
+}
+
 std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> \
 &serverBlocks,std::string &response,int *flag,int *status,std::string &human_status)
 {
@@ -168,10 +179,12 @@ std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> \
     LocationsBlock locationworker;
     std::istringstream httpStream(buffer);
     std::string line;
+    std::string query_string;
     Worker worker;
     
 
     httpStream >> method >> path >> version;
+    get_query_string(path,query_string);
     std::getline(httpStream, line);
     while (std::getline(httpStream, line))
     {
@@ -194,6 +207,7 @@ std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> \
 
     if (worker.getAllowMethods().size() == 0)
         setAllowedmethods(worker,worker.getBlockWorker().getDirectives());
+        
     setErrorPages(worker,worker.getLocationWorker().getDirectives());
     if (worker.getErrorPages().size() == 0)
         setErrorPages(worker,worker.getBlockWorker().getDirectives());
@@ -216,24 +230,24 @@ std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> \
     }
     if (is_regular == 1 || is_dir == 1)
     {
-        printf("path %s =========================\n",path.c_str());
-        printf("root %s\n",worker.getRoot().c_str());
-        printf("body size %s\n",worker.get_max_body_size().c_str());
-        printf("index %s\n",worker.getIndex().c_str());
-        printf("auto index %s\n",worker.getAutoIndex().c_str());
-        printf("methods allowed \t");
+        // printf("path %s =========================\n",path.c_str());
+        // printf("root %s\n",worker.getRoot().c_str());
+        // printf("body size %s\n",worker.get_max_body_size().c_str());
+        // printf("index %s\n",worker.getIndex().c_str());
+        // printf("auto index %s\n",worker.getAutoIndex().c_str());
+        // printf("methods allowed \t");
         
-        for (size_t i = 0; i < worker.getAllowMethods().size(); i++)
-        {
-            printf("%s \t",worker.getAllowMethods()[i].c_str());
-        }
-        printf("\nerror pages \t");
-        for (size_t i = 0; i < worker.getErrorPages().size(); i++)
-        {
-            printf("%s \t",worker.getErrorPages()[i].c_str());
-        }
-        printf("\n");
-        printf("===============================================\n");
+        // for (size_t i = 0; i < worker.getAllowMethods().size(); i++)
+        // {
+        //     printf("%s \t",worker.getAllowMethods()[i].c_str());
+        // }
+        // printf("\nerror pages \t");
+        // for (size_t i = 0; i < worker.getErrorPages().size(); i++)
+        // {
+        //     printf("%s \t",worker.getErrorPages()[i].c_str());
+        // }
+        // printf("\n");
+        // printf("===============================================\n");
     }
 
     else

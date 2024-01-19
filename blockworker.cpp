@@ -6,11 +6,62 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/17 12:41:39 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/19 20:36:59 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
+
+Worker::Worker()
+{
+    
+}
+
+ServerBlocks Worker::getBlockWorker() const
+{
+    return this->blockworker;
+}
+
+void Worker::setBlockWorker(const ServerBlocks& blocks)
+{
+    this->blockworker = blocks;
+}
+
+LocationsBlock Worker::getLocationWorker() const
+{
+    return this->locationworker;
+}
+
+std::string Worker::getRoot() const
+{
+    return this->root;
+}
+
+void Worker::setRoot(const std::string& newRoot)
+{
+    this->root = newRoot;
+}
+std::string Worker::getIndex() const
+{
+    return this->index;
+}
+
+std::string Worker::getRedirect() const
+{
+    return redirect;
+}
+
+void Worker::setRedirect(const std::string& newRedirect)
+{
+        redirect = newRedirect;
+}
+
+
+std::vector<std::string> const &Worker::getAllowMethods() const  
+{
+    return this->allow_methods;
+}
+    
 
 std::string trim(const std::string& str)
 {
@@ -107,7 +158,47 @@ void Worker::setIndex(const std::vector<std::string>&   args,const std::string &
         }
     }
 }
+std::vector<std::string> const &Worker::getErrorPages() const  
+{
+    return this->error_page;
+}
 
+std::string Worker::getHost() const
+{
+        return host;
+}
+
+void Worker::setHost(const std::string& newHost)
+{
+    host = newHost;
+}
+
+std::string Worker::getPath() const {
+    return path;
+}
+
+void Worker::setPath(const std::string& newPath)
+{
+    path = newPath;
+}
+
+std::string Worker::getAutoIndex() const {
+    return path;
+}
+
+void Worker::setAutoIndex(const std::string& newPath)
+{
+    this->path = newPath;
+}
+std::string &Worker::get_max_body_size() 
+{
+    return (this->max_body_size);
+}
+
+void Worker::set_max_body_size(std::string max_body_size) 
+{
+    this->max_body_size = max_body_size;
+}
 
 void Worker::setMethod(std::vector<std::string>  &args)
 {

@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/09 12:17:44 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/16 21:47:24 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/19 18:35:47 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,6 +181,11 @@ void    handle_errors(tokens_map tokens)
                 else if (!type.compare("directive"))
                 {
                     directive = token;
+                    if (!directive.compare("listen") && is_location_block)
+                    {
+                        error = directive +  " directive is not allowed here in " + convertToString(line);
+                        throw error;
+                    }
                     if (closed.empty() || (!opening && is_location_block))
                     {
                         error = "unexpected } in " + convertToString(line);
@@ -204,7 +209,14 @@ void    handle_errors(tokens_map tokens)
                     is_not_semi_colone = 1;
                 }
                 else if (!type.compare("path"))
-                {
+                {         
+                    std::string::iterator it = std::find(token.begin(), token.end(),'?');
+
+                    if (it != token.end())
+                    {
+                        error = "reserved symbols in uri " + convertToString(line);
+                        throw error;
+                    }
                     is_path = 1;
                     number_of_path++;
                 }

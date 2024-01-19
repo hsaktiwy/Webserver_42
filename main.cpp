@@ -6,11 +6,16 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:40 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/17 12:50:39 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/18 17:57:05 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
+
+void    check_allow_directives()
+{
+
+}
 
 void    readAndParseConfig(int c, char **argv,tokens_iterator &lines)
 {
@@ -47,22 +52,22 @@ void show_info(std::vector<ServerBlocks> &blocks) {
     printf("\nSERVER INFO\t\n");
     for (size_t i = 0; i < blocks.size(); i++) {
         int j = 0;
-        std::cout << "\x1B[1;34m";  // Set text color to blue
+        std::cout << "\x1B[1;34m"; 
         printf("server #%lu\n", i);
-        std::cout << "\x1B[0m";  // Reset text color
+        std::cout << "\x1B[0m";
 
         while (j < blocks[i].getDirectives().size()) {
             if (!blocks[i].getDirectives()[j].getDirective().compare("server_name"))
             {
-                std::cout << "\t\x1B[1;32m";  // Set text color to green
+                std::cout << "\t\x1B[1;32m"; 
                 printf("Server Name %s\n", blocks[i].getDirectives()[j].getArgument()[0].c_str());
-                std::cout << "\x1B[0m";  // Reset text color
+                std::cout << "\x1B[0m"; 
             }
             if (!blocks[i].getDirectives()[j].getDirective().compare("listen"))
             {
                 std::cout << "\t\x1B[1;32m";  // Set text color to green
                 printf("Host:Port %s\n", blocks[i].getDirectives()[j].getArgument()[0].c_str());
-                std::cout << "\x1B[0m";  // Reset text color
+                std::cout << "\x1B[0m"; 
             }
             j++;
         }

@@ -1,16 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parse_request.cpp                                  :+:      :+:    :+:   */
+/*   init_worker_block.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/18 17:48:30 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/19 20:26:56 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
+
+
 
 void    setAllowedmethods(Worker &worker, std::vector<Directives> &directives)
 {
@@ -49,67 +51,6 @@ void    set(T& Directives,Worker &worker)
     }
 }
 
-void    build_response(Worker &worker,std::string &response)
-{
-    std::ifstream myfile;
-    myfile.open(worker.getIndex());
-    std::string myline;
-    if ( myfile.is_open() )
-    {
-        while ( myfile )
-        {
-            std::getline (myfile, myline);
-            response += myline;
-        }
-        myfile.close();
-    }
-    else {
-        std::cout << "Couldn't open file\n";
-    }
-}
-
-std::string    is_mime_type(std::string &path)
-{
-    int length = path.length();
-    while (length)
-    {
-        if (path[length] == '.')
-        {
-            break;
-        }
-        length--;
-    }
-    return (path.substr(length + 1));
-}
-
-void    response_mime_type(std::string &response, std::string &mime_type, int *status)
-{
-    int length = response.length();
-    response = "HTTP/1.1 200 OK\r\nContent-Type: text/" + mime_type + "\nContent-Length: " + std::to_string(length) + "\n\n" + response;
-    *status = 1;
-}
-
-bool is_directive(const std::string &directive)
-{
-    std::vector<std::string> tokenTypes;
-    
-    tokenTypes.push_back("client_max_body_size");
-    tokenTypes.push_back("error_page");
-    tokenTypes.push_back("autoindex");
-    tokenTypes.push_back("allow_methods");
-    tokenTypes.push_back("index");
-    tokenTypes.push_back("access_log");
-    tokenTypes.push_back("error_log");
-    tokenTypes.push_back("root");
-    tokenTypes.push_back("to");
-    tokenTypes.push_back("cgi");
-    
-    if (std::find(tokenTypes.begin(), tokenTypes.end(), directive) != tokenTypes.end())
-    {
-        return true;
-    }
-    return false;
-}
 template<typename T>
 void    setDirectives(T &directives,Worker &worker)
 {
@@ -164,8 +105,58 @@ void get_query_string(std::string &path, std::string &query_string)
     }
 }
 
-std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> \
-&serverBlocks,std::string &response,int *flag,int *status,std::string &human_status)
+void find_ip_address(const std::string &host,std::string &ipAddresses)
+{
+    
+    struct addrinfo hints, *result, *p;
+    std::memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+
+    int status = getaddrinfo(host.c_str(), NULL, &hints, &result);
+    if (status != 0) {
+        std::cerr << "getaddrinfo error: " << gai_strerror(status) << std::endl;
+        exit(1);
+    }
+
+    for (p = result; p != NULL; p = p->ai_next)
+    {
+        void* addr;
+        char ipstr[INET_ADDRSTRLEN];
+
+        if (p->ai_family == AF_INET) {
+            struct sockaddr_in* ipv4 = reinterpret_cast<struct sockaddr_in*>(p->ai_addr);
+            addr = &(ipv4->sin_addr);
+        } 
+
+        inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr);
+        ipAddresses += ipstr;
+    }
+
+    freeaddrinfo(result); 
+}
+
+
+void    get_matched_server_block(const std::string &host_name,std::vector<ServerBlocks> &blocks,Worker &worker,std::string &ip_address)
+{
+    for (size_t i = 0; i < blocks.size(); i++)
+    {
+        for (size_t j = 0; j < blocks[i].getDirectives().size() ; j++)
+        {
+            if (!blocks[i].getDirectives()[j].getDirective().compare("server_name"))
+            {
+                if (!blocks[i].getDirectives()[j].getArgument()[0].compare(host_name))
+                {
+                    worker.setBlockWorker(blocks[i]);
+                    return;
+                }
+            }
+        }
+    }
+    find_ip_address(host_name, ip_address);
+}
+
+void   init_worker_block(char buffer[1024],std::vector<ServerBlocks> &serverBlocks)
 {
     int find;
     int is_dir = 0;
@@ -179,7 +170,11 @@ std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> \
     LocationsBlock locationworker;
     std::istringstream httpStream(buffer);
     std::string line;
+    std::string hostname;
     std::string query_string;
+    std::string ip_address;
+    std::string port;
+    
     Worker worker;
     
 
@@ -194,9 +189,15 @@ std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> \
             host = line.substr(find + 1);
         }
     }
-    worker = Worker(serverBlocks,host);
-    worker.setLocationWorker(worker.getBlockWorker(),path);
-
+    hostname = trim(host.substr(0,host.find(':'))).c_str();
+    get_matched_server_block(hostname,serverBlocks,worker,ip_address);
+    if (!ip_address.empty())
+    {
+        port = host.substr(host.find(':')).c_str();
+        host = ip_address + port;
+        worker = Worker(serverBlocks,host);
+    }
+    worker.setLocationWorker(worker.getBlockWorker(),host);
     set(worker.getLocationWorker().getDirectives(),worker);
     if (worker.getRoot().empty())
         set(worker.getBlockWorker().getDirectives(),worker);
@@ -230,32 +231,23 @@ std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> \
     }
     if (is_regular == 1 || is_dir == 1)
     {
-        // printf("path %s =========================\n",path.c_str());
-        // printf("root %s\n",worker.getRoot().c_str());
-        // printf("body size %s\n",worker.get_max_body_size().c_str());
-        // printf("index %s\n",worker.getIndex().c_str());
-        // printf("auto index %s\n",worker.getAutoIndex().c_str());
-        // printf("methods allowed \t");
+        printf("path %s =========================\n",path.c_str());
+        printf("root %s\n",worker.getRoot().c_str());
+        printf("body size %s\n",worker.get_max_body_size().c_str());
+        printf("index %s\n",worker.getIndex().c_str());
+        printf("auto index %s\n",worker.getAutoIndex().c_str());
+        printf("methods allowed \t");
         
-        // for (size_t i = 0; i < worker.getAllowMethods().size(); i++)
-        // {
-        //     printf("%s \t",worker.getAllowMethods()[i].c_str());
-        // }
-        // printf("\nerror pages \t");
-        // for (size_t i = 0; i < worker.getErrorPages().size(); i++)
-        // {
-        //     printf("%s \t",worker.getErrorPages()[i].c_str());
-        // }
-        // printf("\n");
-        // printf("===============================================\n");
+        for (size_t i = 0; i < worker.getAllowMethods().size(); i++)
+        {
+            printf("%s \t",worker.getAllowMethods()[i].c_str());
+        }
+        printf("\nerror pages \t");
+        for (size_t i = 0; i < worker.getErrorPages().size(); i++)
+        {
+            printf("%s \t",worker.getErrorPages()[i].c_str());
+        }
+        printf("\n");
+        printf("===============================================\n");
     }
-
-    else
-    {
-        printf("not found\n");
-    }
-    response += "Hello";
-    human_status = "OK";
-    *status = 200;
-    return response;
 }

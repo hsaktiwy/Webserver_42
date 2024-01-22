@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   http.server.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lol <lol@student.42.fr>                    +#+  +:+       +#+        */
+/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/16 18:00:27 by lol              ###   ########.fr       */
+/*   Updated: 2024/01/22 14:48:07 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,14 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <sys/types.h>
+#include <netdb.h>
+#include <string>
+#include <set>
+
+
 
 
 const std::string DEFAULT_CONFIG_PATH = "/Users/adardour/Desktop/www/configs/default.conf";
@@ -44,7 +52,7 @@ const std::string DEFAULT_CONFIG_PATH = "/Users/adardour/Desktop/www/configs/def
 typedef struct 
 {
     unsigned int port;
-    struct in_addr sin_addr;
+    std::string host;
 }   t_port_host;
 
 typedef std::vector<std::pair<std::string, std::string> > vectors_type;
@@ -103,7 +111,7 @@ class LocationsBlock
         {
             return this->path;
         }
-        std::vector<Directives>  &getDirectives()
+        std::vector<Directives>  &getDirectives() 
         {
             return this->directives;
         }
@@ -120,7 +128,8 @@ class ServerBlocks
         std::vector<LocationsBlock> locations;
         std::vector<Directives> directives;
     public:
-        ServerBlocks() {
+        ServerBlocks()
+        {
         
         };
         void    AddDirective(Directives &directive)
@@ -141,9 +150,6 @@ class ServerBlocks
         }
 };
 
-
-#include <string>
-
 class Worker {
 private:
     ServerBlocks blockworker;
@@ -159,125 +165,47 @@ private:
     std::vector<std::string> allow_methods;
 
 public:
-    Worker()
-    {
-        
-    }
-
+    Worker();
     Worker(std::vector<ServerBlocks> &blocks,std::string &host);
-
-    ServerBlocks getBlockWorker() const
-    {
-        return this->blockworker;
-    }
-
-    void setBlockWorker(const ServerBlocks& blocks)
-    {
-        this->blockworker = blocks;
-    }
-
-    LocationsBlock getLocationWorker() const
-    {
-        return this->locationworker;
-    }
-
+    ServerBlocks getBlockWorker() const;
+    LocationsBlock getLocationWorker() const;
+    std::string getRoot() const;
+    std::string getIndex() const;
+    std::string getRedirect() const;
+    std::string getHost() const;
+    std::string getPath() const;
+    std::string getAutoIndex() const;
+    std::string &get_max_body_size();
+    std::vector<std::string> const &getAllowMethods() const;
+    std::vector<std::string> const &getErrorPages() const;
+    void setBlockWorker(const ServerBlocks& blocks);
     void setLocationWorker(const ServerBlocks& block,std::string &path);
-    std::string getRoot() const {
-        return this->root;
-    }
-
-    void setRoot(const std::string& newRoot) {
-        this->root = newRoot;
-    }
-
-    std::string getIndex() const {
-        return this->index;
-    }
-
+    void setRoot(const std::string& newRoot);
     void setIndex(const std::vector<std::string>&   args,const std::string &root);
-
-    std::string getRedirect() const {
-        return redirect;
-    }
-
-    void setRedirect(const std::string& newRedirect) {
-        redirect = newRedirect;
-    }
-
-    std::vector<std::string> const &getAllowMethods() const  
-    {
-        return this->allow_methods;
-    }
-    
+    void setRedirect(const std::string& newRedirect);
     void setMethod(std::vector<std::string>  &args);
-    // std::string getErrorPage() const {
-    //     return error_page;
-    // }
-
+    void setHost(const std::string& newHost);
+    void setAutoIndex(const std::string& newPath);
+    void setPath(const std::string& newPath);
     void setErrorPages(std::vector<std::string>  &args);
-    
-    std::vector<std::string> const &getErrorPages() const  
-    {
-        return this->error_page;
-    }
-    
-
-    std::string getHost() const {
-        return host;
-    }
-
-    void setHost(const std::string& newHost) {
-        host = newHost;
-    }
-
-    std::string getPath() const {
-        return path;
-    }
-
-    void setPath(const std::string& newPath) {
-        path = newPath;
-    }
-    std::string getAutoIndex() const {
-        return path;
-    }
-
-    void setAutoIndex(const std::string& newPath)
-    {
-        this->path = newPath;
-    }
-
-    std::string &get_max_body_size() 
-    {
-        return (this->max_body_size);
-    }
-    void set_max_body_size(std::string max_body_size) 
-    {
-        this->max_body_size = max_body_size;
-    }
+    void set_max_body_size(std::string max_body_size);
     bool exact_match(const ServerBlocks &block,const std::string &path);
     bool prefix_match(const ServerBlocks &block,const std::string &path);
     bool find_root(const ServerBlocks &block,const std::string &path);
+    void found_index_file(const std::string &root);
 };
 
 
-void    start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks);
-void        parse_line(const std::string &line,  tokens_map &tokens, int line_number);
-void        parse_config(tokens_iterator  &lines, tokens_map &tokens);
-void        print_tokens(vectors_type &tokens);
-void        print_args(std::vector<std::string> &args);
-void        print_dir(std::vector<Directives> &dir);
-void        print_server(std::vector<ServerBlocks> &serverBlocks);
-void        getarguments(vectors_type::iterator &it,Directives &directive);
-void        proccess_tokens(tokens_map &tokens,std::vector<ServerBlocks> &serverBlocks);
-void        print_location(std::vector<LocationsBlock> &locations);
-void        handle_errors(tokens_map tokens);
-void        print_tokens(std::multimap<int,std::vector<std::pair<std::string, std::string> > > &tokens);
-std::string getTokenType(const std::string& token);
-std::string trim(const std::string& str);
-ServerBlocks get_server_block(std::string &host,std::vector<ServerBlocks> &serverBlocks);
-// std::string get_index(std::vector<Directives> &directives);
-// std::string get_root(std::vector<Directives> &directives);
-std::string check_root(ServerBlocks &block);
-std::string&    parse_request(char buffer[1024],std::vector<ServerBlocks> &serverBlocks,std::string &response,int *flag,int *status,std::string &human_status);
-void    build_response(std::string index_path,std::string &response);
+void            start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks);
+void            parse_line(const std::string &line,  tokens_map &tokens, int line_number);
+void            parse_config(tokens_iterator  &lines, tokens_map &tokens);
+void            getarguments(vectors_type::iterator &it,Directives &directive);
+void            proccess_tokens(tokens_map &tokens,std::vector<ServerBlocks> &serverBlocks);
+void            handle_errors(tokens_map tokens);
+void            print_tokens(std::multimap<int,std::vector<std::pair<std::string, std::string> > > &tokens);
+std::string     getTokenType(const std::string& token);
+std::string     trim(const std::string& str);
+int             Is_Directory(const std::string &root);
+void            init_worker_block(char buffer[1024],std::vector<ServerBlocks> &serverBlocks);
+void            check_duplications(std::vector<ServerBlocks> serverBlocks);
 #endif

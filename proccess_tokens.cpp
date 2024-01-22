@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/07 10:23:31 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/14 12:13:55 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/21 19:13:12 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,9 +124,9 @@ void proccess_tokens(tokens_map &tokens,std::vector<ServerBlocks> &serverBlocks)
             it_v++;
         }
     }
-    if (!closed.empty())
+    if (!closed.empty() || serverBlocks.size() == 0)
     {
-        std::cout << "error\n";
+        std::cout << "end of file or not close something\n";
         exit(0);
     }
 }

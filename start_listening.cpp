@@ -6,12 +6,12 @@
 /*   By: lol <lol@student.42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/16 18:01:01 by lol              ###   ########.fr       */
+/*   Updated: 2024/01/16 20:20:55 by lol              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
-#include "request.hpp"
+#include "Client.hpp"
 #include <map>
 #include <unistd.h>
 
@@ -182,7 +182,6 @@ int create_socket_client(std::vector<int> &sockets,std::vector<struct pollfd> &p
     return (client_socket);
 }
 
-
 void handle_read(std::vector<struct pollfd> &poll_fds, int i, int *ready_to_write, \
                   nfds_t *size_fd, std::vector<ServerBlocks> &serverBlocks, std::string &response, int *flag,int *status,std::string &human_status)
 {
@@ -207,15 +206,14 @@ void handle_read(std::vector<struct pollfd> &poll_fds, int i, int *ready_to_writ
     }
 }
 
-void    handle_request(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::vector<ServerBlocks> &serverBlocks,std::string &response, request& http_request)
+void    handle_request(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::vector<ServerBlocks> &serverBlocks,std::string &response, Client & client)
 {
     char buffer[1024];
     int bytes_read = recv(poll_fds[i].fd, buffer, sizeof(buffer) - 1, 0);
     if (bytes_read > 0)
     {
         buffer[bytes_read] = '\0';
-        http_request.ParseRequest(buffer);
-        http_request.CheckRequest(serverBlocks);
+        client.ParseRequest(buffer, serverBlocks);
         *ready_to_write = 1;
     }
     else if (bytes_read == 0)
@@ -307,15 +305,15 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks)
                 }
                 else
                 {
-                    request http_request;
+                    Client client;
                     if (poll_fds[i].revents & POLLIN)
                     {
                         if(new_connection(client_socket,new_connections))
                         {
                             printf("new connection from socket %d ...\n",client_socket);
                         }
-                        // handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status, http_request);
-                        handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, http_request);
+                        //handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status, http_request);
+                        handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, client);
                     }
                     if (poll_fds[i].revents & POLLOUT)
                     {

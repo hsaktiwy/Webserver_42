@@ -7,8 +7,9 @@
 #include <list>
 #include <math.h>
 #include <sys/types.h>
-#include <dirent.h>
-#include "http.server.hpp"
+#include <sys/stat.h>
+// #include <dirent.h>
+#include "WorkerInit.hpp"
 
 // special character
 #define CRLF "\r\n"
@@ -68,12 +69,11 @@ class request {
 		~request();
 		request(const request& copy);
 		void							ParseRequest(char *request);
-		void							CheckRequest(std::vector<ServerBlocks> &serverBlocks);// THIS WILL CHECK THE REQUEST VALIDITY
+		void							CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker);// THIS WILL CHECK THE REQUEST VALIDITY
 		request&						operator=(const request& obj);
 		Method							getMethod( void ) const; // to get the method when we need it
 		const std::vector<std::string>&	getHeaders( void ) const;// get the headers after being prased
 		void							RequestDisplay( void );
 };
-std::vector<std::string> get_index(std::vector<Directives> &directives);
 std::string get_root(std::vector<Directives> &directives, t_uri &uri);
 #endif

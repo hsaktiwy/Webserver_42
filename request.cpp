@@ -324,49 +324,69 @@ bool	ft_strcmp(const char *s1, const char *s2)
 
 static bool	CheckPathExistance(t_uri &uri, std::string root)
 {
-	DIR *dir;
-	struct dirent *dirent;
+	// DIR *dir;
+	// struct dirent *dirent;
 	std::string src,path;
+	bool is_Directory = (uri.path[uri.path.size() - 1] == '/') ? true : false;
 	std::string file;
-	src = "./" + root + "/" + uri.path;
-	path = src;
-	size_t s = path.rfind("/");
-	if (s != std::string::npos)
-		path = path.substr(0, s);
-	dir = opendir(path.c_str());
-	if (dir)
-	{
-		if (s != std::string::npos)
-		{
-			std::string file = src.substr(s + 1);
-			bool stop = false;
-			while (!stop)
-			{
-				dirent = readdir(dir);
-				if (dirent)
-				{
-					if (dirent->d_type == DT_REG)
-					{
-						std::cout << dirent->d_name << std::endl;
-						if (ft_strcmp(dirent->d_name, file.c_str()))
-						{
-							if (closedir(dir) == -1)
-								std::cerr << "Error \n	closedir Failed" << std::endl;
-							return (true);
-						}
-					}
-				}
-				else
-					stop = true;
-			}
-		}
-		else
-		{
-			if (closedir(dir) == -1)
-				std::cerr << "Error \n	closedir Failed" << std::endl;
-			return (true);
-		}
-	}
+	src = ((root[0] == '/') ? "" : "/") + root + ((root[root.size() - 1] == '/') ? "" : "/") + uri.path;
+	struct stat *statbuff = NULL;
+	std::cout << src << std::endl;
+	int res = access(src.c_str(), F_OK | R_OK);
+
+	std::cout << " res " << res << std::endl;
+	if (res == 0)
+		return (true);
+	// path = src;
+	// size_t s = path.rfind("/");
+	// if (s != std::string::npos)
+	// 	path = path.substr(0, s);
+	// std::cout << " Path " << path << std::endl;
+	// dir = opendir(path.c_str());
+	// if (dir)
+	// {
+	// 	if (s != std::string::npos)
+	// 	{
+	// 		std::string file = src.substr(s + 1);
+	// 		bool stop = false;
+	// 		while (!stop)
+	// 		{
+	// 			dirent = readdir(dir);
+	// 			if (dirent)
+	// 			{
+	// 				std::cout << dirent->d_name << std::endl;
+	// 				if (is_Directory && dirent->d_type == DT_DIR)
+	// 				{
+	// 					std::string tmp = file;
+	// 					tmp[tmp.size() - 1] = '\0';
+	// 					if (ft_strcmp(dirent->d_name, file.c_str()))
+	// 					{
+	// 						if (closedir(dir) == -1)
+	// 							std::cerr << "Error \n	closedir Failed" << std::endl;
+	// 						return (true);
+	// 					}
+	// 				}
+	// 				else
+	// 				{
+	// 					if (ft_strcmp(dirent->d_name, file.c_str()))
+	// 					{
+	// 						if (closedir(dir) == -1)
+	// 							std::cerr << "Error \n	closedir Failed" << std::endl;
+	// 						return (true);
+	// 					}
+	// 				}
+	// 			}
+	// 			else
+	// 				stop = true;
+	// 		}
+	// 	}
+	// 	else
+	// 	{
+	// 		if (closedir(dir) == -1)
+	// 			std::cerr << "Error \n	closedir Failed" << std::endl;
+	// 		return (true);
+	// 	}
+	// }
 	return (false);
 }
 
@@ -418,47 +438,23 @@ std::string	get_root(std::vector<Directives> &directives, std::vector<LocationsB
 	return (root);
 }
 
-std::string	get_index(std::vector<Directives> &directives, std::vector<LocationsBlock>& locations, std::string &root)
-{
-	// std::vector<std::string> index;
-
-	// //get index from the server block
-	// std::vector<std::string> tmp;
-	// bool inServer = false;
-	// for (std::vector<Directives>::iterator iter = directives.begin(); iter != directives.end(); iter++)
-	// {
-	// 	if (iter->getDirective() == "root" && iter->getArgument()[0] == root)
-	// 		inServer = true;
-	// 	if (iter->getDirective() == "index")
-	// 	{
-	// 		index = iter->getArgument();
-	// 		break;
-	// 	}
-	// }
-	// if (tmp.size() > 0)
-
-	// // get index from the location if we couldn't find it in the server block
-	// if (index.size() == 0)
-	// {
-	// 	for()
-	// }
-	return ("index.html");
-}
-void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks)
+void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker)
 {
 	std::string KnownHeaders[] = {"Host", "Accept", "Accept-Language", "Accept-Encoding", "Connection", "Referer"};
 	// ServerBlocks block = get_server_block(host, serverBlocks);
-	Worker worker(serverBlocks, host);
-	ServerBlocks block = worker.getBlockWorker();
 	std::string mimeType[] = {"image/avif", "image/avif", "image/jpeg", "image/gif", "image/png", "text/csv",  "text/html",   "text/javascript", "text/plain", "text/xml", "text/plain", "audio/mpeg", "video/mp4", "video/mpeg", "application/xml"};
 	if (error == false)
 	{
 		// splite uri to scheme, authority, path, query
 		UriFormat(uri, method_uri, host);
-		std::string root = get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
-		std::string index = get_index(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), root);
-		// if (uri.path.size() == 0)
-		// 	uri.path = index;
+		WorkerInit(worker, serverBlocks, uri.path, host);
+		ServerBlocks block = worker.getBlockWorker();
+		std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
+		std::string index = worker.getIndex();
+		std::cout << "host " << host << " root " << root  << " index " << index << std::endl;
+		if (uri.path.size() == 0)
+			uri.path += index.substr(root.size());
+		std::cout << "New Path " << uri.path << std::endl;
 		if (!CheckPathExistance(uri, root))
 		{
 			error = true, status = 404;

@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/19 20:41:16 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/22 13:55:22 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,8 @@
 #include <sys/types.h>
 #include <netdb.h>
 #include <string>
+#include <set>
+
 
 
 
@@ -106,7 +108,7 @@ class LocationsBlock
         {
             return this->path;
         }
-        std::vector<Directives>  &getDirectives()
+        std::vector<Directives>  &getDirectives() 
         {
             return this->directives;
         }
@@ -201,4 +203,5 @@ std::string     getTokenType(const std::string& token);
 std::string     trim(const std::string& str);
 int             Is_Directory(const std::string &root);
 void            init_worker_block(char buffer[1024],std::vector<ServerBlocks> &serverBlocks);
+void            check_duplications(std::vector<ServerBlocks> serverBlocks);
 #endif

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami <aalami@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/03 10:55:55 by aalami            #+#    #+#             */
-/*   Updated: 2024/01/13 17:57:08 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/22 17:27:07 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,10 @@
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <vector>
+#include <list>
 #include <map>
 #include <fcntl.h>
+#include <arpa/inet.h>
 
 #define RESET   "\033[0m"
 #define RED     "\033[31m"

@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "array": "cpp",
+        "iterator": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "vector": "cpp",
+        "list": "cpp"
+    }
+}

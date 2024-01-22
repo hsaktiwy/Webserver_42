@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   responseHandler.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami <aalami@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/04 18:12:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/01/15 17:34:53 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/22 19:14:46 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,37 +58,38 @@ void responseHandler(std::vector<struct pollfd> &fds, int index, char **env,
     // std::string buffer;
     // getline(stream, buffer, '\0');
     (void)request;
-    // (void)env;
-    // std::string response = "HTTP/1.1 301 Moved Permantely\r\n";
-    // response += "Location: 127.0.0.1:4000\r\n";
-    // response += "Content-Length: 0\r\n";
-    // response += "\r\n";
+    (void)env;
+    std::string httpResponse =
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/plain\r\n"
+        "Content-Length: 0\r\n"
+        "\r\n";
     
-    // const char *buff = response.c_str();
-    // send(fds[index].fd, buff, strlen(buff),0 );
-    char *path = strdup("/usr/bin/python3");
-    std::string cgi = "/Users/aalami/Desktop/Webserver_42/cgi-bin/cgi.py";
-    char **arg ;
-    // int status;
-    arg = (char **)malloc(sizeof(char *) * 3);
-    arg[0] = path;
-    arg[1] = strdup(cgi.c_str());
-    arg[2] = NULL;
-    // int tmp = dup(fds[index].fd);
-    // int tmp2 = dup(1);
-    int pid = fork();
-    if (pid == -1)
-        throw "fork error";
-    if (pid == 0)
-    {
-        if (dup2(fds[index].fd, 1) == -1)
-            printf("dd\n");
+    const char *buff = httpResponse.c_str();
+    send(fds[index].fd, buff, strlen(buff),0 );
+    // char *path = strdup("/usr/bin/python3");
+    // std::string cgi = "/Users/aalami/Desktop/Webserver_42/cgi-bin/cgi.py";
+    // char **arg ;
+    // // int status;
+    // arg = (char **)malloc(sizeof(char *) * 3);
+    // arg[0] = path;
+    // arg[1] = strdup(cgi.c_str());
+    // arg[2] = NULL;
+    // // int tmp = dup(fds[index].fd);
+    // // int tmp2 = dup(1);
+    // int pid = fork();
+    // if (pid == -1)
+    //     throw "fork error";
+    // if (pid == 0)
+    // {
+    //     if (dup2(fds[index].fd, 1) == -1)
+    //         printf("dd\n");
         
-        close(fds[index].fd);
-        execve(path,arg,env);
-        close(STDOUT_FILENO);
-        // exit(0);
-    }
+    //     close(fds[index].fd);
+    //     execve(path,arg,env);
+    //     close(STDOUT_FILENO);
+    //     exit(0);
+    // }
 
     // generateCgiEnv(request);
     // else

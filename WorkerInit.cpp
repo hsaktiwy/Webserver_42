@@ -1,4 +1,4 @@
-
+// this is not used (true : delete, false : no action) 
 #include "WorkerInit.hpp"
 
 void    setAllowedmethods2(Worker &worker, std::vector<Directives> &directives)

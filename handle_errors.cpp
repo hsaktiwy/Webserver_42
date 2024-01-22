@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/09 12:17:44 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/22 13:57:37 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/22 16:28:34 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,14 @@ void    handle_directives(std::string &type, std::string &directive,std::string 
             if (token.compare("on") && token.compare("off"))
             {
                 error = "invalid value \"" + token + "\" in  \"autoindex\" directive must be \"on\" or \"off\" in " + convertToString(line);
+                throw error;
+            }
+        }
+        if (!directive.compare("allow_methods"))
+        {
+            if (token.compare("POST") && token.compare("GET") && token.compare("DELETE"))
+            {
+                error = "not a valid method \"" + token + "\" directive in " + convertToString(line);
                 throw error;
             }
         }

@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/22 17:16:28 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/22 20:33:33 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,12 +216,4 @@ void   init_worker_block(Worker &worker, std::string &host, std::string &path,st
         else if (Is_Directory(worker.getRoot()) == 1)
             is_regular = 1;
     }
-    // if (is_regular == 1 || is_dir == 1)
-    // {
-    //     printf("root %s\n",worker.getRoot().c_str());
-    // }
-    // else 
-    // {
-    //     printf("not found\n");
-    // }
 }

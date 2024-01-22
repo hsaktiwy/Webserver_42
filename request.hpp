@@ -64,6 +64,8 @@ class request {
 		std::string				req;
 		bool					error;
 		int						status;
+		int						is_dir;
+		int 					is_regular;
     public:
 		request();
 		~request();
@@ -74,6 +76,20 @@ class request {
 		Method							getMethod( void ) const; // to get the method when we need it
 		const std::vector<std::string>&	getHeaders( void ) const;// get the headers after being prased
 		void							RequestDisplay( void );
+		std::string				&getMethod( void );
+		std::string				&getMethod_uri( void );
+		t_uri					&getUri( void );
+		std::string				&getHttp( void );
+		std::string				&getHost( void );
+		std::vector<HTTPHeader>	&getHeaders( void );
+		std::string				&getBody( void );
+		std::string				&getReq( void );
+		bool					getError( void );
+		int						getStatus( void );
+		int						getIs_dir( void );
+		int 					getIs_regular( void );
+		void					setError(bool value);
+		void					setStatus(int value);
 };
 std::string get_root(std::vector<Directives> &directives, t_uri &uri);
 #endif

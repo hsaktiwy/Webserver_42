@@ -438,8 +438,8 @@ std::string	get_root(std::vector<Directives> &directives, std::vector<LocationsB
 
 void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker)
 {
-	int 		is_dir = 0;
-	int 		is_regular = 0;
+	is_dir = 0;
+	is_regular = 0;
 	std::string KnownHeaders[] = {"Host", "Accept", "Accept-Language", "Accept-Encoding", "Connection", "Referer"};
 	std::string mimeType[] = {"image/avif", "image/avif", "image/jpeg", "image/gif", "image/png", "text/csv",  "text/html",   "text/javascript", "text/plain", "text/xml", "text/plain", "audio/mpeg", "video/mp4", "video/mpeg", "application/xml"};
 	// ServerBlocks block = get_server_block(host, serverBlocks);
@@ -447,24 +447,23 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 	{
 		// splite uri to scheme, authority, path, query
 		UriFormat(uri, method_uri, host);
-		// WorkerInit(worker, serverBlocks, uri.path, host);
 		init_worker_block(worker, host, uri.path, serverBlocks, is_dir, is_regular);
 		// ServerBlocks block = worker.getBlockWorker();
 		std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
 		std::string index = worker.getIndex();
 		std::cout << "host " << host << " root " << root  << " index " << index << std::endl;
 		if (uri.path.size() == 0 && index.size() != 0)
-			uri.path += index.substr(root.size());
+			uri.path += index;
 		std::cout << "New Path " << uri.path << std::endl;
-		if (!CheckPathExistance(uri, root))
+		// check for allowed method
+		std::vector <std::string> allowedMethod = worker.getAllowMethods();
+		if (allowedMethod.size() != 0)
 		{
-			error = true, status = 404;
-			// return ;
+			if (find(allowedMethod.begin(), allowedMethod.end(), method) == allowedMethod.end())
+				error = true, status = 405;
 		}
-		// Check for known headers
-		
 	}
-	// RequestDisplay();
+	RequestDisplay();
 }
 
 void	request::RequestDisplay( void )
@@ -502,4 +501,76 @@ request& request::operator=(const request& obj)
 
 	}
 	return (*this);
+}
+
+// Getter and Setter
+
+std::string				&request::getMethod( void )
+{
+	return (method);
+}
+
+std::string				&request::getMethod_uri( void )
+{
+	return (method_uri);
+}
+
+t_uri					&request::getUri( void )
+{
+	return (uri);
+}
+
+std::string				&request::getHttp( void )
+{
+	return (http);
+}
+
+std::string				&request::getHost( void )
+{
+	return (host);
+}
+
+std::vector<HTTPHeader>	&request::getHeaders( void )
+{
+	return (headers);
+}
+
+std::string				&request::getBody( void )
+{
+	return (body);
+}
+
+std::string				&request::getReq( void )
+{
+	return (req);
+}
+
+bool					request::getError( void )
+{
+	return (error);
+}
+
+int						request::getStatus( void )
+{
+	return (status);
+}
+
+int						request::getIs_dir( void )
+{
+	return (is_dir);
+}
+
+int 					request::getIs_regular( void )
+{
+	return (is_regular);
+}
+
+void					request::setError(bool value)
+{
+	error = value;
+}
+
+void						request::setStatus(int value)
+{
+	status = value;
 }

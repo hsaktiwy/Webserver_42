@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/22 16:54:37 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/22 20:20:33 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,8 +195,7 @@ public:
     void found_index_file(const std::string &root);
 };
 
-
-void            start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks);
+void            start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks, std::map<unsigned int, std::string> &status_codes);
 void            parse_line(const std::string &line,  tokens_map &tokens, int line_number);
 void            parse_config(tokens_iterator  &lines, tokens_map &tokens);
 void            getarguments(vectors_type::iterator &it,Directives &directive);

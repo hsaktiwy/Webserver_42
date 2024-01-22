@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/22 17:02:13 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/22 22:46:25 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,7 +175,7 @@ int create_socket_client(std::vector<int> &sockets,std::vector<struct pollfd> &p
 //     }
 // }
 
-void    handle_request(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::vector<ServerBlocks> &serverBlocks,std::string &response, Client & client)
+void    handle_request(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::vector<ServerBlocks> &serverBlocks,std::string &response, Client & client, std::map<unsigned int, std::string> &status_codes)
 {
     char buffer[1024];
     int bytes_read = recv(poll_fds[i].fd, buffer, sizeof(buffer) - 1, 0);
@@ -183,7 +183,6 @@ void    handle_request(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_
     {
         buffer[bytes_read] = '\0';
         client.ParseRequest(buffer, serverBlocks);
-        *ready_to_write = 1;
     }
     else if (bytes_read == 0)
     {
@@ -198,20 +197,25 @@ void    handle_request(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_
     }
 }
 
-void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &response,int *flag,int *status,std::string &human_status,std::string &mime_type)
+void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &response,int *flag,int *status,std::string &human_status,std::string &mime_type, Client & client, std::map<unsigned int, std::string> &status_codes)
 {
-    int length = response.length();
-    if (*flag == 0)
-    {
-        response = "HTTP/1.1 " + std::to_string(*status) + " " + human_status + "\r\nContent-Type: " + mime_type + "text/html\nContent-Length: " + std::to_string(length) + "\n\n" + response;
-        *flag = 1;
-    }
-    int bytes_written = write(poll_fds[i].fd, response.c_str(), response.size());
-    response.clear();
+    std::string responce = client.Responce(status_codes);
+    std::cout << "Reponce here: \n" << responce << std::endl;
+    int bytes_written = write(poll_fds[i].fd, response.c_str(), responce.size());
     if (bytes_written < 0)
-    {
         perror("write ");
-    }
+    // int length = response.length();
+    // if (*flag == 0)
+    // {
+    //     response = "HTTP/1.1 " + std::to_string(*status) + " " + human_status + "\r\nContent-Type: " + mime_type + "text/html\nContent-Length: " + std::to_string(length) + "\n\n" + response;
+    //     *flag = 1;
+    // }
+    // int bytes_written = write(poll_fds[i].fd, response.c_str(), response.size());
+    response.clear();
+    // if (bytes_written < 0)
+    // {
+    //     perror("write ");
+    // }
     (*ready_to_write) = 0;
     close(poll_fds[i].fd);
     poll_fds.erase(poll_fds.begin() + i);
@@ -230,7 +234,7 @@ int    new_connection(int client_socket,std::vector<int> new_connections)
     return (1);
 }
 
-void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks)
+void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks, std::map<unsigned int, std::string> &status_codes)
 {
     std::string response;
     std::vector<int> sockets;
@@ -284,12 +288,12 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks)
                             printf("new connection from socket %d ...\n",client_socket);
                         }
                         //handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status, http_request);
-                        handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, client);
+                        handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, client, status_codes);
                         //handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status,mime_type);
                     }
                     if (poll_fds[i].revents & POLLOUT)
                     {
-                        handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status,mime_type);
+                        handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status,mime_type, client, status_codes);
                     }
                 }
             }

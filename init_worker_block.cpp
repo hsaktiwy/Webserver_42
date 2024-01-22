@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/22 14:48:12 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/22 17:16:28 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,39 +163,19 @@ void    get_matched_server_block(const std::string &host_name,std::vector<Server
     find_ip_address(host_name, ip_address);
 }
 
-void   init_worker_block(char buffer[1024],std::vector<ServerBlocks> &serverBlocks)
+void   init_worker_block(Worker &worker, std::string &host, std::string &path,std::vector<ServerBlocks> &serverBlocks, int &is_dir, int &is_regular)
 {
-    int find;
-    int is_dir = 0;
-    int is_regular = 0;
 
-    std::string host;
-    std::string path;
-    std::string method;
-    std::string version;
+    int find;
+
     std::string mime_type;
     LocationsBlock locationworker;
-    std::istringstream httpStream(buffer);
     std::string line;
     std::string hostname;
     std::string query_string;
     std::string ip_address;
     std::string port;
-    
-    Worker worker;
-    
 
-    httpStream >> method >> path >> version;
-    get_query_string(path,query_string);
-    std::getline(httpStream, line);
-    while (std::getline(httpStream, line))
-    {
-        find = line.find(':');
-        if (!line.substr(0,find).compare("Host"))
-        {
-            host = line.substr(find + 1);
-        }
-    }
     hostname = trim(host.substr(0,host.find(':'))).c_str();
     get_matched_server_block(hostname,serverBlocks,worker,ip_address);
     if (!ip_address.empty())
@@ -236,12 +216,12 @@ void   init_worker_block(char buffer[1024],std::vector<ServerBlocks> &serverBloc
         else if (Is_Directory(worker.getRoot()) == 1)
             is_regular = 1;
     }
-    if (is_regular == 1 || is_dir == 1)
-    {
-        printf("root %s\n",worker.getRoot().c_str());
-    }
-    else 
-    {
-        printf("not found\n");
-    }
+    // if (is_regular == 1 || is_dir == 1)
+    // {
+    //     printf("root %s\n",worker.getRoot().c_str());
+    // }
+    // else 
+    // {
+    //     printf("not found\n");
+    // }
 }

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: lol <lol@student.42.fr>                    +#+  +:+       +#+         #
+#    By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/13 12:12:25 by adardour          #+#    #+#              #
-#    Updated: 2024/01/12 18:13:53 by lol              ###   ########.fr        #
+#    Updated: 2024/01/22 17:21:41 by hsaktiwy         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,6 +29,8 @@ $(TARGET): $(OBJ)  $(HPP)
 	$(CC) -c $< -o $@
 
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f $(OBJ) 
 
+fclean: clean
+	rm -f $(TARGET)
 re: clean all

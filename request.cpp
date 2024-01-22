@@ -187,9 +187,7 @@ static void	MethodParsing(bool &error, int &status, std::string &HTTPrequest, st
 	{
 		std::set<std::string>::iterator iter = ValideMethodes.find(method);
 		if (iter == ValideMethodes.end())
-		{
-			error = true,status = 501;// is there another way to say undefine ?(501 : Not Implemented, if the method is unrecognized or not implemented by the origin server) 
-		}
+			error = true,status = 405;// is there another way to say undefine ?(501 : Not Implemented, if the method is unrecognized or not implemented by the origin server) 
 	}
 	// get the uri
 	if (tmp[i] == ' ')
@@ -233,7 +231,7 @@ void	request::ParseRequest(char *r)
 	status = 200;
 	size_t index = 0;
 	// Turn any none quoted  *SP or HT or LWS to one space
-	std::cout << "Before Request form :\n" << req <<std::endl;
+	// std::cout << "Before Request form :\n" << req <<std::endl;
 	replaceConsecutiveSpaces(HTTPrequest, req);
 	// Define the method  ?
 	MethodParsing(error, status, HTTPrequest, method, method_uri, http, index);
@@ -440,19 +438,22 @@ std::string	get_root(std::vector<Directives> &directives, std::vector<LocationsB
 
 void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker)
 {
+	int 		is_dir = 0;
+	int 		is_regular = 0;
 	std::string KnownHeaders[] = {"Host", "Accept", "Accept-Language", "Accept-Encoding", "Connection", "Referer"};
-	// ServerBlocks block = get_server_block(host, serverBlocks);
 	std::string mimeType[] = {"image/avif", "image/avif", "image/jpeg", "image/gif", "image/png", "text/csv",  "text/html",   "text/javascript", "text/plain", "text/xml", "text/plain", "audio/mpeg", "video/mp4", "video/mpeg", "application/xml"};
+	// ServerBlocks block = get_server_block(host, serverBlocks);
 	if (error == false)
 	{
 		// splite uri to scheme, authority, path, query
 		UriFormat(uri, method_uri, host);
-		WorkerInit(worker, serverBlocks, uri.path, host);
-		ServerBlocks block = worker.getBlockWorker();
+		// WorkerInit(worker, serverBlocks, uri.path, host);
+		init_worker_block(worker, host, uri.path, serverBlocks, is_dir, is_regular);
+		// ServerBlocks block = worker.getBlockWorker();
 		std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
 		std::string index = worker.getIndex();
 		std::cout << "host " << host << " root " << root  << " index " << index << std::endl;
-		if (uri.path.size() == 0)
+		if (uri.path.size() == 0 && index.size() != 0)
 			uri.path += index.substr(root.size());
 		std::cout << "New Path " << uri.path << std::endl;
 		if (!CheckPathExistance(uri, root))
@@ -463,7 +464,7 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		// Check for known headers
 		
 	}
-	RequestDisplay();
+	// RequestDisplay();
 }
 
 void	request::RequestDisplay( void )

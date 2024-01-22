@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/22 14:48:52 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/22 17:02:13 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,15 +151,38 @@ int create_socket_client(std::vector<int> &sockets,std::vector<struct pollfd> &p
     return (client_socket);
 }
 
-void handle_read(std::vector<struct pollfd> &poll_fds, int i, int *ready_to_write, \
-                  nfds_t *size_fd, std::vector<ServerBlocks> &serverBlocks, std::string &response, int *flag,int *status,std::string &human_status,std::string &mime_type)
+// void handle_read(std::vector<struct pollfd> &poll_fds, int i, int *ready_to_write, \
+//                   nfds_t *size_fd, std::vector<ServerBlocks> &serverBlocks, std::string &response, int *flag,int *status,std::string &human_status,std::string &mime_type)
+// {
+//     char buffer[1024];
+//     int bytes_read = recv(poll_fds[i].fd, buffer, sizeof(buffer) - 1, 0);
+//     if (bytes_read > 0)
+//     {
+//         buffer[bytes_read] = '\0';
+//         init_worker_block(buffer, serverBlocks);
+//         *ready_to_write = 1;
+//     }
+//     else if (bytes_read == 0)
+//     {
+//         printf("close client\n");
+//         close(poll_fds[i].fd);
+//         poll_fds.erase(poll_fds.begin() + i);
+//         (*size_fd)--;
+//     }
+//     else
+//     {
+//         perror("recv ");
+//     }
+// }
+
+void    handle_request(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::vector<ServerBlocks> &serverBlocks,std::string &response, Client & client)
 {
     char buffer[1024];
     int bytes_read = recv(poll_fds[i].fd, buffer, sizeof(buffer) - 1, 0);
     if (bytes_read > 0)
     {
         buffer[bytes_read] = '\0';
-        init_worker_block(buffer, serverBlocks);
+        client.ParseRequest(buffer, serverBlocks);
         *ready_to_write = 1;
     }
     else if (bytes_read == 0)

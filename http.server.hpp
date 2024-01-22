@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/22 14:48:07 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/22 16:54:37 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,6 +206,6 @@ void            print_tokens(std::multimap<int,std::vector<std::pair<std::string
 std::string     getTokenType(const std::string& token);
 std::string     trim(const std::string& str);
 int             Is_Directory(const std::string &root);
-void            init_worker_block(char buffer[1024],std::vector<ServerBlocks> &serverBlocks);
+void            init_worker_block(Worker &worker, std::string &host, std::string &path,std::vector<ServerBlocks> &serverBlocks, int &is_dir, int &is_regular);
 void            check_duplications(std::vector<ServerBlocks> serverBlocks);
 #endif

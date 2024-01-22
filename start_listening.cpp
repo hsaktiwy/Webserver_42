@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/19 20:40:02 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/21 21:21:08 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ void    get_port_host(ServerBlocks &serverBlocks,t_port_host &port_host)
             }
             port_host.port = atoi(port.c_str());
             port_host.host = host;
+            break;
         }
         i++;
     }
@@ -68,8 +69,8 @@ void    create_sockets(std::vector<ServerBlocks> &serverBlocks,std::vector<int> 
         get_port_host(serverBlocks[i],port_host);
         if ((status = getaddrinfo(port_host.host.c_str(),std::to_string(port_host.port).c_str(), &hints, &result)) != 0)
         {
-            std::cerr << "getaddrinfo error: " << gai_strerror(status) << std::endl;
-            continue;
+            std::cerr << "error: " << gai_strerror(status) << std::endl;
+            exit(0);
         }
         for (p = result; p != NULL; p = p->ai_next)
         {
@@ -79,7 +80,7 @@ void    create_sockets(std::vector<ServerBlocks> &serverBlocks,std::vector<int> 
                 perror("socket");
                 exit(1);
             }
-            if(fcntl(socket_fd,F_SETFL, O_NONBLOCK) < 0)
+            if(fcntl(socket_fd,F_SETFL, O_NONBLOCK | O_CLOEXEC) < 0)
             {
                 perror("set socket ");
                 exit(1);
@@ -97,7 +98,7 @@ void    create_sockets(std::vector<ServerBlocks> &serverBlocks,std::vector<int> 
                 exit(1);
                                     
             }
-            if (listen(socket_fd, 128) < 0)
+            if (listen(socket_fd, 0) < 0)
             {
                 perror("socket ");
                 exit(1);

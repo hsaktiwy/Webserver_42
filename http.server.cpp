@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/16 21:30:35 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/21 21:35:56 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,12 +112,10 @@ std::string getTokenType(const std::string& token)
     tokenTypes.insert(std::make_pair("autoindex", "directive"));
     tokenTypes.insert(std::make_pair("allow_methods", "directive"));
     tokenTypes.insert(std::make_pair("index", "directive"));
-    tokenTypes.insert(std::make_pair("access_log", "directive"));
-    tokenTypes.insert(std::make_pair("error_log", "directive"));
     tokenTypes.insert(std::make_pair("root", "directive"));
     tokenTypes.insert(std::make_pair("to", "directive"));
     tokenTypes.insert(std::make_pair("cgi", "directive"));
-    tokenTypes.insert(std::make_pair("server_name", "directive"));
+    tokenTypes.insert(std::make_pair("server_names", "directive"));
     tokenTypes.insert(std::make_pair("{", "open_block"));
     tokenTypes.insert(std::make_pair("}", "close_block"));
     tokenTypes.insert(std::make_pair(";", "semi_colon"));

@@ -6,13 +6,16 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/19 20:26:56 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/21 21:39:23 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
 
-
+void    listing(const std::string &root)
+{
+       
+}
 
 void    setAllowedmethods(Worker &worker, std::vector<Directives> &directives)
 {
@@ -131,6 +134,7 @@ void find_ip_address(const std::string &host,std::string &ipAddresses)
 
         inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr);
         ipAddresses += ipstr;
+        break;
     }
 
     freeaddrinfo(result); 
@@ -143,12 +147,15 @@ void    get_matched_server_block(const std::string &host_name,std::vector<Server
     {
         for (size_t j = 0; j < blocks[i].getDirectives().size() ; j++)
         {
-            if (!blocks[i].getDirectives()[j].getDirective().compare("server_name"))
+            if (!blocks[i].getDirectives()[j].getDirective().compare("server_names"))
             {
-                if (!blocks[i].getDirectives()[j].getArgument()[0].compare(host_name))
+                for (size_t k = 0; k < blocks[i].getDirectives()[j].getArgument().size(); k++)
                 {
-                    worker.setBlockWorker(blocks[i]);
-                    return;
+                    if (!blocks[i].getDirectives()[j].getArgument()[k].compare(host_name))
+                    {
+                        worker.setBlockWorker(blocks[i]);
+                        return;
+                    }
                 }
             }
         }
@@ -197,7 +204,7 @@ void   init_worker_block(char buffer[1024],std::vector<ServerBlocks> &serverBloc
         host = ip_address + port;
         worker = Worker(serverBlocks,host);
     }
-    worker.setLocationWorker(worker.getBlockWorker(),host);
+    worker.setLocationWorker(worker.getBlockWorker(),path);
     set(worker.getLocationWorker().getDirectives(),worker);
     if (worker.getRoot().empty())
         set(worker.getBlockWorker().getDirectives(),worker);
@@ -231,23 +238,10 @@ void   init_worker_block(char buffer[1024],std::vector<ServerBlocks> &serverBloc
     }
     if (is_regular == 1 || is_dir == 1)
     {
-        printf("path %s =========================\n",path.c_str());
         printf("root %s\n",worker.getRoot().c_str());
-        printf("body size %s\n",worker.get_max_body_size().c_str());
-        printf("index %s\n",worker.getIndex().c_str());
-        printf("auto index %s\n",worker.getAutoIndex().c_str());
-        printf("methods allowed \t");
-        
-        for (size_t i = 0; i < worker.getAllowMethods().size(); i++)
-        {
-            printf("%s \t",worker.getAllowMethods()[i].c_str());
-        }
-        printf("\nerror pages \t");
-        for (size_t i = 0; i < worker.getErrorPages().size(); i++)
-        {
-            printf("%s \t",worker.getErrorPages()[i].c_str());
-        }
-        printf("\n");
-        printf("===============================================\n");
+    }
+    else 
+    {
+        printf("not found\n");
     }
 }

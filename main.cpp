@@ -6,16 +6,11 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:40 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/18 17:57:05 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/21 21:36:13 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
-
-void    check_allow_directives()
-{
-
-}
 
 void    readAndParseConfig(int c, char **argv,tokens_iterator &lines)
 {
@@ -57,7 +52,7 @@ void show_info(std::vector<ServerBlocks> &blocks) {
         std::cout << "\x1B[0m";
 
         while (j < blocks[i].getDirectives().size()) {
-            if (!blocks[i].getDirectives()[j].getDirective().compare("server_name"))
+            if (!blocks[i].getDirectives()[j].getDirective().compare("server_names"))
             {
                 std::cout << "\t\x1B[1;32m"; 
                 printf("Server Name %s\n", blocks[i].getDirectives()[j].getArgument()[0].c_str());
@@ -88,6 +83,7 @@ int main(int c,char **argv)
         parse_config(lines,tokens);
         handle_errors(tokens);
         proccess_tokens(tokens,serverBlocks);
+        check_duplications(serverBlocks);
         show_info(serverBlocks);
         start_listening_and_accept_request(serverBlocks);
     }

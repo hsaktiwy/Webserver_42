@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/19 20:36:59 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/20 20:57:48 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,6 +229,7 @@ void    Worker::found_index_file(const std::string &root)
                 if (Is_Directory(this->getRoot() + "/" +start->d_name) == 1)
                 {
                     this->setRoot((this->getRoot() + "/" + start->d_name));
+        
                     this->index = start->d_name;
                 }
             }

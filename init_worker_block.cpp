@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/21 21:39:23 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/22 14:25:17 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,6 +196,9 @@ void   init_worker_block(char buffer[1024],std::vector<ServerBlocks> &serverBloc
             host = line.substr(find + 1);
         }
     }
+    printf("path %s\n",path.c_str());
+    printf("host %s\n",host.c_str());
+    exit(0);
     hostname = trim(host.substr(0,host.find(':'))).c_str();
     get_matched_server_block(hostname,serverBlocks,worker,ip_address);
     if (!ip_address.empty())

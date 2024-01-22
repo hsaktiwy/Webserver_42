@@ -55,6 +55,7 @@ void    responce::errorResponce(std::map<unsigned int, std::string> &status_code
     ss >> statusCode;
     if (iter != status_codes.end())
         HumanRead = iter->second;
+    printf("||||||||||||%s\n", error_pages[2].c_str());
     // if (error_pages.size() == 0)
     // {
         html_body = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n<title>Error Page</title>\r\n<style>\r\nbody {\r\nfont-family: Arial, sans-serif;\r\ntext-align: center;\r\npadding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\nmargin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\nmargin-bottom: 50px;\r\n}\r\n</style>\r\n</head>\r\n<body>\r\n<h1>Error "+ statusCode + "("+ HumanRead +")"+"</h1>\r\n<p>Unhable to reserve a propore responce.</p>\r\n</body>\r\n</html>";

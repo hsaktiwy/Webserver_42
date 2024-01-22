@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/22 22:46:25 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/22 23:10:12 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,7 +201,7 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 {
     std::string responce = client.Responce(status_codes);
     std::cout << "Reponce here: \n" << responce << std::endl;
-    int bytes_written = write(poll_fds[i].fd, response.c_str(), responce.size());
+    int bytes_written = write(poll_fds[i].fd, responce.c_str(), responce.size());
     if (bytes_written < 0)
         perror("write ");
     // int length = response.length();
@@ -211,7 +211,6 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
     //     *flag = 1;
     // }
     // int bytes_written = write(poll_fds[i].fd, response.c_str(), response.size());
-    response.clear();
     // if (bytes_written < 0)
     // {
     //     perror("write ");

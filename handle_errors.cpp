@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   handle_errors.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/09 12:17:44 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/22 16:28:34 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/22 23:07:18 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -294,8 +294,11 @@ void    handle_duplication_block(T &block)
     for (size_t j = 0; j < directives.size(); ++j)
     {
         const std::string& directiveName = directives[j].getDirective();
-        int& count = directiveCounts[directiveName];
-        ++count;
+        if (directiveName.compare("error_page"))
+        {
+            int& count = directiveCounts[directiveName];
+            ++count;
+        }
     }
     for (std::map<std::string, int>::const_iterator it = directiveCounts.begin(); it != directiveCounts.end(); ++it)
     {

@@ -1,7 +1,7 @@
 #include "Client.hpp"
 
 
-Client::Client() : http_responce(http_request, worker)
+Client::Client() : http_response(http_request, worker)
 {
 
 }
@@ -22,7 +22,7 @@ Client& Client::operator=(const Client& obj)
 	{
 		worker = obj.worker;
 		http_request = obj.http_request;
-		http_responce = obj.http_responce;
+		http_response = obj.http_response;
 	}
 	return (*this);
 }
@@ -33,8 +33,8 @@ void	Client::ParseRequest(char *buffer, std::vector<ServerBlocks> &serverBlocks)
     http_request.CheckRequest(serverBlocks, worker);
 }
 
-std::string	Client::Responce(std::map<unsigned int, std::string> &status_codes)
+std::string	Client::response(std::map<unsigned int, std::string> &status_codes)
 {
-	http_responce.responed(status_codes);
-	return (http_responce.getHttp_responce());
+	http_response.responed(status_codes);
+	return (http_response.getHttp_response());
 }

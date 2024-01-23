@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/22 23:10:12 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/23 13:50:10 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,9 +199,9 @@ void    handle_request(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_
 
 void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &response,int *flag,int *status,std::string &human_status,std::string &mime_type, Client & client, std::map<unsigned int, std::string> &status_codes)
 {
-    std::string responce = client.Responce(status_codes);
-    std::cout << "Reponce here: \n" << responce << std::endl;
-    int bytes_written = write(poll_fds[i].fd, responce.c_str(), responce.size());
+    std::string response = client.response(status_codes);
+    std::cout << "Reponce here: \n" << response << std::endl;
+    int bytes_written = write(poll_fds[i].fd, response.c_str(), response.size());
     if (bytes_written < 0)
         perror("write ");
     // int length = response.length();

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   http.server.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/23 14:29:54 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/23 15:43:39 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,16 +69,17 @@ class Directives
         Directives () {};
 
         Directives(std::string &dir): directive(dir){};
-        
+
         void    setArguments(std::string argument)
         {
             arguments.push_back(argument);
         }
-        
+
         std::vector<std::string> &getArgument()
         {
             return this->arguments;
         }
+
         std::string getDirective() const
         {
             return this->directive;
@@ -96,10 +97,12 @@ class LocationsBlock
         {
             
         };
+
         LocationsBlock(std::string &path)
         {
             this->path = path;
         };
+
         void    AddDirective(Directives &directive)
         {
             directives.push_back(directive);
@@ -112,6 +115,7 @@ class LocationsBlock
         {
             return this->directives;
         }
+
         void    setPath(std::string &path)
         {
             this->path = path;
@@ -195,8 +199,7 @@ public:
 ;
 };
 
-
-void            start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks);
+void            start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks, std::map<unsigned int, std::string> &status_codes);
 void            parse_line(const std::string &line,  tokens_map &tokens, int line_number);
 void            parse_config(tokens_iterator  &lines, tokens_map &tokens);
 void            getarguments(vectors_type::iterator &it,Directives &directive);
@@ -206,6 +209,6 @@ void            print_tokens(std::multimap<int,std::vector<std::pair<std::string
 std::string     getTokenType(const std::string& token);
 std::string     trim(const std::string& str);
 int             Is_Directory(const std::string &root);
-void            init_worker_block(char buffer[1024],std::vector<ServerBlocks> &serverBlocks);
+void            init_worker_block(Worker &worker, std::string &host, std::string &path,std::vector<ServerBlocks> &serverBlocks, int &is_dir, int &is_regular);
 void            check_duplications(std::vector<ServerBlocks> serverBlocks);
 #endif

@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/21 21:21:08 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/22 23:02:11 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,6 +159,7 @@ void handle_read(std::vector<struct pollfd> &poll_fds, int i, int *ready_to_writ
     if (bytes_read > 0)
     {
         buffer[bytes_read] = '\0';
+        printf("%s\n",buffer);
         init_worker_block(buffer, serverBlocks);
         *ready_to_write = 1;
     }
@@ -177,12 +178,13 @@ void handle_read(std::vector<struct pollfd> &poll_fds, int i, int *ready_to_writ
 
 void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &response,int *flag,int *status,std::string &human_status,std::string &mime_type)
 {
+    response = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<link rel=\"icon\" type=\"image/x-icon\" href=\"/images/favicon.ico\">\n<title>Document</title>\n</head>\n<body>\n<h1>my Not found</h1>\n</body>\n</html>";
     int length = response.length();
-    if (*flag == 0)
-    {
+    // if (*flag == 0)
+    // {
         response = "HTTP/1.1 " + std::to_string(*status) + " " + human_status + "\r\nContent-Type: " + mime_type + "text/html\nContent-Length: " + std::to_string(length) + "\n\n" + response;
         *flag = 1;
-    }
+    // }
     int bytes_written = write(poll_fds[i].fd, response.c_str(), response.size());
     response.clear();
     if (bytes_written < 0)

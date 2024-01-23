@@ -73,23 +73,23 @@ class request {
 		void							ParseRequest(char *request);
 		void							CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker);// THIS WILL CHECK THE REQUEST VALIDITY
 		request&						operator=(const request& obj);
-		Method							getMethod( void ) const; // to get the method when we need it
-		const std::vector<std::string>&	getHeaders( void ) const;// get the headers after being prased
+		// Method							getMethod( void ) const; // to get the method when we need it
+		// const std::vector<std::string>&	getHeaders( void ) const;// get the headers after being prased
 		void							RequestDisplay( void );
-		std::string				&getMethod( void );
-		std::string				&getMethod_uri( void );
-		t_uri					&getUri( void );
-		std::string				&getHttp( void );
-		std::string				&getHost( void );
-		std::vector<HTTPHeader>	&getHeaders( void );
-		std::string				&getBody( void );
-		std::string				&getReq( void );
-		bool					getError( void );
-		int						getStatus( void );
-		int						getIs_dir( void );
-		int 					getIs_regular( void );
-		void					setError(bool value);
-		void					setStatus(int value);
+		std::string	const				&getMethod( void ) const;
+		std::string	const				&getMethod_uri( void ) const;
+		t_uri	const					&getUri( void ) const;
+		std::string	const				&getHttp( void ) const;
+		std::string	const				&getHost( void ) const;
+		std::vector<HTTPHeader>	const	&getHeaders( void ) const;
+		std::string	const				&getBody( void ) const;
+		std::string	const				&getReq( void ) const;
+		bool							getError( void ) const;
+		int								getStatus( void ) const;
+		int								getIs_dir( void ) const;
+		int 							getIs_regular( void ) const;
+		void							setError(bool value);
+		void							setStatus(int value);
 };
 std::string get_root(std::vector<Directives> &directives, t_uri &uri);
 #endif

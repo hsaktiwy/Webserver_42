@@ -193,8 +193,6 @@ static void	MethodParsing(bool &error, int &status, std::string &HTTPrequest, st
 	if (tmp[i] == ' ')
 		i++;
 	uri = "";
-	if (error == false)
-		return ;
 	while (tmp[i] && tmp[i] != ' ')
 			uri += tmp[i++];
 	// check the validity of the uri
@@ -456,13 +454,14 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		// splite uri to scheme, authority, path, query
 		UriFormat(uri, method_uri, host);
 		init_worker_block(worker, host, uri.path, serverBlocks, is_dir, is_regular);
+		printf("in request parsing %lu\n", worker.getErrorPages().size());
 		// ServerBlocks block = worker.getBlockWorker();
 		std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
 		std::string index = worker.getIndex();
 		std::cout << "host " << host << " root " << root  << " index " << index << std::endl;
 		if (uri.path.size() == 0 && index.size() != 0)
 			uri.path += index;
-		// std::cout << "New Path " << uri.path << std::endl;
+		// std::cout << "New Path " << uri.path << std::endl
 		// check for allowed method
 		std::vector <std::string> allowedMethod = worker.getAllowMethods();
 		if (allowedMethod.size() != 0)
@@ -513,62 +512,62 @@ request& request::operator=(const request& obj)
 
 // Getter and Setter
 
-std::string				&request::getMethod( void )
+std::string	const			&request::getMethod( void ) const
 {
 	return (method);
 }
 
-std::string				&request::getMethod_uri( void )
+std::string	const			&request::getMethod_uri( void ) const
 {
 	return (method_uri);
 }
 
-t_uri					&request::getUri( void )
+t_uri const					&request::getUri( void ) const
 {
 	return (uri);
 }
 
-std::string				&request::getHttp( void )
+std::string	const			&request::getHttp( void ) const
 {
 	return (http);
 }
 
-std::string				&request::getHost( void )
+std::string	const			&request::getHost( void ) const
 {
 	return (host);
 }
 
-std::vector<HTTPHeader>	&request::getHeaders( void )
+std::vector<HTTPHeader>	const &request::getHeaders( void ) const
 {
 	return (headers);
 }
 
-std::string				&request::getBody( void )
+std::string	const			&request::getBody( void ) const
 {
 	return (body);
 }
 
-std::string				&request::getReq( void )
+std::string	const			&request::getReq( void ) const
 {
 	return (req);
 }
 
-bool					request::getError( void )
+bool					request::getError( void ) const
 {
 	return (error);
 }
 
-int						request::getStatus( void )
+int						request::getStatus( void ) const
 {
 	return (status);
 }
 
-int						request::getIs_dir( void )
+int						request::getIs_dir( void ) const
 {
 	return (is_dir);
 }
 
-int 					request::getIs_regular( void )
+int 					request::getIs_regular( void ) const
 {
 	return (is_regular);
 }

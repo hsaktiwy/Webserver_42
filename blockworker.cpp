@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   blockworker.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/23 16:34:36 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/23 23:48:06 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -243,11 +243,13 @@ std::string    Worker::getPathError() const
     return this->path_error_page;
 }
 
-void    Worker::setPathError(const std::vector<std::vector<std::string> > error_page, unsigned int status,const std::string &root)
+void    Worker::setPathError(const std::vector<std::vector<std::string> > &error_page, unsigned int status,const std::string &root)
 {
     this->set_track_status(0);
+    printf("size %lu\n",error_page.size());
     for (size_t i = 0; i < error_page.size(); i++)
     {
+        printf("in\n");
        for (size_t j = 0; j < error_page[i].size() - 1; j++)
        {
             if (atoi(error_page[i][j].c_str()) == status)

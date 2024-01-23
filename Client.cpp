@@ -3,7 +3,6 @@
 
 Client::Client() : http_response(http_request, worker)
 {
-
 }
 
 Client::~Client()
@@ -31,10 +30,25 @@ void	Client::ParseRequest(char *buffer, std::vector<ServerBlocks> &serverBlocks)
 {
 	http_request.ParseRequest(buffer);
     http_request.CheckRequest(serverBlocks, worker);
+	printf("size size     %lu\n", http_response.worker->getErrorPages().size());
 }
 
-std::string	Client::response(std::map<unsigned int, std::string> &status_codes)
+void	Client::CreateResponse(std::map<unsigned int, std::string> &status_codes)
 {
 	http_response.responed(status_codes);
-	return (http_response.getHttp_response());
+}
+
+response const	&Client::getHttp_response( void ) const
+{
+	return (http_response);
+}
+
+request const	&Client::getHttp_request( void ) const
+{
+	return (http_request);
+}
+
+Worker const	&Client::getWorker( void ) const
+{
+	return (worker);
 }

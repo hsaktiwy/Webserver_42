@@ -51,30 +51,40 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 {
     Worker &wk = *worker;
     request &req = *http_request;
-    std::string html_body;
     std::string HumanRead;
     std::stringstream ss,ss2;
     std::string statusCode;
-    std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
-    ss << req.getStatus();
-    ss >> statusCode;
-    if (iter != status_codes.end())
-        HumanRead = iter->second;
-    // if (error_pages.size() == 0)
-    // {
-        html_body = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n<title>Error Page</title>\r\n<style>\r\nbody {\r\nfont-family: Arial, sans-serif;\r\ntext-align: center;\r\npadding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\nmargin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\nmargin-bottom: 50px;\r\n}\r\n</style>\r\n</head>\r\n<body>\r\n<h1>Error "+ statusCode + "("+ HumanRead +")"+"</h1>\r\n<p>Unhable to reserve a propore response.</p>\r\n</body>\r\n</html>";
+
+    // worker->setPathError(worker->getErrorPages(), req.getStatus(),worker->getRoot());
+    if (wk.get_track_status() == 0 || (wk.get_track_status() == 1 && wk.getPathError().empty()))
+    {
+        printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());
+        if (wk.get_track_status() == 1 && wk.getPathError() == "")
+            req.setStatus(404);
+        std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
+        ss << req.getStatus();
+        ss >> statusCode;
+        if (iter != status_codes.end())
+            HumanRead = iter->second;
+        body_string = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n<title>Error Page</title>\r\n<style>\r\nbody {\r\nfont-family: Arial, sans-serif;\r\ntext-align: center;\r\npadding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\nmargin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\nmargin-bottom: 50px;\r\n}\r\n</style>\r\n</head>\r\n<body>\r\n<h1>Error "+ statusCode + "("+ HumanRead +")"+"</h1>\r\n<p>Unhable to reserve a propore response.</p>\r\n</body>\r\n</html>";
         http_response += "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n";
         http_response += "Content-Type: text/html\r\n";
         std::string size;
-        ss2 << html_body.size();
+        ss2 << body_string.size();
         ss2 >> size;
-        http_response += "Content-Length: " + size + "\r\n\r\n" + html_body;
-    // }
-    // else
-    // {
-    //     // this will be handled when the error_page directive will be ready
-    //     http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html>\r\n<head>\r\n	<title>Hello World</title>\r\n</head>\r\n<body>\r\n	<h1>Error</h1>\r\n</body>\r\n</html>\r\n";
-    // }
+        http_response += "Content-Length: " + size + "\r\n\r\n";
+    }
+    else
+    {
+        printf("solo\n");
+        std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
+        ss << 307;
+        ss >> statusCode;
+        if (iter != status_codes.end())
+            HumanRead = iter->second;
+        // this will be handled when the error_page directive will be ready
+        http_response = "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n" + "Content-Type: text/html\r\n" + "Location: http://" + req.getHost() + "/" + worker->getRoot() + "/" + worker->getPathError() + "\r\n";
+    }
 }
 
 std::string response::getHttp_response( void )
@@ -120,4 +130,19 @@ std::string response::Status(unsigned int status, std::map<unsigned int, std::st
         result += " " +iter->second;
     } 
     return (result);
+}
+
+std::string response::getHttp_response( void ) const
+{
+    return (http_response);
+}
+
+std::string response::getBody_string( void ) const
+{
+    return (body_string);
+}
+
+std::string response::getFile( void ) const
+{
+    return (file);
 }

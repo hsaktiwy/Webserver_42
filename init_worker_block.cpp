@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init_worker_block.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/23 16:35:16 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/23 23:40:54 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,4 +195,5 @@ void   init_worker_block(Worker &worker, std::string &host, std::string &path,st
         else if (Is_Directory(worker.getRoot()) == 1)
             is_regular = 1;
     }
+    printf("size %lu\n",(worker.getErrorPages().size()));
 }

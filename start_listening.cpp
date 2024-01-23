@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   start_listening.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/23 16:08:27 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/23 22:31:33 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -197,23 +197,48 @@ void    handle_request(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_
     }
 }
 
-void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &response,int *flag,int *status,std::string &human_status,std::string &mime_type, Client & client, std::map<unsigned int, std::string> &status_codes)
+void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &string_response,int *flag,int *status,std::string &human_status,std::string &mime_type, Client & client, std::map<unsigned int, std::string> &status_codes)
 {
-    std::string resp = client.response(status_codes);
-    int bytes_written = write(poll_fds[i].fd, resp.c_str(), resp.size());
-    if (bytes_written < 0)
-        perror("write ");
-    // int length = response.length();
-    // if (*flag == 0)
-    // {
-    //     response = "HTTP/1.1 " + std::to_string(*status) + " " + human_status + "\r\nContent-Type: " + mime_type + "text/html\nContent-Length: " + std::to_string(length) + "\n\n" + response;
-    //     *flag = 1;
-    // }
-    // int bytes_written = write(poll_fds[i].fd, response.c_str(), response.size());
-    // if (bytes_written < 0)
-    // {
-    //     perror("write ");
-    // }
+    client.CreateResponse(status_codes);
+    response const &resp = client.getHttp_response();
+    if (resp.getFile() == "")
+    {
+        string_response = resp.getHttp_response() + resp.getBody_string();
+        int bytes_written = write(poll_fds[i].fd, string_response.c_str(), string_response.size());
+        if (bytes_written < 0)
+            perror("write ");
+    }
+    else
+    {
+        string_response = resp.getHttp_response();
+        int bytes_written = write(poll_fds[i].fd, string_response.c_str(), string_response.size());
+        if (bytes_written < 0)
+            perror("write ");
+        std::string file = client.getWorker().getRoot() + resp.getFile();
+        struct stat stat_buff;
+        int error = stat(file.c_str(), &stat_buff);
+        if (error == 0)
+        {
+            long long size = stat_buff.st_size;
+            std::stringstream ss;
+            std::string body_size;
+            ss << size;
+            ss >> body_size;
+            int fd = open(file.c_str(), 0644);
+            if (fd > 0)
+            {
+                char buff[4001];
+                std::memset(buff, 0, 4001);
+                while (read(fd, buff, 4000))
+                {
+                    write(poll_fds[i].fd, buff, std::strlen(buff));
+                    std::memset(buff, 0, 4001);
+                }
+            }
+        }
+        else
+            std::cout << "%%%%%%%%%%%%Error file can't be opend " << file << std::endl;
+    }
     (*ready_to_write) = 0;
     close(poll_fds[i].fd);
     poll_fds.erase(poll_fds.begin() + i);

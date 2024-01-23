@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/09 12:17:44 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/22 16:28:34 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/23 13:49:24 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,42 @@ const std::string convertToString(long long line)
     return convert.str();
 }
 
+void    proccess_error_page(std::vector<std::string> error_page_token, int line)
+{
+    int size = error_page_token.size() - 1;
+    int i = 0;
+    std::string error;
+    while(i < size)
+    {
+        if (atoi(error_page_token[i].c_str()) < 300 || atoi(error_page_token[i].c_str()) > 599)
+        {
+            error = "value \"" + error_page_token[i] + "\" must be between 300 and 599 " + convertToString(line);
+            throw error;
+        }
+        for (size_t j = 0; j < error_page_token[i].size(); j++)
+        {
+            if (!std::isdigit(error_page_token[i][j]))
+            {
+                error = "invalid value \"" + error_page_token[i] + "\" in " + convertToString(line);
+                throw error;
+            }
+        }
+        i++;
+    }
+}
+
 void    handle_directives(std::string &type, std::string &directive,std::string &token,int *argument,int *is_directive,int *is_not_semi_colone,int line)
 {
     std::string error;
+    static int number_of_args = 0;
+    static std::vector<std::string> error_page_token;
     if (!type.compare("argument"))
     {
+        if (!directive.compare("error_page"))
+        {
+            number_of_args++;
+            error_page_token.push_back(token);
+        }
         if (!directive.compare("autoindex"))
         {
             if (token.compare("on") && token.compare("off"))
@@ -45,14 +76,17 @@ void    handle_directives(std::string &type, std::string &directive,std::string 
     }
     if (!type.compare("semi_colon"))
     {
-        if (!(*argument))
+        if (!(*argument)  || (number_of_args <= 1 && !directive.compare("error_page")))
         {
             error = "invalid number of arguments in " + directive + " directive in " + convertToString(line);
             throw error;
         }
+        proccess_error_page(error_page_token, line);
         *is_directive = 0;
         *is_not_semi_colone = 1;
         *argument = 0;
+        number_of_args = 0;
+        error_page_token.clear();
     }
     else if (!type.compare("directive") || !type.compare("block"))
     {
@@ -121,9 +155,7 @@ void    handle_errors(tokens_map tokens)
                 throw error;
             }
             else if (is_directive)
-            {   
                 handle_directives(type,directive, token, &argument,&is_directive, &is_not_semi_colone,line);
-            }
             else
             {
                 if (!type.compare("block"))
@@ -294,8 +326,11 @@ void    handle_duplication_block(T &block)
     for (size_t j = 0; j < directives.size(); ++j)
     {
         const std::string& directiveName = directives[j].getDirective();
-        int& count = directiveCounts[directiveName];
-        ++count;
+        if (directiveName.compare("error_page"))
+        {
+            int& count = directiveCounts[directiveName];
+            ++count;
+        }
     }
     for (std::map<std::string, int>::const_iterator it = directiveCounts.begin(); it != directiveCounts.end(); ++it)
     {

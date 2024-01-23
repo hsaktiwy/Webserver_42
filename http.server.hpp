@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/22 13:55:22 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/23 14:29:54 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,7 +157,8 @@ private:
     std::string path;
     std::string autoindex;
     std::string max_body_size;
-    std::vector<std::string> error_page;
+    std::string path_error_page;
+    std::vector<std::vector<std::string> > error_page;
     std::vector<std::string> allow_methods;
 
 public:
@@ -170,25 +171,28 @@ public:
     std::string getRedirect() const;
     std::string getHost() const;
     std::string getPath() const;
+    std::string    getPathError() const;
     std::string getAutoIndex() const;
     std::string &get_max_body_size();
     std::vector<std::string> const &getAllowMethods() const;
-    std::vector<std::string> const &getErrorPages() const;
-    void setBlockWorker(const ServerBlocks& blocks);
-    void setLocationWorker(const ServerBlocks& block,std::string &path);
-    void setRoot(const std::string& newRoot);
-    void setIndex(const std::vector<std::string>&   args,const std::string &root);
-    void setRedirect(const std::string& newRedirect);
-    void setMethod(std::vector<std::string>  &args);
-    void setHost(const std::string& newHost);
-    void setAutoIndex(const std::string& newPath);
-    void setPath(const std::string& newPath);
-    void setErrorPages(std::vector<std::string>  &args);
-    void set_max_body_size(std::string max_body_size);
-    bool exact_match(const ServerBlocks &block,const std::string &path);
-    bool prefix_match(const ServerBlocks &block,const std::string &path);
-    bool find_root(const ServerBlocks &block,const std::string &path);
-    void found_index_file(const std::string &root);
+    std::vector<std::vector<std::string> >  &getErrorPages() ;
+    void    setBlockWorker(const ServerBlocks& blocks);
+    void    setLocationWorker(const ServerBlocks& block,std::string &path);
+    void    setRoot(const std::string& newRoot);
+    void    setIndex(const std::vector<std::string>&   args,const std::string &root);
+    void    setRedirect(const std::string& newRedirect);
+    void    setMethod(std::vector<std::string>  &args);
+    void    setHost(const std::string& newHost);
+    void    setAutoIndex(const std::string& newPath);
+    void    setPath(const std::string& newPath);
+    void    setErrorPages(std::vector<std::string>  &args);
+    void    set_max_body_size(std::string max_body_size);
+    bool    exact_match(const ServerBlocks &block,const std::string &path);
+    bool    prefix_match(const ServerBlocks &block,const std::string &path);
+    bool    find_root(const ServerBlocks &block,const std::string &path);
+    void    found_index_file(const std::string &root);
+    void    setPathError(const std::vector<std::vector<std::string> > error_page, unsigned int status, const std::string &root);
+;
 };
 
 

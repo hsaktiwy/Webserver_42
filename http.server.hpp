@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   http.server.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/23 15:43:39 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/23 16:32:14 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,6 +164,7 @@ private:
     std::string path_error_page;
     std::vector<std::vector<std::string> > error_page;
     std::vector<std::string> allow_methods;
+    int track_status;
 
 public:
     Worker();
@@ -196,6 +197,9 @@ public:
     bool    find_root(const ServerBlocks &block,const std::string &path);
     void    found_index_file(const std::string &root);
     void    setPathError(const std::vector<std::vector<std::string> > error_page, unsigned int status, const std::string &root);
+
+    void set_track_status(int flag);
+    int get_track_status();
 ;
 };
 

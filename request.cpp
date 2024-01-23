@@ -193,21 +193,27 @@ static void	MethodParsing(bool &error, int &status, std::string &HTTPrequest, st
 	if (tmp[i] == ' ')
 		i++;
 	uri = "";
-	while (tmp[i] && tmp[i] != ' ' && error == false)
+	if (error == false)
+		return ;
+	while (tmp[i] && tmp[i] != ' ')
 			uri += tmp[i++];
 	// check the validity of the uri
 	//  			?
 	// check the http protocol
-	if (!CheckUriFormat(uri))
+	// printf("error %d, status %d\n", error, status);
+	if (error ==  false && !CheckUriFormat(uri))
 		error = true, status = 400;
+	// printf("error %d, status %d\n", error, status);
 	if (tmp[i] == ' ')
 		i++;
 	while (tmp[i] && tmp[i] != ' ')
 		http += tmp[i++];
 
 	// check the http protocol
-	if (http != "HTTP/1.1")
+	// printf("|%s|\n", http.c_str());
+	if (error == false && http != "HTTP/1.1")
 		error = true,status = 400;
+	// printf("error %d, status %d\n", error, status);
 }
 
 static void	GetRequestHost(std::vector<HTTPHeader> &headers, std::string &host)
@@ -443,6 +449,8 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 	std::string KnownHeaders[] = {"Host", "Accept", "Accept-Language", "Accept-Encoding", "Connection", "Referer"};
 	std::string mimeType[] = {"image/avif", "image/avif", "image/jpeg", "image/gif", "image/png", "text/csv",  "text/html",   "text/javascript", "text/plain", "text/xml", "text/plain", "audio/mpeg", "video/mp4", "video/mpeg", "application/xml"};
 	// ServerBlocks block = get_server_block(host, serverBlocks);
+	// printf("error %d\n",error);
+	// printf("status %d\n",status);
 	if (error == false)
 	{
 		// splite uri to scheme, authority, path, query
@@ -454,7 +462,7 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		std::cout << "host " << host << " root " << root  << " index " << index << std::endl;
 		if (uri.path.size() == 0 && index.size() != 0)
 			uri.path += index;
-		std::cout << "New Path " << uri.path << std::endl;
+		// std::cout << "New Path " << uri.path << std::endl;
 		// check for allowed method
 		std::vector <std::string> allowedMethod = worker.getAllowMethods();
 		if (allowedMethod.size() != 0)
@@ -463,7 +471,7 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 				error = true, status = 405;
 		}
 	}
-	RequestDisplay();
+	// RequestDisplay();
 }
 
 void	request::RequestDisplay( void )

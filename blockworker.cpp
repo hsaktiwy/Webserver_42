@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   blockworker.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/23 15:44:43 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/23 16:34:36 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 Worker::Worker()
 {
-    
+    this->track_status = 0;
 }
 
 ServerBlocks Worker::getBlockWorker() const
@@ -214,7 +214,6 @@ void    Worker::setErrorPages(std::vector<std::string>  &args)
     for (size_t i = 0; i < args.size(); i++)
     {
         error_page.push_back(args[i]);
-        // this->error_page.push_back(args[i]);
     }
     this->getErrorPages().push_back(error_page);
     error_page.clear();
@@ -246,12 +245,14 @@ std::string    Worker::getPathError() const
 
 void    Worker::setPathError(const std::vector<std::vector<std::string> > error_page, unsigned int status,const std::string &root)
 {
+    this->set_track_status(0);
     for (size_t i = 0; i < error_page.size(); i++)
     {
-       for (size_t j = 0; j < error_page[i].size(); j++)
+       for (size_t j = 0; j < error_page[i].size() - 1; j++)
        {
             if (atoi(error_page[i][j].c_str()) == status)
             {
+                this->set_track_status(1);
                 if (access(error_page[i][error_page[i].size() - 1].c_str(),F_OK) == 0)
                 {
                     this->path_error_page = error_page[i][error_page[i].size() - 1];
@@ -268,4 +269,13 @@ void    Worker::setPathError(const std::vector<std::vector<std::string> > error_
             }
        }
     }    
+}
+
+void Worker::set_track_status(int flag)
+{
+    this->track_status = flag;
+}
+int Worker::get_track_status()
+{
+    return this->track_status;
 }

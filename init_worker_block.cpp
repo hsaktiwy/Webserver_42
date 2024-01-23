@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init_worker_block.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/23 15:43:34 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/23 16:35:16 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,17 +91,6 @@ int Is_Directory(const std::string &root)
     return (-1);
 }
 
-void get_query_string(std::string &path, std::string &query_string)
-{
-    size_t position = path.find('?');
-
-    if (position != std::string::npos)
-    {
-        query_string = path.substr(position + 1);
-        path = path.substr(0,position);
-    }
-}
-
 void find_ip_address(const std::string &host,std::string &ipAddresses)
 {
     
@@ -162,11 +151,7 @@ void   init_worker_block(Worker &worker, std::string &host, std::string &path,st
 
     int find;
 
-    std::string mime_type;
-    LocationsBlock locationworker;
-    std::string line;
     std::string hostname;
-    std::string query_string;
     std::string ip_address;
     std::string port;
 

@@ -6,16 +6,11 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/22 14:25:17 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/23 15:37:06 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
-
-void    listing(const std::string &root)
-{
-       
-}
 
 void    setAllowedmethods(Worker &worker, std::vector<Directives> &directives)
 {
@@ -36,7 +31,6 @@ void    setErrorPages(Worker &worker, std::vector<Directives> &directives)
         if (!directives[i].getDirective().compare("error_page"))
         {
             worker.setErrorPages(directives[i].getArgument());
-            return;
         }
     }
 }
@@ -196,9 +190,6 @@ void   init_worker_block(char buffer[1024],std::vector<ServerBlocks> &serverBloc
             host = line.substr(find + 1);
         }
     }
-    printf("path %s\n",path.c_str());
-    printf("host %s\n",host.c_str());
-    exit(0);
     hostname = trim(host.substr(0,host.find(':'))).c_str();
     get_matched_server_block(hostname,serverBlocks,worker,ip_address);
     if (!ip_address.empty())
@@ -224,7 +215,7 @@ void   init_worker_block(char buffer[1024],std::vector<ServerBlocks> &serverBloc
         setErrorPages(worker,worker.getBlockWorker().getDirectives());
 
     if (!worker.getRoot().empty())
-        worker.setRoot(worker.getRoot() + path);
+        worker.setRoot(worker.getRoot());
 
     if (Is_Directory(worker.getRoot()) == 0 \
     || Is_Directory(worker.getRoot()) == 1 \
@@ -238,13 +229,5 @@ void   init_worker_block(char buffer[1024],std::vector<ServerBlocks> &serverBloc
         }
         else if (Is_Directory(worker.getRoot()) == 1)
             is_regular = 1;
-    }
-    if (is_regular == 1 || is_dir == 1)
-    {
-        printf("root %s\n",worker.getRoot().c_str());
-    }
-    else 
-    {
-        printf("not found\n");
     }
 }

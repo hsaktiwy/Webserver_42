@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/24 16:11:05 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/24 16:29:41 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,8 +201,6 @@ void   init_worker_block(Worker &worker, std::string &host, std::string &path,st
     setErrorPages(worker,worker.getLocationWorker().getDirectives());
     if (worker.getErrorPages().size() == 0)
         setErrorPages(worker,worker.getBlockWorker().getDirectives());
-
-    worker.setPathError(worker.getErrorPages(),404,worker.getRoot());
     
     if (Is_Directory(worker.getRoot()) == 0 \
     || Is_Directory(worker.getRoot()) == 1 \

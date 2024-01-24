@@ -447,14 +447,14 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 	std::string KnownHeaders[] = {"Host", "Accept", "Accept-Language", "Accept-Encoding", "Connection", "Referer"};
 	std::string mimeType[] = {"image/avif", "image/avif", "image/jpeg", "image/gif", "image/png", "text/csv",  "text/html",   "text/javascript", "text/plain", "text/xml", "text/plain", "audio/mpeg", "video/mp4", "video/mpeg", "application/xml"};
 	// ServerBlocks block = get_server_block(host, serverBlocks);
-	// printf("error %d\n",error);
-	// printf("status %d\n",status);
+	printf("error %d\n",error);
+	printf("status %d\n",status);
 	if (error == false)
 	{
 		// splite uri to scheme, authority, path, query
 		UriFormat(uri, method_uri, host);
-		init_worker_block(worker, host, uri.path, serverBlocks, is_dir, is_regular);
-		printf("in request parsing %lu\n", worker.getErrorPages().size());
+		std::string path = "/"  + uri.path;
+		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
 		// ServerBlocks block = worker.getBlockWorker();
 		std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
 		std::string index = worker.getIndex();
@@ -470,7 +470,7 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 				error = true, status = 405;
 		}
 	}
-	// RequestDisplay();
+	RequestDisplay();
 }
 
 void	request::RequestDisplay( void )

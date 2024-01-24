@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/23 23:40:54 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/24 16:43:26 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,13 +36,13 @@ void    setErrorPages(Worker &worker, std::vector<Directives> &directives)
 }
 
 template<typename T>
-void    set(T& Directives,Worker &worker)
+void    set(T& Directives,Worker &worker, const std::string &path)
 {
     for (size_t i = 0; i < Directives.size(); i++)
     {
         if (!Directives[i].getDirective().compare("root"))
         {
-            worker.setRoot(Directives[i].getArgument()[0]);
+            worker.setRoot(Directives[i].getArgument()[0] + path);
             break;
         }
     }
@@ -100,21 +100,22 @@ void find_ip_address(const std::string &host,std::string &ipAddresses)
     hints.ai_socktype = SOCK_STREAM;
 
     int status = getaddrinfo(host.c_str(), NULL, &hints, &result);
-    if (status != 0) {
+    
+    if (status != 0)
+    {
         std::cerr << "getaddrinfo error: " << gai_strerror(status) << std::endl;
         exit(1);
     }
-
     for (p = result; p != NULL; p = p->ai_next)
     {
         void* addr;
         char ipstr[INET_ADDRSTRLEN];
 
-        if (p->ai_family == AF_INET) {
+        if (p->ai_family == AF_INET)
+        {
             struct sockaddr_in* ipv4 = reinterpret_cast<struct sockaddr_in*>(p->ai_addr);
             addr = &(ipv4->sin_addr);
         } 
-
         inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr);
         ipAddresses += ipstr;
         break;
@@ -146,6 +147,27 @@ void    get_matched_server_block(const std::string &host_name,std::vector<Server
     find_ip_address(host_name, ip_address);
 }
 
+void    set_based_ip_address(Worker &worker, std::vector<ServerBlocks> &serverBlocks, const std::string listen)
+{
+    for (size_t i = 0; i < serverBlocks.size(); i++)
+    {
+        for (size_t j = 0; j < serverBlocks[i].getDirectives().size() ; j++)
+        {
+            if (!serverBlocks[i].getDirectives()[j].getDirective().compare("listen"))
+            {
+                for (size_t k = 0; k < serverBlocks[i].getDirectives()[j].getArgument().size(); k++)
+                {
+                    if (!serverBlocks[i].getDirectives()[j].getArgument()[k].compare(listen))
+                    {
+                        worker.setBlockWorker(serverBlocks[i]);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+}
+
 void   init_worker_block(Worker &worker, std::string &host, std::string &path,std::vector<ServerBlocks> &serverBlocks, int &is_dir, int &is_regular)
 {
 
@@ -155,18 +177,19 @@ void   init_worker_block(Worker &worker, std::string &host, std::string &path,st
     std::string ip_address;
     std::string port;
 
+    worker.setPath(path);
     hostname = trim(host.substr(0,host.find(':'))).c_str();
     get_matched_server_block(hostname,serverBlocks,worker,ip_address);
     if (!ip_address.empty())
     {
         port = host.substr(host.find(':')).c_str();
         host = ip_address + port;
-        worker = Worker(serverBlocks,host);
+        set_based_ip_address(worker,serverBlocks,host);
     }
     worker.setLocationWorker(worker.getBlockWorker(),path);
-    set(worker.getLocationWorker().getDirectives(),worker);
+    set(worker.getLocationWorker().getDirectives(),worker,worker.getPath());
     if (worker.getRoot().empty())
-        set(worker.getBlockWorker().getDirectives(),worker);
+        set(worker.getBlockWorker().getDirectives(),worker,worker.getPath());
     
     setDirectives(worker.getBlockWorker().getDirectives(),worker);
     setDirectives(worker.getLocationWorker().getDirectives(),worker);
@@ -178,10 +201,7 @@ void   init_worker_block(Worker &worker, std::string &host, std::string &path,st
     setErrorPages(worker,worker.getLocationWorker().getDirectives());
     if (worker.getErrorPages().size() == 0)
         setErrorPages(worker,worker.getBlockWorker().getDirectives());
-
-    if (!worker.getRoot().empty())
-        worker.setRoot(worker.getRoot());
-
+    
     if (Is_Directory(worker.getRoot()) == 0 \
     || Is_Directory(worker.getRoot()) == 1 \
     || Is_Directory(worker.getRoot()) == -1)
@@ -195,5 +215,5 @@ void   init_worker_block(Worker &worker, std::string &host, std::string &path,st
         else if (Is_Directory(worker.getRoot()) == 1)
             is_regular = 1;
     }
-    printf("size %lu\n",(worker.getErrorPages().size()));
+    // printf("size %lu\n",(worker.getErrorPages().size()));
 }

@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/23 23:48:06 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/24 16:34:38 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,7 +151,7 @@ void Worker::setIndex(const std::vector<std::string>&   args,const std::string &
 {
     for (size_t i = 0; i < args.size(); i++)
     {
-        if (access((root + args[i]).c_str(),F_OK) == 0)
+        if (access((root + "/" +args[i]).c_str(),F_OK) == 0)
         {
             this->index = root + args[i];
             break;
@@ -183,12 +183,12 @@ void Worker::setPath(const std::string& newPath)
 }
 
 std::string Worker::getAutoIndex() const {
-    return path;
+    return this->autoindex;
 }
 
 void Worker::setAutoIndex(const std::string& newPath)
 {
-    this->path = newPath;
+    this->autoindex = newPath;
 }
 std::string &Worker::get_max_body_size() 
 {
@@ -255,19 +255,7 @@ void    Worker::setPathError(const std::vector<std::vector<std::string> > &error
             if (atoi(error_page[i][j].c_str()) == status)
             {
                 this->set_track_status(1);
-                if (access(error_page[i][error_page[i].size() - 1].c_str(),F_OK) == 0)
-                {
-                    this->path_error_page = error_page[i][error_page[i].size() - 1];
-                    break;
-                }
-                else
-                {
-                    if (access((root + error_page[i][error_page[i].size() - 1]).c_str(),F_OK) == 0)
-                    {
-                        this->path_error_page = root + error_page[i][error_page[i].size() - 1];
-                        break;
-                    }
-                }
+                this->path_error_page = root + error_page[i][error_page[i].size() - 1];
             }
        }
     }    

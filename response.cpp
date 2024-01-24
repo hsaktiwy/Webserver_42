@@ -10,8 +10,8 @@ void    autoIndexing(request &req, std::string &response_head, std::string &body
     Uri const &uri = req.getUri();
     std::string path = uri.authority + "/" +uri.path;
     std::cout << path << std::endl;
-
-    response_head = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html;charset=UTF-8"
+    printf("Autoindexing\n");
+    // response_head = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html;charset=UTF-8";
 }
 
 void    response::responed(std::map<unsigned int, std::string> &status_codes)
@@ -60,7 +60,7 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
     std::stringstream ss,ss2;
     std::string statusCode;
 
-    // worker->setPathError(worker->getErrorPages(), req.getStatus(),worker->getRoot());
+    worker->setPathError(worker->getErrorPages(), req.getStatus(),worker->getRoot());
     if (wk.get_track_status() == 0 || (wk.get_track_status() == 1 && wk.getPathError().empty()))
     {
         printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());

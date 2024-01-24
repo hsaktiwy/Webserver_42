@@ -5,9 +5,13 @@ response::response(request &req, Worker &wk): http_request(&req), worker(&wk)
     
 }
 
-void    autoIndexing(std::string &response, std::map<unsigned int, std::string> &status_codes)
+void    autoIndexing(request &req, std::string &response_head, std::string &body, std::map<unsigned int, std::string> &status_codes)
 {
-    
+    Uri const &uri = req.getUri();
+    std::string path = uri.authority + "/" +uri.path;
+    std::cout << path << std::endl;
+
+    response_head = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html;charset=UTF-8"
 }
 
 void    response::responed(std::map<unsigned int, std::string> &status_codes)
@@ -16,14 +20,16 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
     request &req = *http_request;
     Worker &wk = *worker;
 
+
     if (req.getError() == false)
     {
+        printf("--------->%d %d\n", req.getIs_dir(), req.getIs_regular());
         if (req.getIs_dir() == 1 || req.getIs_regular() == 1)
         {
             if (req.getIs_dir() == 1 && index.size() == 0 &&  wk.getAutoIndex() == "on")
             {
                 // autoindexing
-
+                autoIndexing(req, http_response, body_string, status_codes);
             }
             else if (req.getIs_dir() == 1 && index.size() == 0)
             {
@@ -34,7 +40,6 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
         {
             req.setError(true), req.setStatus(404);
             // responed using error pages
-            
         }
     }
     // responed using error pages if  (error  == true)

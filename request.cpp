@@ -193,8 +193,6 @@ static void	MethodParsing(bool &error, int &status, std::string &HTTPrequest, st
 	if (tmp[i] == ' ')
 		i++;
 	uri = "";
-	if (error == false)
-		return ;
 	while (tmp[i] && tmp[i] != ' ')
 			uri += tmp[i++];
 	// check the validity of the uri
@@ -455,7 +453,8 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 	{
 		// splite uri to scheme, authority, path, query
 		UriFormat(uri, method_uri, host);
-		init_worker_block(worker, host, uri.path, serverBlocks, is_dir, is_regular);
+		std::string path = "/"  + uri.path;
+		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
 		// ServerBlocks block = worker.getBlockWorker();
 		std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
 		std::string index = worker.getIndex();

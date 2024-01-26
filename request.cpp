@@ -8,7 +8,7 @@ request::request()
 static bool CharacterUri(char c)
 {
 	if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == ':'
-		|| (c == '0' && c == '9') ||   c == '/' || c == ';' || c == '?'
+		|| (c >= '0' && c <= '9') ||   c == '/' || c == ';' || c == '?'
 		|| c == '#' || c == '$' || c == '-' || c == '_' || c == '.' 
 		|| c == '+' || c == '!' || c == '*' || c == '\'' || c == '('
 		|| c == ')' || c == ',' || c == '~' || c == '@' || c == '&'
@@ -238,10 +238,17 @@ void	request::ParseRequest(char *r)
 	// std::cout << "Before Request form :\n" << req <<std::endl;
 	replaceConsecutiveSpaces(HTTPrequest, req);
 	// Define the method  ?
+	// printf("><<><><><%d %d\n", error, status);
 	MethodParsing(error, status, HTTPrequest, method, method_uri, http, index);
+	// printf("><<><><><%d %d\n", error, status);
+
 	// parsthe headers
 	ParseHeaders(headers, req, body, index, error, status);
+	// printf("><<><><><%d %d\n", error, status);
+
 	GetRequestHost(headers, host);
+	// printf("><<><><><%d %d\n", error, status);
+
 	// files, plus check the syntaxe
 }
 
@@ -333,10 +340,10 @@ static bool	CheckPathExistance(t_uri &uri, std::string root)
 	std::string file;
 	src = ((root[0] == '/') ? "" : "/") + root + ((root[root.size() - 1] == '/') ? "" : "/") + uri.path;
 	struct stat *statbuff = NULL;
-	std::cout << src << std::endl;
+	// std::cout << src << std::endl;
 	int res = access(src.c_str(), F_OK | R_OK);
 
-	std::cout << " res " << res << std::endl;
+	// std::cout << " res " << res << std::endl;
 	if (res == 0)
 		return (true);
 	// path = src;
@@ -440,6 +447,11 @@ std::string	get_root(std::vector<Directives> &directives, std::vector<LocationsB
 	return (root);
 }
 
+static void	CheckPathExistance()
+{
+
+}
+
 void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker)
 {
 	is_dir = 0;
@@ -447,8 +459,8 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 	std::string KnownHeaders[] = {"Host", "Accept", "Accept-Language", "Accept-Encoding", "Connection", "Referer"};
 	std::string mimeType[] = {"image/avif", "image/avif", "image/jpeg", "image/gif", "image/png", "text/csv",  "text/html",   "text/javascript", "text/plain", "text/xml", "text/plain", "audio/mpeg", "video/mp4", "video/mpeg", "application/xml"};
 	// ServerBlocks block = get_server_block(host, serverBlocks);
-	printf("error %d\n",error);
-	printf("status %d\n",status);
+	// printf("error %d\n",error);
+	// printf("status %d\n",status);
 	if (error == false)
 	{
 		// splite uri to scheme, authority, path, query
@@ -458,11 +470,30 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		// ServerBlocks block = worker.getBlockWorker();
 		std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
 		std::string index = worker.getIndex();
-		std::cout << "host " << host << " root " << root  << " index " << index << std::endl;
-		if (uri.path.size() == 0 && index.size() != 0)
-			uri.path += index;
-		// std::cout << "New Path " << uri.path << std::endl
+		// std::cout << "host " << host << " root " << root  << " index " << index << " path " << path << std::endl;
+		bool indexed = false;
+		if (is_dir == 1 && index.size() != 0)
+		{
+			std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
+			if (access(check.c_str(), F_OK) == 0)
+			{
+				uri.path += index;
+				indexed = true;
+				is_dir = 0; is_regular = 1;
+			}
+		}
+		// std::cout << "New Path " << uri.path << std::endl;
 		// check for allowed method
+		if (is_regular == 1)
+		{
+			int exist = F_OK;
+			int rigths =(method == "POST") ? (F_OK | R_OK | W_OK):(F_OK | R_OK); 
+			std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
+			if (access(check.c_str(), exist) != 0)
+				error = true, status = 404;
+			if (error == false && access(check.c_str(), rigths) != 0)
+				error = true, status = 403;
+		}
 		std::vector <std::string> allowedMethod = worker.getAllowMethods();
 		if (allowedMethod.size() != 0)
 		{
@@ -470,7 +501,7 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 				error = true, status = 405;
 		}
 	}
-	RequestDisplay();
+	// RequestDisplay();
 }
 
 void	request::RequestDisplay( void )

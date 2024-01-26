@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/24 16:34:38 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/26 18:01:47 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,17 +147,18 @@ void    Worker::setLocationWorker(const ServerBlocks& block,std::string &path)
         return ;
 }
 
-void Worker::setIndex(const std::vector<std::string>&   args,const std::string &root)
+void Worker::setIndex(const std::vector<std::string>&   args,const std::string &root)//, const std::string &path)
 {
     for (size_t i = 0; i < args.size(); i++)
     {
-        if (access((root + "/" +args[i]).c_str(),F_OK) == 0)
+        if (access(((root + path ) + args[i]).c_str(),F_OK) == 0)
         {
-            this->index = root + args[i];
+            this->index = args[i];
             break;
         }
     }
 }
+
 std::vector<std::vector<std::string> >  &Worker::getErrorPages()   
 {
     return this->error_page;
@@ -229,9 +230,10 @@ void    Worker::found_index_file(const std::string &root)
         {
             if (!strcmp(start->d_name,"index.html") || !strcmp(start->d_name,"index.htm"))
             {
-                if (Is_Directory(this->getRoot() + "/" +start->d_name) == 1)
+                if (Is_Directory(this->getRoot() + "/" + start->d_name) == 1)
                 {        
                     this->index = start->d_name;
+                    break;
                 }
             }
         }
@@ -246,16 +248,14 @@ std::string    Worker::getPathError() const
 void    Worker::setPathError(const std::vector<std::vector<std::string> > &error_page, unsigned int status,const std::string &root)
 {
     this->set_track_status(0);
-    printf("size %lu\n",error_page.size());
     for (size_t i = 0; i < error_page.size(); i++)
     {
-        printf("in\n");
        for (size_t j = 0; j < error_page[i].size() - 1; j++)
        {
             if (atoi(error_page[i][j].c_str()) == status)
             {
                 this->set_track_status(1);
-                this->path_error_page = root + error_page[i][error_page[i].size() - 1];
+                this->path_error_page = error_page[i][error_page[i].size() - 1];
             }
        }
     }    
@@ -268,4 +268,24 @@ void Worker::set_track_status(int flag)
 int Worker::get_track_status()
 {
     return this->track_status;
+}
+
+std::string     NormilisePath(std::string &Path)
+{
+    std::string result;
+    bool slash = false;
+    for (size_t i = 0; i < Path.size(); i++)
+    {
+        if (Path[i] == '/' && slash == false)
+        {
+            result += '/';
+            slash = true;
+        }
+        else if (Path[i] != '/')
+        {
+            result += Path[i];
+            slash = false;
+        }
+    }
+    return (result);
 }

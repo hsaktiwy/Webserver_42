@@ -30,7 +30,7 @@ void	Client::ParseRequest(char *buffer, std::vector<ServerBlocks> &serverBlocks)
 {
 	http_request.ParseRequest(buffer);
     http_request.CheckRequest(serverBlocks, worker);
-	printf("size size     %lu\n", http_response.worker->getErrorPages().size());
+	// printf("size size     %lu\n", http_response.worker->getErrorPages().size());
 }
 
 void	Client::CreateResponse(std::map<unsigned int, std::string> &status_codes)

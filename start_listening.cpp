@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/24 16:35:39 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/26 17:58:54 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,6 +201,7 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 {
     client.CreateResponse(status_codes);
     response const &resp = client.getHttp_response();
+    // printf("%s\n", resp.getFile().c_str());
     if (resp.getFile() == "")
     {
         string_response = resp.getHttp_response() + resp.getBody_string();
@@ -214,16 +215,19 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
         int bytes_written = write(poll_fds[i].fd, string_response.c_str(), string_response.size());
         if (bytes_written < 0)
             perror("write ");
-        std::string file = client.getWorker().getRoot() + resp.getFile();
+        std::string file = resp.getFile();
         struct stat stat_buff;
         int error = stat(file.c_str(), &stat_buff);
         if (error == 0)
         {
+            // printf("+++++++++++++++> %s (%lld)\n", file.c_str(), stat_buff.st_size);
             long long size = stat_buff.st_size;
             std::stringstream ss;
             std::string body_size;
             ss << size;
             ss >> body_size;
+            body_size = "Content-Length: " + body_size + "\r\n\r\n";
+            write(poll_fds[i].fd, body_size.c_str(), body_size.size());
             int fd = open(file.c_str(), 0644);
             if (fd > 0)
             {
@@ -234,6 +238,7 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
                     write(poll_fds[i].fd, buff, std::strlen(buff));
                     std::memset(buff, 0, 4001);
                 }
+                close(fd);
             }
         }
         else

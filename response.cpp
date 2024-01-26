@@ -72,6 +72,18 @@ void    autoIndexing(request &req, Worker &wk,std::string &response_head, std::s
     response_head += "Content-Length: " + body_size + "\r\n\r\n";
 }
 
+
+std::string GetFileType(const std::string &Path)
+{
+    size_t pos =  Path.rfind('.');
+    if (pos != std::string::npos)
+    {
+        std::string extension = &Path[pos + 1];
+        return (mime_types(extension));
+    }
+    return ("text/plain");
+}
+
 void    response::responed(std::map<unsigned int, std::string> &status_codes)
 {
     std::string index = (*worker).getIndex();
@@ -110,7 +122,8 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
     {
         if (req.getMethod() == "GET")
         {
-            http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n";
+            std::string FileType = GetFileType(req.getUri().path);
+            http_response = "HTTP/1.1 200 OK\r\nContent-Type: " + FileType + "\r\n";
             file = wk.getRoot() + req.getUri().path;
         }
         else
@@ -147,12 +160,14 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
     }
     else
     {
+        req.setStatus(301);
         std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
-        ss << 302;
+        ss << req.getStatus();
         ss >> statusCode;
         if (iter != status_codes.end())
             HumanRead = iter->second;
         std::string path = wk.getLocationWorker().getPath() + "/" + worker->getPathError();
+        path = NormilisePath(path);
         http_response = "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n" + "Content-Type: text/html\r\n" + "Location: http://" + req.getHost() + "/" + path + "\r\n";
     }
 }

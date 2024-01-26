@@ -4,3 +4,6 @@ a.out
 *.txt
 client
 server
+configs/
+public/
+UsableTools/

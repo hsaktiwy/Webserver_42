@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/26 17:58:54 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/26 23:08:43 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -233,7 +233,7 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
             {
                 char buff[4001];
                 std::memset(buff, 0, 4001);
-                while (read(fd, buff, 4000))
+                while (read(fd, buff, 4001))
                 {
                     write(poll_fds[i].fd, buff, std::strlen(buff));
                     std::memset(buff, 0, 4001);

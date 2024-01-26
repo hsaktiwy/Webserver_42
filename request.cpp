@@ -470,7 +470,7 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		// ServerBlocks block = worker.getBlockWorker();
 		std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
 		std::string index = worker.getIndex();
-		// std::cout << "host " << host << " root " << root  << " index " << index << " path " << path << std::endl;
+		std::cout << "host " << host << " root " << root  << " index " << index << " path " << path << " query " << uri.query << std::endl;
 		bool indexed = false;
 		if (is_dir == 1 && index.size() != 0)
 		{

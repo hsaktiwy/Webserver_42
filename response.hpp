@@ -6,9 +6,11 @@
 class response {
     private:
         std::string http_response;
+        std::string body_string;
+        std::string file;
+    public:
         request *http_request;
         Worker *worker;
-    public:
         response();
         response(request &http_request, Worker& worker);
         ~response();
@@ -18,6 +20,9 @@ class response {
         void        errorresponse(std::map<unsigned int, std::string> &status_codes);
         std::string getHttp_response( void );
         std::string Status(unsigned int status, std::map<unsigned int, std::string> &status_codes);
+        std::string getHttp_response( void ) const;
+        std::string getBody_string( void ) const;
+        std::string getFile( void ) const;
 };
 
 #endif

@@ -15,8 +15,10 @@ class Client {
 		Client& operator=(const Client& obj);
 		// this function will int http_request and worker plus parse the request
 		void	ParseRequest(char *buffer, std::vector<ServerBlocks> &serverBlocks);
-		std::string	response(std::map<unsigned int, std::string> &status_codes);
-		const Worker &getWorker( void ) const;
+		void	CreateResponse(std::map<unsigned int, std::string> &status_codes);
+		response const	&getHttp_response( void ) const;
+		request const	&getHttp_request( void ) const;
+		Worker const	&getWorker( void ) const;
 };
 
 #endif

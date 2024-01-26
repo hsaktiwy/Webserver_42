@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/01/26 18:10:57 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/26 20:46:19 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,12 +27,12 @@ public:
     void setCgiServePort();
     // void setCgiScriptPath();
     // void setCgiPATHINFO();
-    // void setCgiQueryString();
+    void setCgiQueryString();
     std::string &getCgiServerName();
     std::string &getCgiServerPort();
     // std::string getCgiScriptPath();
     // std::string getCgiPATHINFO();
-    // std::string getCgiQueryString();
+    std::string &getCgiQueryString();
 };
 
 #endif

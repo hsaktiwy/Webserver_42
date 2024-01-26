@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/26 17:23:36 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/26 20:32:22 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,6 +158,7 @@ private:
     std::string redirect;
     std::string host;
     std::string path;
+    std::string query;
     std::string autoindex;
     std::string max_body_size;
     std::string path_error_page;
@@ -171,6 +172,7 @@ public:
     ServerBlocks getBlockWorker() const;
     LocationsBlock getLocationWorker() const;
     std::string getRoot() const;
+    std::string getQuery() const;
     std::string getIndex() const;
     std::string getRedirect() const;
     std::string getHost() const;
@@ -183,7 +185,7 @@ public:
     void    setBlockWorker(const ServerBlocks& blocks);
     void    setLocationWorker(const ServerBlocks& block,std::string &path);
     void    setRoot(const std::string& newRoot);
-    void    setIndex(const std::vector<std::string>&   args,const std::string &root);
+    void    setIndex(const std::vector<std::string>&   args,const std::string &root);// modified bye hamza 
     void    setRedirect(const std::string& newRedirect);
     void    setMethod(std::vector<std::string>  &args);
     void    setHost(const std::string& newHost);
@@ -194,9 +196,10 @@ public:
     bool    exact_match(const ServerBlocks &block,const std::string &path);
     bool    prefix_match(const ServerBlocks &block,const std::string &path);
     bool    find_root(const ServerBlocks &block,const std::string &path);
-    void    found_index_file(const std::string &root);
-    void    setPathError(const std::vector<std::vector<std::string> > error_page, unsigned int status, const std::string &root);
-
+    void    found_index_file(const std::string &root);//, const std::string &path);// modified bye hamza 
+    void    setPathError(const std::vector<std::vector<std::string> > &error_page, unsigned int status, const std::string &root);
+    void    setIndex2(std::string const &path);
+    void    setQuery(std::string const &query);
     void set_track_status(int flag);
     int get_track_status();
 ;
@@ -214,4 +217,5 @@ std::string     trim(const std::string& str);
 int             Is_Directory(const std::string &root);
 void            init_worker_block(Worker &worker, std::string &host, std::string &path,std::vector<ServerBlocks> &serverBlocks, int &is_dir, int &is_regular);
 void            check_duplications(std::vector<ServerBlocks> serverBlocks);
+std::string     NormilisePath(std::string &Path);
 #endif

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/26 18:24:24 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/26 19:05:36 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,8 +67,12 @@ void    setDirectives(T &directives,Worker &worker)
         }
         else if (!directives[i].getDirective().compare("index"))
         {
-            worker.setIndex(directives[i].getArgument(),worker.getRoot());
+                worker.setIndex(directives[i].getArgument(),worker.getRoot());//, worker.get);
         }
+        // else if (!directives[i].getDirective().compare("index"))
+        // {
+        //         worker.setIndex(directives[i].getArgument(),worker.getRoot());//, worker.get);
+        // }
     }
     
 }
@@ -185,15 +189,19 @@ void   init_worker_block(Worker &worker, std::string &host, std::string &path,st
     {
         port = host.substr(host.find(':')).c_str();
         host = ip_address + port;
-        set_based_ip_address(worker,serverBlocks,host);
+    set_based_ip_address(worker,serverBlocks,host);
     }
     worker.setLocationWorker(worker.getBlockWorker(),path);
     set(worker.getLocationWorker().getDirectives(),worker,worker.getPath());
     if (worker.getRoot().empty())
         set(worker.getBlockWorker().getDirectives(),worker,worker.getPath());
-    
+    // int flag = 0;
     setDirectives(worker.getBlockWorker().getDirectives(),worker);
+    // if (worker.getIndex().empty())
+    //     flag = 1;
     setDirectives(worker.getLocationWorker().getDirectives(),worker);
+    // if (flag == 1 && !worker.getIndex().empty())
+    //     worker.setIndex2(((std::string &)worker.getLocationWorker().getPath()) + "/" + worker.getIndex());
     setAllowedmethods(worker,worker.getLocationWorker().getDirectives());
 
     if (worker.getAllowMethods().size() == 0)
@@ -202,19 +210,24 @@ void   init_worker_block(Worker &worker, std::string &host, std::string &path,st
     setErrorPages(worker,worker.getLocationWorker().getDirectives());
     if (worker.getErrorPages().size() == 0)
         setErrorPages(worker,worker.getBlockWorker().getDirectives());
-
-    worker.setPathError(worker.getErrorPages(),404,worker.getRoot());
-    if (Is_Directory(worker.getRoot() + path) == 0 \
-    || Is_Directory(worker.getRoot() + path) == 1 \
-    || Is_Directory(worker.getRoot() + path) == -1)
+    std::string tmp_path = worker.getRoot() + path;
+    if (Is_Directory(tmp_path) == 0 \
+    || Is_Directory(tmp_path) == 1 \
+    || Is_Directory(tmp_path) == -1)
     {
-        if (Is_Directory(worker.getRoot()) == 0)
+        if (Is_Directory(tmp_path) == 0)
         {
             if (worker.getIndex().empty())
-                worker.found_index_file(worker.getRoot());
+                worker.found_index_file(tmp_path);
             is_dir = 1;
         }
-        else if (Is_Directory(worker.getRoot()) == 1)
+        else if (Is_Directory(tmp_path) == 1)
             is_regular = 1;
     }
+    // if (is_regular)
+    // {
+    //     printf("server this %s\n",path.c_str());
+    // }
+    // printf("path %s\n",worker.getPath().c_str());
+    // printf("size %lu\n",(worker.getErrorPages().size()));
 }

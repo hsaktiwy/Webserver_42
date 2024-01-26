@@ -30,6 +30,7 @@ Client& Client::operator=(const Client& obj)
 void	Client::ParseRequest(char *buffer, std::vector<ServerBlocks> &serverBlocks)
 {
 	http_request.ParseRequest(buffer);
+	
     http_request.CheckRequest(serverBlocks, worker);
 }
 
@@ -37,4 +38,9 @@ std::string	Client::response(std::map<unsigned int, std::string> &status_codes)
 {
 	http_response.responed(status_codes);
 	return (http_response.getHttp_response());
+}
+const Worker &Client::getWorker( void ) const
+{
+	std::cout << worker.getRoot() << std::endl;
+	return worker;
 }

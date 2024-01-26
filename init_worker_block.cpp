@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init_worker_block.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/24 17:37:51 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/26 18:24:24 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,6 +177,7 @@ void   init_worker_block(Worker &worker, std::string &host, std::string &path,st
     std::string ip_address;
     std::string port;
 
+    worker.setHost(host);
     worker.setPath(path);
     hostname = trim(host.substr(0,host.find(':'))).c_str();
     get_matched_server_block(hostname,serverBlocks,worker,ip_address);

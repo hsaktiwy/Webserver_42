@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   start_listening.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/24 16:22:29 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/26 18:40:08 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "Client.hpp"
 #include <map>
 #include <unistd.h>
+#include "cgi/cgi.hpp"
 
 bool valid_port(const std::string &port)
 {
@@ -287,6 +288,11 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
                         }
                         //handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status, http_request);
                         handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, client, status_codes);
+                        // Worker cgiworker = client.getWorker();
+                        // CgiEnv cgi(cgiworker);
+                        // cgi.setCgiServerName();
+                        // cgi.setCgiServePort();
+                        // std::cout<<"SERVER_NAME   : "<<cgi.getCgiServerName()<<" SERVER_PORT :  "<<cgi.getCgiServerPort()<<std::endl;
                         //handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status,mime_type);
                     }
                     if (poll_fds[i].revents & POLLOUT)

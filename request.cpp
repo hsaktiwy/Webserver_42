@@ -455,10 +455,12 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		UriFormat(uri, method_uri, host);
 		std::string path = "/"  + uri.path;
 		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
+
+		
 		// ServerBlocks block = worker.getBlockWorker();
 		std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
 		std::string index = worker.getIndex();
-		std::cout << "host " << host << " root " << root  << " index " << index << std::endl;
+		std::cout << "host " << host << " root " << root  << " index " << index <<" "<< worker.getPath()<< std::endl;
 		if (uri.path.size() == 0 && index.size() != 0)
 			uri.path += index;
 		// std::cout << "New Path " << uri.path << std::endl;

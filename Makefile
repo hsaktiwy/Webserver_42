@@ -3,18 +3,18 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+         #
+#    By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/13 12:12:25 by adardour          #+#    #+#              #
-#    Updated: 2024/01/22 22:10:19 by hsaktiwy         ###   ########.fr        #
+#    Updated: 2024/01/26 17:12:31 by aalami           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC = c++ -std=c++98
 CFLAGS = -Wall -Wextra -Werror
 
-SRC = $(wildcard *.cpp)
-HPP = $(wildcard *.hpp)
+SRC = $(wildcard *.cpp) cgi/cgi.cpp
+HPP = $(wildcard *.hpp) cgi/cgi.hpp
 
 OBJ = $(SRC:.cpp=.o)
 

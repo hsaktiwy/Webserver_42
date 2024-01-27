@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/26 16:04:53 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/27 15:48:12 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@
 #include <netdb.h>
 #include <string>
 #include <set>
+#include <signal.h>
 
 
 

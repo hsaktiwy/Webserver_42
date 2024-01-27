@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/26 23:08:43 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/27 15:59:01 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,14 +205,14 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
     if (resp.getFile() == "")
     {
         string_response = resp.getHttp_response() + resp.getBody_string();
-        int bytes_written = write(poll_fds[i].fd, string_response.c_str(), string_response.size());
+        int bytes_written = send(poll_fds[i].fd, string_response.c_str(), string_response.size(), 0);
         if (bytes_written < 0)
             perror("write ");
     }
     else
     {
         string_response = resp.getHttp_response();
-        int bytes_written = write(poll_fds[i].fd, string_response.c_str(), string_response.size());
+        int bytes_written = send(poll_fds[i].fd, string_response.c_str(), string_response.size(), 0);
         if (bytes_written < 0)
             perror("write ");
         std::string file = resp.getFile();
@@ -227,15 +227,16 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
             ss << size;
             ss >> body_size;
             body_size = "Content-Length: " + body_size + "\r\n\r\n";
-            write(poll_fds[i].fd, body_size.c_str(), body_size.size());
+            send(poll_fds[i].fd, body_size.c_str(), body_size.size(), 0);
             int fd = open(file.c_str(), 0644);
             if (fd > 0)
             {
                 char buff[4001];
                 std::memset(buff, 0, 4001);
-                while (read(fd, buff, 4001))
+                ssize_t bytes;
+                while ((bytes = read(fd, buff, 4001)))
                 {
-                    write(poll_fds[i].fd, buff, std::strlen(buff));
+                    send(poll_fds[i].fd, buff, bytes, 0);
                     std::memset(buff, 0, 4001);
                 }
                 close(fd);

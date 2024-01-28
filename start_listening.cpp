@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/28 15:54:46 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/29 00:07:32 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -200,55 +200,143 @@ void    handle_request(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_
 
 void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &string_response,int *flag,int *status,std::string &human_status,std::string &mime_type, Client & client, std::map<unsigned int, std::string> &status_codes)
 {
+    // printf("client %s\n", client.getHttp_request().getReq().c_str());
+    // printf("---%lld %lu\n", client.getHttp_response().getHeader_size(), client.getHttp_response().getHeader_index());
+    response &resp = (response &)client.getHttp_response();
+    printf("%lld %lu BodySize %lld BodyIndex %lu\n", resp.getHeader_size(), resp.getHeader_index(), resp.getBody_size(), resp.getBody_index());
     client.CreateResponse(status_codes);
-    response const &resp = client.getHttp_response();
-    // printf("%s\n", resp.getFile().c_str());
     if (resp.getFile() == "")
     {
-        string_response = resp.getHttp_response() + resp.getBody_string();
-        int bytes_written = write(poll_fds[i].fd, string_response.c_str(), string_response.size());
-        if (bytes_written < 0)
-            perror("write ");
+        // string_response = resp.getHttp_response() + resp.getBody_string();
+        // std::cout<<string_response<<std::endl;
+        // printf("In Response File step\n");
+        size_t writeBytes = CHUNK_SIZE;
+        // printf("@@@@Header sent %d\n", resp.getHeader_sent());
+        if (resp.getHeader_sent() == false)
+        {
+            long long Hsize = resp.getHeader_size();
+            long long Hindex = resp.getHeader_index();
+
+            if (Hindex < Hsize)
+            {
+                printf("%lld %lld\n", Hsize, Hindex);
+                size_t bytes = writeBytes;
+                long long rest = Hsize - Hindex;
+                if (rest <  CHUNK_SIZE)
+                    bytes = rest;
+                printf("rest %lld\n", rest);
+                ssize_t bytes_written = send(poll_fds[i].fd, &resp.getHttp_response()[Hindex], bytes, 0);
+                resp.setHeader_index(Hindex + bytes);
+                if (resp.getHeader_size() == resp.getHeader_index())
+                    resp.setHeader_sent(true);
+                writeBytes -= bytes;
+                if (bytes_written < 0)
+                    perror("write ");
+            }
+        }
+        if (resp.getBody_sent() == false && writeBytes > 0)
+        {
+            long long Bsize = resp.getBody_size();
+            long long Bindex = resp.getBody_index();
+
+            if (Bindex < Bsize)
+            {
+                size_t bytes = writeBytes;
+                long long rest = Bsize - Bindex;
+                if (rest <  CHUNK_SIZE)
+                    bytes = rest;
+                ssize_t bytes_written = send(poll_fds[i].fd, &resp.getBody_string()[Bindex], bytes, 0);
+                resp.setBody_index(Bindex + bytes);
+                if (resp.getBody_size() == resp.getBody_index())
+                    resp.setBody_sent(true);
+                writeBytes -= bytes; 
+                if (bytes_written < 0)
+                    perror("write ");
+            }
+        }
+        if (resp.getBody_sent() == false && resp.getBody_size() == -1)
+            resp.setBody_sent(true);
     }
     else
     {
-        string_response = resp.getHttp_response();
-        int bytes_written = write(poll_fds[i].fd, string_response.c_str(), string_response.size());
-        if (bytes_written < 0)
-            perror("write ");
-        std::string file = resp.getFile();
-        struct stat stat_buff;
-        int error = stat(file.c_str(), &stat_buff);
-        if (error == 0)
+        // printf("In Response File step\n");
+        size_t writeBytes = CHUNK_SIZE;
+        // printf("Header sent %d\n", resp.getHeader_sent());
+        if (resp.getHeader_sent() == false)
         {
-            // printf("+++++++++++++++> %s (%lld)\n", file.c_str(), stat_buff.st_size);
-            long long size = stat_buff.st_size;
-            std::stringstream ss;
-            std::string body_size;
-            ss << size;
-            ss >> body_size;
-            body_size = "Content-Length: " + body_size + "\r\n\r\n";
-            write(poll_fds[i].fd, body_size.c_str(), body_size.size());
-            int fd = open(file.c_str(), 0644);
-            if (fd > 0)
+            long long Hsize = resp.getHeader_size();
+            long long Hindex = resp.getHeader_index();
+
+            // printf("%lld %lld", Hsize, Hindex);
+            if (Hindex < Hsize)
             {
-                char buff[4001];
-                std::memset(buff, 0, 4001);
-                while (read(fd, buff, 4000))
-                {
-                    write(poll_fds[i].fd, buff, std::strlen(buff));
-                    std::memset(buff, 0, 4001);
-                }
-                close(fd);
+                // printf("In File %s\n", &resp.getHttp_response()[Hindex]);
+                size_t bytes = writeBytes;
+                long long rest = Hsize - Hindex;
+                if (rest <  CHUNK_SIZE)
+                    bytes = rest;
+                // printf("rest in file %lld\n", rest);
+                ssize_t bytes_written = send(poll_fds[i].fd, &resp.getHttp_response()[Hindex], bytes, 0);
+                if (bytes_written < 0)
+                    perror("write ");
+                resp.setHeader_index(Hindex + bytes);
+                if (resp.getHeader_size() == resp.getHeader_index())
+                    resp.setHeader_sent(true);
+                writeBytes -= bytes;
             }
         }
-        else
-            std::cout << "%%%%%%%%%%%%Error file can't be opend " << file << std::endl;
+        // printf("Body sent %d\n", resp.getBody_sent());
+        if (resp.getBody_sent() == false && writeBytes > 0)
+        {
+            std::string file = resp.getFile();
+            if (resp.getFileOpened() == false)
+            {
+                struct stat stat_buff;
+                int error = stat(file.c_str(), &stat_buff);
+                if (error == 0)
+                {
+                    long long size = stat_buff.st_size;
+                    std::stringstream ss;
+                    std::string body_size;
+                    ss << size;
+                    ss >> body_size;
+                    body_size = "Content-Length: " + body_size + "\r\n\r\n";
+                    resp.setBody_size(size + body_size.size());
+                    send(poll_fds[i].fd, body_size.c_str(), body_size.size(), 0);
+                    size_t Bindex = resp.getBody_index();
+                    resp.setBody_index(Bindex + body_size.size());
+                    // printf("Body size %lld, body_index %lu\n", resp.getBody_size(), resp.getBody_index());
+                    if (resp.getBody_size() == resp.getBody_index())
+                        resp.setBody_sent(true);
+                    writeBytes -= body_size.size();
+                }
+            }
+            // printf("Body sent2 %d\n", resp.getBody_sent());
+            if (resp.getBody_sent() == false && resp.getBody_size() != -1 && writeBytes > 0)
+            {
+                int fd = resp.getFd();
+                // printf("fd == %d\n", fd);
+                if (fd == -1)
+                    fd = open(file.c_str(), 0644), resp.setFd(fd), resp.setFileOpened(true);
+                if (fd > 0)
+                {
+                    char buff[writeBytes];
+                    std::memset(buff, 0, writeBytes);
+                    ssize_t bytes = read(fd, buff, writeBytes);
+                    if (bytes > 0)
+                    {
+                        send(poll_fds[i].fd, buff, bytes, 0);
+                        size_t Bindex = resp.getBody_index();
+                        resp.setBody_index(Bindex + bytes);
+                        if (resp.getBody_size() == resp.getBody_index())
+                            resp.setBody_sent(true), close(fd);
+                    }
+                    else
+                        write(2, "Something Went Wrong!\n", 22);
+                }
+            }
+        }
     }
-    (*ready_to_write) = 0;
-    close(poll_fds[i].fd);
-    poll_fds.erase(poll_fds.begin() + i);
-    (*size_fd)--;
 }
 
 int    new_connection(int client_socket,std::vector<int> new_connections)
@@ -263,11 +351,102 @@ int    new_connection(int client_socket,std::vector<int> new_connections)
     return (1);
 }
 
-void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks, std::map<unsigned int, std::string> &status_codes)
+// void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks, std::map<unsigned int, std::string> &status_codes)
+// {
+//     std::string response;
+//     std::vector<int> sockets;
+//     std::vector<struct pollfd> poll_fds;
+//     char buffer[1024];
+//     int client_socket = -1;
+//     int ready_to_write = 0;
+//     int flag = 0;
+//     int status;
+//     std::string human_status;
+//     std::string mime_type;
+
+//     create_sockets(serverBlocks, sockets);
+//     init_poll_fds(poll_fds, serverBlocks.size(), sockets);
+//     std::vector<int> new_connections;
+//     std::vector<Client> clients;
+//     nfds_t size_fd = poll_fds.size();
+//     while (true)
+//     {
+//         int ready = poll(poll_fds.data(), size_fd, -1);
+//         if (ready < 0)
+//         {
+//             perror("poll ");
+//             exit(0);
+//         }
+//         for (size_t i = 0; i < size_fd; i++)
+//         {
+//             if ((poll_fds[i].revents & POLLIN))
+//             {
+//                 if (poll_fds[i].fd == sockets[i])
+//                 {
+//                     client_socket = create_socket_client(sockets, poll_fds, &size_fd,i);
+                    
+//                     if (client_socket == 35 || client_socket == -1)
+//                     {
+//                         if (client_socket == 35)
+//                             continue;
+//                         else
+//                         {
+//                             std::cout << "Error in accepting connection\n";
+//                             break;
+//                         }
+//                     }
+//                 }
+//                 else
+//                 {
+//                     Client client;
+//                     if (poll_fds[i].revents & POLLIN)
+//                     {
+//                         if(new_connection(client_socket,new_connections))
+//                         {
+//                             printf("new connection from socket %d ...\n",client_socket);
+//                         }
+//                         //handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status, http_request);
+//                         handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, client, status_codes);
+//                         // CgiEnv cgi(client.getWorker());
+//                         // cgi.setCgiServerName();
+//                         // cgi.setCgiServePort();
+//                         // cgi.setCgiScriptPath();
+//                         // std::cout<<"SERVER_NAME   : "<<cgi.getCgiServerName()<<" SERVER_PORT :  "<<cgi.getCgiServerPort()<<std::endl;
+//                         //handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status,mime_type);
+//                     }
+//                     if (poll_fds[i].revents & POLLOUT)
+//                     {
+//                         handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status,mime_type, client, status_codes);
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
+
+size_t findClientBySocketFd(std::vector<Client> &ClientsVector, int fd)
+{
+    size_t i = 0;
+    
+    for (i = 0 ; i <  ClientsVector.size(); i++)
+    {
+        // printf("Socket id  : %d\n", it->getClientSocket());
+        if (ClientsVector[i].getClientSocket() == fd)
+            break;
+    }
+    return i;
+}
+void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,std::map<unsigned int, std::string> &status_codes)
 {
     std::string response;
     std::vector<int> sockets;
+    // std::vector<t_socket_data> socketsFds;
+    std::vector<int> vecFds; // save only opened sockets on a vector (useful when working with poll)
     std::vector<struct pollfd> poll_fds;
+    struct pollfd tmp; 
+    // int timeout = 2 * 60 * 1000;
+    int pollRet = 0;
+    int acceptRet = 0;
     char buffer[1024];
     int client_socket = -1;
     int ready_to_write = 0;
@@ -279,59 +458,141 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
     create_sockets(serverBlocks, sockets);
     init_poll_fds(poll_fds, serverBlocks.size(), sockets);
     std::vector<int> new_connections;
-    std::vector<Client> clients;
+    std::vector<Client> ClientsVector;
+    
     nfds_t size_fd = poll_fds.size();
+    
+    std::cout<<GREEN<<"Waiting for an incomming request"<<RESET<<std::endl;
     while (true)
     {
-        int ready = poll(poll_fds.data(), size_fd, -1);
-        if (ready < 0)
+        pollRet = poll(poll_fds.data(), poll_fds.size(), TIME_OUT);
+        if (pollRet < 0)
         {
             perror("poll ");
             exit(0);
         }
-        for (size_t i = 0; i < size_fd; i++)
+        if (pollRet == 0)
         {
-            if ((poll_fds[i].revents & POLLIN))
+            std::cout<<RED<<"Connection timeout...."<<RESET<<std::endl;
+            continue;
+        }
+            
+        for (size_t i = 0; i < poll_fds.size(); i++)
+        {
+            if (poll_fds[i].revents == 0)
+                continue;
+            else if (poll_fds[i].fd == sockets[i])
             {
-                if (poll_fds[i].fd == sockets[i])
+                Client client;
+                socklen_t len;
+                struct sockaddr_in tmpAddr;
+                len = sizeof(tmpAddr);
+                memset(&tmpAddr, 0, len);
+                
+                acceptRet = accept(poll_fds[i].fd, (struct sockaddr *)&tmpAddr, &len);
+                // if (acceptRet < 0)
+                //     break;
+                printf("???????%lld %lu\n", client.getHttp_response().getHeader_size(),client.getHttp_response().getHeader_index());
+                client.setClientSocket(acceptRet);
+                printf("lol %lld %lu\n", client.getHttp_response().getHeader_size(),client.getHttp_response().getHeader_index());
+                ClientsVector.push_back(client);
+                char clientIP[INET_ADDRSTRLEN];
+                unsigned short clientPort = ntohs(tmpAddr.sin_port);
+                inet_ntop(AF_INET, &(tmpAddr.sin_addr), clientIP, INET_ADDRSTRLEN);
+                std::cout<<GREEN <<"New incomming connection from the client Socket ";
+                std::cout<<acceptRet<<" with the address : "<<clientIP<<":"<<clientPort<< " To the socket "<<poll_fds[i].fd<<RESET<<std::endl;
+                    // if (fcntl(acceptRet, F_SETFL, O_NONBLOCK | FD_CLOEXEC) < 0)
+                    //     errorHandler(socketsFds, "Fcntl");
+                    memset(&tmp, 0, sizeof(tmp));
+                    tmp.fd = acceptRet; // add a client socket to the poll array
+                    tmp.events = POLLIN; // waiting for I/O on this socket
+                    poll_fds.push_back(tmp); 
+                    // pollFdsSize++;
+            }
+            else
+            {
+                // if (poll_fds[i].revents == 0)
+                //     continue;
+                size_t client_it;
+                client_it = findClientBySocketFd(ClientsVector, poll_fds[i].fd);
+                if (client_it == ClientsVector.size())
                 {
-                    client_socket = create_socket_client(sockets, poll_fds, &size_fd,i);
-                    
-                    if (client_socket == 35 || client_socket == -1)
+                    printf("OUT\n");
+                    exit(0);
+                    continue ;
+                }
+                if (poll_fds[i].revents & POLLIN)
+                {
+                    // printf("DDDd\n");
+                    // request = requestHandler(fds, i);
+                    // char c;
+                    // read(fds[i].fd,&c, 1);
+                    handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, ClientsVector[client_it], status_codes);
+                    std::cout<<YELLOW<<"Request sent from Client "<<poll_fds[i].fd<<RESET<<std::endl;
+                    poll_fds[i].events = POLLOUT;
+                    // printf("1-%lld %lu\n", ClientsVector[client_it].getHttp_response().getHeader_size(), ClientsVector[client_it].getHttp_response().getHeader_index());
+
+                        // fds[i].events = POLLOUT;
+                }
+                else if (poll_fds[i].revents & POLLOUT)
+                {
+                    // printf("2-%lld %lu\n", ClientsVector[client_it].getHttp_response().getHeader_size(), ClientsVector[client_it].getHttp_response().getHeader_index());
+
+                    handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status,mime_type, ClientsVector[client_it], status_codes);
+                    // exit(0);
+                    std::cout<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;
+                    std::cerr<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;
+
+                    if (ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent())
                     {
-                        if (client_socket == 35)
-                            continue;
-                        else
-                        {
-                            std::cout << "Error in accepting connection\n";
-                            break;
-                        }
+                        std::cout<<YELLOW<<"Connection to Client "<<poll_fds[i].fd<<" closed"<<RESET<<std::endl;
+                        ClientsVector.erase(ClientsVector.begin() + client_it);
+                        close(poll_fds[i].fd);
+                        poll_fds.erase(poll_fds.begin() + i);
                     }
+                    // pollFdsSize--;
+                    // fds[i].events = POLLIN;
                 }
                 else
                 {
-                    Client client;
-                    if (poll_fds[i].revents & POLLIN)
-                    {
-                        if(new_connection(client_socket,new_connections))
-                        {
-                            printf("new connection from socket %d ...\n",client_socket);
-                        }
-                        //handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status, http_request);
-                        handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, client, status_codes);
-                        CgiEnv cgi(client.getWorker());
-                        cgi.setCgiServerName();
-                        cgi.setCgiServePort();
-                        cgi.setCgiScriptPath();
-                        std::cout<<"SERVER_NAME   : "<<cgi.getCgiServerName()<<" SERVER_PORT :  "<<cgi.getCgiServerPort()<<std::endl;
-                        //handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status,mime_type);
-                    }
-                    if (poll_fds[i].revents & POLLOUT)
-                    {
-                        handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status,mime_type, client, status_codes);
-                    }
+                    std::cout<<RED<<"Client "<<poll_fds[i].fd<<" closed the connection"<<RESET<<std::endl;
+                    close (poll_fds[i].fd);
+                    poll_fds.erase(poll_fds.begin() + i);
                 }
             }
+            // if ((poll_fds[i].revents & POLLIN))
+            // {
+            //     if (poll_fds[i].fd == sockets[i])
+            //     {
+            //         client_socket = create_socket_client(sockets, poll_fds, &size_fd,i);
+            //         if (client_socket == 35 || client_socket == -1)
+            //         {
+            //             if (client_socket == 35)
+            //                 continue;
+            //             else
+            //             {
+            //                 std::cout << "Error in accepting connection\n";
+            //                 break;
+            //             }
+            //         }
+            //     }
+            //     else
+            //     {
+            //         if (poll_fds[i].revents & POLLIN)
+            //         {
+            //             if(new_connection(client_socket,new_connections))
+            //             {
+            //                 printf("new connection from socket %d ...\n",client_socket);
+            //             }
+            //             handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status);
+            //         }
+            //         if (poll_fds[i].revents & POLLOUT)
+            //         {
+            //             handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status);
+                        
+            //         }
+            //     }
+            // }
         }
     }
 }

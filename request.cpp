@@ -467,6 +467,7 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		UriFormat(uri, method_uri, host);
 		std::string path = "/"  + uri.path;
 		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
+		worker.setHost(host);
 		// ServerBlocks block = worker.getBlockWorker();
 		std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
 		std::string index = worker.getIndex();
@@ -542,7 +543,18 @@ request& request::operator=(const request& obj)
 {
 	if (this != &obj)
 	{
-
+		method = obj.method;
+		method_uri = obj.method_uri;
+		uri = obj.uri;
+		http = obj.http;
+		host = obj.host;
+		headers = obj.headers;
+		body = obj.body;
+		req = obj.req;
+		error = obj.error;
+		status = obj.status;
+		is_dir = obj.is_dir;
+		is_regular = obj.is_regular;
 	}
 	return (*this);
 }
@@ -618,3 +630,4 @@ void						request::setStatus(int value)
 {
 	status = value;
 }
+

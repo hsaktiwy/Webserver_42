@@ -1,8 +1,8 @@
 #include "response.hpp"
 
-response::response(request &req, Worker &wk): http_request(&req), worker(&wk)
+response::response(request &req, Worker &wk): http_request(&req), worker(&wk), body_index(0), body_size(-1), header_index(0), header_size(-1), body_sent(0), header_sent(0), FileOpened(false), fd(-1)
 {
-    
+   printf("%lld %lu\n", header_size, header_index);
 }
 
 std::string TimeToString(timespec time)
@@ -72,12 +72,23 @@ void    autoIndexing(request &req, Worker &wk,std::string &response_head, std::s
     response_head += "Content-Length: " + body_size + "\r\n\r\n";
 }
 
+
+std::string GetFileType(const std::string &Path)
+{
+    size_t pos =  Path.rfind('.');
+    if (pos != std::string::npos)
+    {
+        std::string extension = &Path[pos + 1];
+        return (mime_types(extension));
+    }
+    return ("text/plain");
+}
+
 void    response::responed(std::map<unsigned int, std::string> &status_codes)
 {
     std::string index = (*worker).getIndex();
     request &req = *http_request;
     Worker &wk = *worker;
-
 
     if (req.getError() == false)
     {
@@ -110,11 +121,16 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
     {
         if (req.getMethod() == "GET")
         {
-            http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n";
+            std::string FileType = GetFileType(req.getUri().path);
+            http_response = "HTTP/1.1 200 OK\r\nContent-Type: " + FileType + "\r\n";
             file = wk.getRoot() + req.getUri().path;
+            header_size = http_response.size();
         }
         else
+        {
             http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html>\r\n<head>\r\n	<title>Valide File</title>\r\n</head>\r\n<body>\r\n	<h1>The response must be here!.</h1>\r\n</body>\r\n</html>\r\n";
+            header_size = http_response.size();
+        }
     }
 }
 
@@ -137,6 +153,7 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
         ss >> statusCode;
         if (iter != status_codes.end())
             HumanRead = iter->second;
+        // this maybe need to be in a folder i mean like a error_page file but with out being define in the http configue file
         body_string = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n<title>Error Page</title>\r\n<style>\r\nbody {\r\nfont-family: Arial, sans-serif;\r\ntext-align: center;\r\npadding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\nmargin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\nmargin-bottom: 50px;\r\n}\r\n</style>\r\n</head>\r\n<body>\r\n<h1>Error "+ statusCode + "("+ HumanRead +")"+"</h1>\r\n<p>Unhable to reserve a propore response.</p>\r\n</body>\r\n</html>";
         http_response += "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n";
         http_response += "Content-Type: text/html\r\n";
@@ -144,16 +161,22 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
         ss2 << body_string.size();
         ss2 >> size;
         http_response += "Content-Length: " + size + "\r\n\r\n";
+        body_size = body_string.size();
+        header_size = http_response.size();
     }
     else
     {
+        req.setStatus(301);
         std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
-        ss << 302;
+        ss << req.getStatus();
         ss >> statusCode;
         if (iter != status_codes.end())
             HumanRead = iter->second;
         std::string path = wk.getLocationWorker().getPath() + "/" + worker->getPathError();
+        path = NormilisePath(path);
         http_response = "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n" + "Content-Type: text/html\r\n" + "Location: http://" + req.getHost() + "/" + path + "\r\n";
+        header_size = http_response.size();
+        body_size = 0;
     }
 }
 
@@ -162,7 +185,7 @@ std::string response::getHttp_response( void )
     return (http_response);
 }
 
-response::response()
+response::response():http_request(NULL), worker(NULL), body_index(0), body_size(-1), header_index(0), header_size(-1), body_sent(0), header_sent(0), FileOpened(false), fd(-1)
 {
 
 }
@@ -181,9 +204,22 @@ response& response::operator=(const response& obj)
 {
     if (this != &obj)
     {
+        printf("Copy Assigned oPERATOR IS CALLED\n");
+        printf("Before setting ->%lld %lu\n", header_size, header_index);
+        printf("To Copy setting %lld %lu\n", obj.header_size, obj.header_index);
+
         http_request = obj.http_request;
-        worker = obj.worker;
         http_response = obj.http_response;
+        file = obj.file;
+        body_index = obj.body_index;
+        body_size = obj.body_size;
+        header_index = obj.header_index;
+        header_size = obj.header_size;
+        body_sent = obj.body_sent;
+        header_sent = obj.header_sent;
+        FileOpened = obj.FileOpened;
+        fd = obj.fd;
+        printf("After setting %lld %lu\n", header_size, header_index);
     }
     return (*this);
 }
@@ -215,4 +251,95 @@ std::string response::getBody_string( void ) const
 std::string response::getFile( void ) const
 {
     return (file);
+}
+
+
+void        response::setHttp_request(request &request)
+{
+    http_request = &request;
+}
+
+void        response::setWorker(Worker &wk)
+{
+    worker = &wk;
+}
+
+size_t      response::getHeader_index( void ) const
+{
+        return (header_index);
+}
+
+long long   response::getHeader_size( void ) const
+{
+    return (header_size);
+}
+
+long long   response::getBody_size( void ) const
+{
+    return (body_size);
+}
+
+size_t      response::getBody_index( void ) const
+{
+    return (body_index);
+}
+
+bool        response::getHeader_sent( void ) const
+{
+    return (header_sent);
+}
+
+bool        response::getBody_sent( void ) const
+{
+    return (body_sent);
+}
+
+void        response::setHeader_index(size_t value)
+{
+    header_index = value;
+}
+
+void        response::setHeader_size(long long  value)
+{
+    header_size = value;
+}
+
+void        response::setBody_size(long long  value)
+{
+    body_size = value;
+}
+
+void        response::setBody_index(size_t  value)
+{
+    body_index = value;
+}
+
+void        response::setHeader_sent(bool  value)
+{
+    header_sent = value;
+}
+
+void        response::setBody_sent( bool  value)
+{
+    body_sent = value;
+}
+
+bool    response::getFileOpened( void ) const
+{
+    return (FileOpened);
+}
+
+int     response::getFd( void ) const
+{
+    return (fd);
+}
+
+void    response::setFileOpened( bool value )
+{
+    FileOpened = value;
+}
+
+void     response::setFd( int value )
+{
+    fd = value;
 }

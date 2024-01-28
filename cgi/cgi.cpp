@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/01/27 16:02:17 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/28 17:07:33 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,8 @@ void CgiEnv::setCgiServerName()
 {
     std::string host;
     std::stringstream stream(worker.getHost());
-    std::cout<<worker.getHost()<<std::endl;
+    std::cout<<"-------->"<<worker.getHost()<<std::endl;
+    
     if (getline(stream, host, ':'))
         envMap["SERVER_NAME"] = host;
     else
@@ -43,8 +44,6 @@ void CgiEnv::setCgiScriptPath()
     std::string fullPath;
     root = worker.getRoot();
     fullPath = root + worker.getPath();
-    std::cout<<"APPAA  "<<fullPath<<std::endl;
-    exit (0);
     
 }
 // void cgiEnv::set

@@ -3,6 +3,8 @@
 
 Client::Client() : http_response(http_request, worker)
 {
+	requestReceived = false;
+	responseSent = false;
 }
 
 Client::~Client()
@@ -22,6 +24,11 @@ Client& Client::operator=(const Client& obj)
 		worker = obj.worker;
 		http_request = obj.http_request;
 		http_response = obj.http_response;
+		socket = obj.socket;
+		requestReceived = obj.requestReceived;
+		responseSent = obj.responseSent;
+		http_response.setHttp_request(http_request);
+		http_response.setWorker(worker);
 	}
 	return (*this);
 }
@@ -29,8 +36,7 @@ Client& Client::operator=(const Client& obj)
 void	Client::ParseRequest(char *buffer, std::vector<ServerBlocks> &serverBlocks)
 {
 	http_request.ParseRequest(buffer);
-	
-    http_request.CheckRequest(serverBlocks, worker);
+    http_request.CheckRequest(serverBlocks, worker);;
 	// printf("ss\n");
 	// printf("size size     %lu\n", http_response.worker->getErrorPages().size());
 }
@@ -53,4 +59,35 @@ request const	&Client::getHttp_request( void ) const
 const Worker &Client::getWorker( void ) const
 {
 	return worker;
+}
+
+void Client::setClientSocket(int fd)
+{
+	this->socket = fd;
+}
+
+void Client::setClientRequestState(bool state)
+{
+	this->requestReceived = state;
+}
+
+void Client::setClientResponseState(bool state)
+{
+	this->responseSent = state;
+}
+
+int Client::getClientSocket() const
+{
+	return this->socket;
+}
+
+bool Client::getClientResponseSate() const
+{
+	return this->responseSent;
+}
+
+bool Client::getClientRequestSate() const
+{
+	return this->requestReceived;
+
 }

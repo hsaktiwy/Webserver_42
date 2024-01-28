@@ -467,14 +467,17 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		UriFormat(uri, method_uri, host);
 		std::string path = "/"  + uri.path;
 		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
-
-		
 		// ServerBlocks block = worker.getBlockWorker();
 		std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
 		std::string index = worker.getIndex();
 		worker.setQuery(uri.query);
-		std::cout << "host " << host << " root " << root  << " index " << index << " path " << path << " query " << uri.query << std::endl;
+		std::cout << "host " << host << " root " << root  << " index " << index << " path " << worker.getPath() << " query " << uri.query << std::endl;
 		bool indexed = false;
+		if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/"))
+		{
+			worker.setCgiStatus(true);
+			return;
+		}
 		if (is_dir == 1 && index.size() != 0)
 		{
 			std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/26 20:35:25 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/27 14:12:27 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 Worker::Worker()
 {
     this->track_status = 0;
+    this->isCgi = false;
 }
 
 ServerBlocks Worker::getBlockWorker() const
@@ -296,4 +297,13 @@ std::string     NormilisePath(std::string &Path)
         }
     }
     return (result);
+}
+
+void Worker::setCgiStatus(bool state)
+{
+    this->isCgi = state;
+}
+bool Worker::getCgiStatus()
+{
+    return isCgi;
 }

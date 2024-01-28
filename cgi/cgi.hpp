@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/01/26 20:46:19 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/27 13:42:07 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ public:
     CgiEnv(const Worker &workerObj);
     void setCgiServerName();
     void setCgiServePort();
-    // void setCgiScriptPath();
+    void setCgiScriptPath();
     // void setCgiPATHINFO();
     void setCgiQueryString();
     std::string &getCgiServerName();

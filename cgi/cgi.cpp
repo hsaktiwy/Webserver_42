@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/01/26 20:46:08 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/27 16:02:17 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,16 @@ void CgiEnv::setCgiQueryString()
 {
     envMap["QUERY_STRING"] = worker.getQuery();
 }
-
+void CgiEnv::setCgiScriptPath()
+{
+    std::string root;
+    std::string fullPath;
+    root = worker.getRoot();
+    fullPath = root + worker.getPath();
+    std::cout<<"APPAA  "<<fullPath<<std::endl;
+    exit (0);
+    
+}
 // void cgiEnv::set
 std::string &CgiEnv::getCgiServerName() 
 {

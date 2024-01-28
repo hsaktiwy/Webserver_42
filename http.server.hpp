@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/26 20:32:22 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/27 14:08:52 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,6 +165,7 @@ private:
     std::vector<std::vector<std::string> > error_page;
     std::vector<std::string> allow_methods;
     int track_status;
+    bool isCgi;
 
 public:
     Worker();
@@ -201,6 +202,8 @@ public:
     void    setIndex2(std::string const &path);
     void    setQuery(std::string const &query);
     void set_track_status(int flag);
+    void setCgiStatus(bool state);
+    bool getCgiStatus();
     int get_track_status();
 ;
 };

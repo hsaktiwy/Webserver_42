@@ -8,6 +8,9 @@ class Client {
 		Worker worker;
 		request http_request;
 		response http_response;
+		int socket;
+		bool requestReceived;
+		bool responseSent;
 	public:
 		Client();
 		~Client();

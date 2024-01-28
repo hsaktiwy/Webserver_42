@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/26 20:50:06 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/28 15:54:46 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -279,7 +279,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
     create_sockets(serverBlocks, sockets);
     init_poll_fds(poll_fds, serverBlocks.size(), sockets);
     std::vector<int> new_connections;
-    
+    std::vector<Client> clients;
     nfds_t size_fd = poll_fds.size();
     while (true)
     {
@@ -296,6 +296,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
                 if (poll_fds[i].fd == sockets[i])
                 {
                     client_socket = create_socket_client(sockets, poll_fds, &size_fd,i);
+                    
                     if (client_socket == 35 || client_socket == -1)
                     {
                         if (client_socket == 35)
@@ -321,6 +322,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
                         CgiEnv cgi(client.getWorker());
                         cgi.setCgiServerName();
                         cgi.setCgiServePort();
+                        cgi.setCgiScriptPath();
                         std::cout<<"SERVER_NAME   : "<<cgi.getCgiServerName()<<" SERVER_PORT :  "<<cgi.getCgiServerPort()<<std::endl;
                         //handle_read(poll_fds, i, &ready_to_write, &size_fd,serverBlocks, response, &flag,&status,human_status,mime_type);
                     }

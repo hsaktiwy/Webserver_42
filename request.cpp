@@ -475,6 +475,7 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		worker.setQuery(uri.query);
 		std::cout << "host " << host << " root " << root  << " index " << index << " path " << path << " query " << uri.query << std::endl;
 		bool indexed = false;
+		
 		if (is_dir == 1 && index.size() != 0)
 		{
 			std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);

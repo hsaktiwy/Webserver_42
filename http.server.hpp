@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   http.server.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/26 20:32:22 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/28 16:21:22 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@
 #include <netdb.h>
 #include <string>
 #include <set>
+#include <signal.h>
 
 
 

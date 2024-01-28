@@ -24,5 +24,5 @@ class response {
         std::string getBody_string( void ) const;
         std::string getFile( void ) const;
 };
-
+std::string mime_types(std::string &extension);
 #endif

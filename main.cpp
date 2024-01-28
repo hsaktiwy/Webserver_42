@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:40 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/24 11:46:25 by adardour         ###   ########.fr       */
+/*   Updated: 2024/01/27 15:48:46 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,13 +136,15 @@ void    iniStatus_codes(std::map<unsigned int, std::string> &status_codes)
     status_codes.insert(std::make_pair(511, "Network Authentication Required"));
 }
 
+
 int main(int c,char **argv)
 {
     tokens_iterator lines;
     tokens_map tokens;
     std::vector<ServerBlocks> serverBlocks;
     std::map<unsigned int, std::string> status_codes;
-
+ 
+    signal(SIGPIPE, SIG_IGN);
     try
     {
         iniStatus_codes(status_codes);

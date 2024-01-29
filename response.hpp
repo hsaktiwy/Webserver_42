@@ -47,8 +47,8 @@ class response {
         void        setBody_index(size_t );
         void        setHeader_sent(bool );
         void        setBody_sent( bool );
-        bool getFileOpened() const;
-        int  getFd() const;
+        bool        getFileOpened() const;
+        int         getFd() const;
         void        setFileOpened( bool value );
         void        setFd( int value );
 

@@ -192,7 +192,9 @@ response::response():http_request(NULL), worker(NULL), body_index(0), body_size(
 
 response::~response()
 {
-
+    std::cerr << "Client Response Destruction " << std::endl;
+    // if (fd != -1)
+    //     close(fd);
 }
 
 response::response(const response& copy)

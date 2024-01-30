@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/29 17:06:16 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/30 18:03:21 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -300,25 +300,38 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
                     std::string body_size;
                     ss << size;
                     ss >> body_size;
-                    body_size = "Content-Length: " + body_size + "\r\nAccept-Ranges: none\r\n\r\n";
+                    body_size = "Content-Length: " + body_size + "\r\nAccept-Ranges: bytes\r\n\r\n";
 
                     resp.setBody_size(size + body_size.size());
                     send(poll_fds[i].fd, body_size.c_str(), body_size.size(), 0);
                     size_t Bindex = resp.getBody_index();
                     resp.setBody_index(Bindex + body_size.size());
-                    // printf("Body size %lld, body_index %lu\n", resp.getBody_size(), resp.getBody_index());
+                    printf("Body size %lld, body_index %lu", resp.getBody_size(), resp.getBody_index());
                     if (resp.getBody_size() == resp.getBody_index())
                         resp.setBody_sent(true);
                     writeBytes -= body_size.size();
                 }
             }
             // printf("Body sent2 %d\n", resp.getBody_sent());
+            static int NOpen;
             if (resp.getBody_sent() == false && resp.getBody_size() != -1 && writeBytes > 0)
             {
                 int fd = resp.getFd();
-                // printf("fd == %d\n", fd);
+                printf("responce file %s_ fd == %d\n", resp.getFile().c_str(),fd);
                 if (fd == -1)
-                    fd = open(file.c_str(), 0644), resp.setFd(fd), resp.setFileOpened(true);
+                {
+                    
+                    fd = open(file.c_str(), O_RDWR);
+                    if(fd == -1)
+                {fprintf(stderr, "    Number of time a file discriptor is opened %d\n", NOpen);
+                        write(2, "Error in the file discritptor wont be opned\n", 44), perror("Open :");}
+                    if (fd > 0)
+                    {
+                        fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+                        NOpen++;
+                    }
+                    resp.setFd(fd), resp.setFileOpened(true);
+                }
                 if (fd > 0)
                 {
                     char buff[writeBytes];
@@ -332,8 +345,11 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
                         if (resp.getBody_size() == resp.getBody_index())
                             resp.setBody_sent(true), close(fd);
                     }
-                    else
-                        write(2, "Something Went Wrong!\n", 22);
+                    else if (bytes == -1)
+                        write(2, "Something Went Wrong!\n", 22), exit(0);
+                    else if (bytes == 0)
+                        write(2, "Noting Read!\n", 22);
+
                 }
             }
             // static int st;
@@ -470,7 +486,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
     std::cout<<GREEN<<"Waiting for an incomming request"<<RESET<<std::endl;
     while (true)
     {
-        printf("poool\n");
         pollRet = poll(poll_fds.data(), poll_fds.size(), TIME_OUT);
         if (pollRet < 0)
         {
@@ -517,6 +532,8 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
             {
                 // if (poll_fds[i].revents == 0)
                 //     continue;
+                 if (poll_fds[i].fd == 5)
+                    std::cerr<<RED<<poll_fds[i].revents<<RESET<< std::endl;
                 size_t client_it;
                 client_it = findClientBySocketFd(ClientsVector, poll_fds[i].fd);
                 if (client_it == ClientsVector.size())
@@ -531,6 +548,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
                     // request = requestHandler(fds, i);
                     // char c;
                     // read(fds[i].fd,&c, 1);
+                    std::cerr << "In request\n";
                     handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, ClientsVector[client_it], status_codes);
                     std::cout<<YELLOW<<"Request sent from Client "<<poll_fds[i].fd<<RESET<<std::endl;
                     poll_fds[i].events = POLLOUT;
@@ -540,13 +558,16 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
                 }
                 else if (poll_fds[i].revents & POLLOUT)
                 {
+                   
                     // printf("2-%lld %lu\n", ClientsVector[client_it].getHttp_response().getHeader_size(), ClientsVector[client_it].getHttp_response().getHeader_index());
-
+                    std::cerr << "In response : ";
                     handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status,mime_type, ClientsVector[client_it], status_codes);
                     // exit(0);
-
+                    std::cerr << ": OUT response \n";
+                    std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;
                     if (ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent())
                     {
+                        std::cerr << "Bro\n";
                         std::cout<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;
                         std::cout<<YELLOW<<"Connection to Client "<<poll_fds[i].fd<<" closed"<<RESET<<std::endl;
                         ClientsVector.erase(ClientsVector.begin() + client_it);

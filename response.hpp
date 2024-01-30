@@ -49,8 +49,9 @@ class response {
         void        setBody_sent( bool );
         bool        getFileOpened() const;
         int         getFd() const;
-        void        setFileOpened( bool value );
-        void        setFd( int value );
+  
+        void            setFileOpened( bool value );
+        void            setFd( int value );
 
 };
 std::string mime_types(std::string &extension);

@@ -2,7 +2,7 @@
 
 request::request()
 {
-
+	RequestRead = HandleRequest = false;
 }
 
 static bool CharacterUri(char c)
@@ -529,6 +529,11 @@ void	request::RequestDisplay( void )
 	std::cout << "Uri scheme : " << uri.scheme  << ",URI authority " << uri.authority  << ",URI path " << uri.path << ",URI query " << uri.query << ",URI fragment " << uri.fragment << std::endl;
 }
 
+void							request::AddToRawRequest(char *buff)
+{
+	req += buff;
+}
+
 request::~request()
 {
  
@@ -559,6 +564,15 @@ request& request::operator=(const request& obj)
 	return (*this);
 }
 
+int request::getHeaderIndex(const std::string &name) const
+{
+	for(size_t i = 0; i < headers.size(); i++)
+	{
+		if (headers[i].name == name)
+			return (i);
+	}
+	return (-1);
+}
 // Getter and Setter
 
 std::string	const			&request::getMethod( void ) const
@@ -631,3 +645,19 @@ void						request::setStatus(int value)
 	status = value;
 }
 
+bool							request::getRequestRead( void ) const
+{
+	return (RequestRead);
+}
+bool							request::getHandleRequest( void ) const
+{
+	return (HandleRequest);
+}
+void							request::setRequestRead(bool value)
+{
+	RequestRead = value;
+}
+void							request::setHandleRequest(bool value)
+{
+	HandleRequest = value;
+}

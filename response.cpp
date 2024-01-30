@@ -121,7 +121,7 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
     {
         if (req.getMethod() == "GET")
         {
-            std::string FileType = GetFileType(req.getUri().path);
+            FileType = GetFileType(req.getUri().path);
             http_response = "HTTP/1.1 200 OK\r\nContent-Type: " + FileType + "\r\n";
             file = wk.getRoot() + req.getUri().path;
             header_size = http_response.size();
@@ -296,6 +296,21 @@ bool        response::getBody_sent( void ) const
     return (body_sent);
 }
 
+bool    response::getFileOpened( void ) const
+{
+    return (FileOpened);
+}
+
+int     response::getFd( void ) const
+{
+    return (fd);
+}
+
+std::string response::getFileType( void ) const
+{
+    return (FileType);
+}
+
 void        response::setHeader_index(size_t value)
 {
     header_index = value;
@@ -326,15 +341,6 @@ void        response::setBody_sent( bool  value)
     body_sent = value;
 }
 
-bool    response::getFileOpened( void ) const
-{
-    return (FileOpened);
-}
-
-int     response::getFd( void ) const
-{
-    return (fd);
-}
 
 void    response::setFileOpened( bool value )
 {
@@ -344,4 +350,24 @@ void    response::setFileOpened( bool value )
 void     response::setFd( int value )
 {
     fd = value;
+}
+
+size_t      response::getFileIndex( void ) const
+{
+    return (FileIndex);
+}
+
+size_t      response::getFileEnd( void ) const
+{
+    return (FileEnd);
+}
+
+void        response::setFileIndex(size_t value)
+{
+    FileIndex = value;
+}
+
+void        response::setFileEnd(size_t value)
+{
+    FileEnd = value;
 }

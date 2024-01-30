@@ -66,6 +66,8 @@ class request {
 		int						status;
 		int						is_dir;
 		int 					is_regular;
+		bool					RequestRead;
+		bool					HandleRequest;
     public:
 		request();
 		~request();
@@ -76,6 +78,8 @@ class request {
 		// Method							getMethod( void ) const; // to get the method when we need it
 		// const std::vector<std::string>&	getHeaders( void ) const;// get the headers after being prased
 		void							RequestDisplay( void );
+		int 							getHeaderIndex(const std::string &name) const;
+		void							AddToRawRequest(char *buff);
 		std::string	const				&getMethod( void ) const;
 		std::string	const				&getMethod_uri( void ) const;
 		t_uri	const					&getUri( void ) const;
@@ -88,6 +92,11 @@ class request {
 		int								getStatus( void ) const;
 		int								getIs_dir( void ) const;
 		int 							getIs_regular( void ) const;
+		bool							getRequestRead( void ) const;
+		bool							getHandleRequest( void ) const;
+
+		void							setRequestRead(bool value);
+		void							setHandleRequest(bool value);
 		void							setError(bool value);
 		void							setStatus(int value);
 };

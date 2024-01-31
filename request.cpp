@@ -2,7 +2,7 @@
 
 request::request()
 {
-
+	RequestRead = HandleRequest = false;
 }
 
 static bool CharacterUri(char c)
@@ -466,6 +466,7 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		// splite uri to scheme, authority, path, query
 		UriFormat(uri, method_uri, host);
 		std::string path = "/"  + uri.path;
+		printf("==>%s\n", path.c_str());
 		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
 		worker.setHost(host);
 		// ServerBlocks block = worker.getBlockWorker();
@@ -476,7 +477,15 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		bool indexed = false;
 		if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/"))
 		{
+			std::string fullpath;
+			std::string rootTmp = worker.getRoot();
+			std::string pathTmp = worker.getPath();
+			if (rootTmp[rootTmp.size() - 1] == '/')
+				rootTmp.pop_back();
+			fullpath = rootTmp+pathTmp;
+			std::cout<< "location : "<<worker.getLocationWorker().getPath()<< " fullpath: "<< fullpath<< " index: "<< worker.getIndex()<<std::endl;
 			worker.setCgiStatus(true);
+			exit (1);
 			return;
 		}
 		if (is_dir == 1 && index.size() != 0)
@@ -529,6 +538,11 @@ void	request::RequestDisplay( void )
 	std::cout << "Uri scheme : " << uri.scheme  << ",URI authority " << uri.authority  << ",URI path " << uri.path << ",URI query " << uri.query << ",URI fragment " << uri.fragment << std::endl;
 }
 
+void							request::AddToRawRequest(char *buff)
+{
+	req += buff;
+}
+
 request::~request()
 {
  
@@ -555,10 +569,21 @@ request& request::operator=(const request& obj)
 		status = obj.status;
 		is_dir = obj.is_dir;
 		is_regular = obj.is_regular;
+		RequestRead  = obj.RequestRead;
+		HandleRequest  = obj.HandleRequest;
 	}
 	return (*this);
 }
 
+int request::getHeaderIndex(const std::string &name) const
+{
+	for(size_t i = 0; i < headers.size(); i++)
+	{
+		if (headers[i].name == name)
+			return (i);
+	}
+	return (-1);
+}
 // Getter and Setter
 
 std::string	const			&request::getMethod( void ) const
@@ -631,3 +656,19 @@ void						request::setStatus(int value)
 	status = value;
 }
 
+bool							request::getRequestRead( void ) const
+{
+	return (RequestRead);
+}
+bool							request::getHandleRequest( void ) const
+{
+	return (HandleRequest);
+}
+void							request::setRequestRead(bool value)
+{
+	RequestRead = value;
+}
+void							request::setHandleRequest(bool value)
+{
+	HandleRequest = value;
+}

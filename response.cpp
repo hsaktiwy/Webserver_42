@@ -121,7 +121,7 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
     {
         if (req.getMethod() == "GET")
         {
-            std::string FileType = GetFileType(req.getUri().path);
+            FileType = GetFileType(req.getUri().path);
             http_response = "HTTP/1.1 200 OK\r\nContent-Type: " + FileType + "\r\n";
             file = wk.getRoot() + req.getUri().path;
             header_size = http_response.size();
@@ -192,7 +192,9 @@ response::response():http_request(NULL), worker(NULL), body_index(0), body_size(
 
 response::~response()
 {
-
+    std::cerr << "Client Response Destruction " << std::endl;
+    // if (fd != -1)
+    //     close(fd);
 }
 
 response::response(const response& copy)
@@ -208,15 +210,19 @@ response& response::operator=(const response& obj)
         printf("Before setting ->%lld %lu\n", header_size, header_index);
         printf("To Copy setting %lld %lu\n", obj.header_size, obj.header_index);
 
-        http_request = obj.http_request;
         http_response = obj.http_response;
+        http_request = obj.http_request;
+        body_string = obj.body_string;
         file = obj.file;
-        body_index = obj.body_index;
-        body_size = obj.body_size;
         header_index = obj.header_index;
+        body_index = obj.body_index;
+        FileIndex = obj.FileIndex;
+        FileEnd = obj.FileEnd;
+        FileType = obj.FileType;
         header_size = obj.header_size;
-        body_sent = obj.body_sent;
+        body_size = obj.body_size;
         header_sent = obj.header_sent;
+        body_sent = obj.body_sent;
         FileOpened = obj.FileOpened;
         fd = obj.fd;
         printf("After setting %lld %lu\n", header_size, header_index);
@@ -294,6 +300,21 @@ bool        response::getBody_sent( void ) const
     return (body_sent);
 }
 
+bool    response::getFileOpened( void ) const
+{
+    return (FileOpened);
+}
+
+int     response::getFd( void ) const
+{
+    return (fd);
+}
+
+std::string response::getFileType( void ) const
+{
+    return (FileType);
+}
+
 void        response::setHeader_index(size_t value)
 {
     header_index = value;
@@ -324,15 +345,6 @@ void        response::setBody_sent( bool  value)
     body_sent = value;
 }
 
-bool    response::getFileOpened( void ) const
-{
-    return (FileOpened);
-}
-
-int     response::getFd( void ) const
-{
-    return (fd);
-}
 
 void    response::setFileOpened( bool value )
 {
@@ -342,4 +354,24 @@ void    response::setFileOpened( bool value )
 void     response::setFd( int value )
 {
     fd = value;
+}
+
+size_t      response::getFileIndex( void ) const
+{
+    return (FileIndex);
+}
+
+size_t      response::getFileEnd( void ) const
+{
+    return (FileEnd);
+}
+
+void        response::setFileIndex(size_t value)
+{
+    FileIndex = value;
+}
+
+void        response::setFileEnd(size_t value)
+{
+    FileEnd = value;
 }

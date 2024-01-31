@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   handle_errors.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/09 12:17:44 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/23 15:43:50 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/31 16:44:26 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ void    handle_directives(std::string &type, std::string &directive,std::string 
 {
     std::string error;
     static int number_of_args = 0;
+    static int number_of_root = 0;
     static std::vector<std::string> error_page_token;
     if (!type.compare("argument"))
     {
@@ -55,6 +56,15 @@ void    handle_directives(std::string &type, std::string &directive,std::string 
         {
             number_of_args++;
             error_page_token.push_back(token);
+        }
+        if (!directive.compare("root"))
+        {
+            number_of_root++;
+            if (number_of_root > 1)
+            {
+                error = "invalid number of arguments in " + directive + " directive in " + convertToString(line);
+                throw error;
+            }
         }
         if (!directive.compare("autoindex"))
         {
@@ -86,6 +96,7 @@ void    handle_directives(std::string &type, std::string &directive,std::string 
         *is_not_semi_colone = 1;
         *argument = 0;
         number_of_args = 0;
+        number_of_root = 0;
         error_page_token.clear();
     }
     else if (!type.compare("directive") || !type.compare("block"))

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/26 19:05:36 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/31 17:29:08 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,6 +224,8 @@ void   init_worker_block(Worker &worker, std::string &host, std::string &path,st
         else if (Is_Directory(tmp_path) == 1)
             is_regular = 1;
     }
+
+    printf("index %s\n",worker.getIndex().c_str());
     // if (is_regular)
     // {
     //     printf("server this %s\n",path.c_str());

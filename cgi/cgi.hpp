@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/01/31 16:09:04 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/31 18:04:14 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ class CgiEnv
 {
 private:
     std::map<std::string, std::string> envMap;
+    
     Worker worker;
     char **cgiMetaData;
 public:

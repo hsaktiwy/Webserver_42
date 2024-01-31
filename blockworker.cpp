@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/27 14:12:27 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/31 17:31:03 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,7 +152,7 @@ void Worker::setIndex(const std::vector<std::string>&   args,const std::string &
 {
     for (size_t i = 0; i < args.size(); i++)
     {
-        if (access(((root + path ) + args[i]).c_str(),F_OK) == 0)
+        if (access(((root + path ) + "/" + args[i]).c_str(),F_OK) == 0)
         {
             this->index = args[i];
             break;

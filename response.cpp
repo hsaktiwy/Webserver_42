@@ -210,15 +210,19 @@ response& response::operator=(const response& obj)
         printf("Before setting ->%lld %lu\n", header_size, header_index);
         printf("To Copy setting %lld %lu\n", obj.header_size, obj.header_index);
 
-        http_request = obj.http_request;
         http_response = obj.http_response;
+        http_request = obj.http_request;
+        body_string = obj.body_string;
         file = obj.file;
-        body_index = obj.body_index;
-        body_size = obj.body_size;
         header_index = obj.header_index;
+        body_index = obj.body_index;
+        FileIndex = obj.FileIndex;
+        FileEnd = obj.FileEnd;
+        FileType = obj.FileType;
         header_size = obj.header_size;
-        body_sent = obj.body_sent;
+        body_size = obj.body_size;
         header_sent = obj.header_sent;
+        body_sent = obj.body_sent;
         FileOpened = obj.FileOpened;
         fd = obj.fd;
         printf("After setting %lld %lu\n", header_size, header_index);

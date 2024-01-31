@@ -560,6 +560,8 @@ request& request::operator=(const request& obj)
 		status = obj.status;
 		is_dir = obj.is_dir;
 		is_regular = obj.is_regular;
+		RequestRead  = obj.RequestRead;
+		HandleRequest  = obj.HandleRequest;
 	}
 	return (*this);
 }

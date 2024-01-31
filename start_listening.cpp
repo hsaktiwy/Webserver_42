@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/31 16:17:51 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/31 20:39:43 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -219,30 +219,33 @@ bool	RangeFormat(const HTTPHeader &header, response  &response, long long FileSi
 	if (header.values.size() == 1)
 	{
 		std::string value = *(header.values.begin());
+        printf("Value %s\n", value.c_str());
 		// Range: bytes=0-1023 bytes=S-|| A=S-E
 		int i = 0;
 		while (value[i] && std::isalpha(value[i]))
-			i++, A+=value[i];
-
+			A += value[i++];
+        printf("A %s\n", A.c_str());
 		if (value[i] && value[i] != '=' && A != "bytes")
 			return (false);
 		i++;
 		while (value[i] && std::isdigit(value[i]))
-			i++, S+=value[i];
+			S+=value[i++];
 		if (value[i] && value[i] != '-')
 			return (false);
 		i++;
 		while (value[i] && std::isdigit(value[i]))
-			i++, E+=value[i];
+			E+=value[i++];
 		if (value[i])
 			return (false);
+        printf("Start string %s End string %s\n", S.c_str(), E.c_str());
 		// check and initial the responce index and the repsonce end;
 		if (S != "")
-			long long start = ft_atoll(S.c_str());
+			start = ft_atoll(S.c_str());
 		if (E != "")
-			long long end = ft_atoll(E.c_str());
+			end = ft_atoll(E.c_str());
 		else
 			end = FileSize - 1;
+        printf(" start %lld, end %lld\n", start, end);
 		if (end <= start || start < 0 || end < 0 || end > FileSize || start > FileSize)
 			return (false);
 		response.setFileIndex(start);
@@ -267,7 +270,8 @@ template <typename T> std::string ToString(T &data)
 	return (result);
 }
 
-std::string	HandleHeaderFileStatus(Client& client, long long size)
+// LMTime mean the last file modification time
+std::string	HandleHeaderFileStatus(Client& client, long long size, long long LMTime)
 {
     const request   &request = client.getHttp_request();
 	std::string ResponseHeader;
@@ -275,7 +279,15 @@ std::string	HandleHeaderFileStatus(Client& client, long long size)
     const std::vector<HTTPHeader> &headers = request.getHeaders();
     int             index;
 	std::string FileSize = ToString(size);
-
+    // cach ttag this can be deleteed in later
+    std::stringstream ss;
+    ss << std::hex << size;
+    std::string hexaTag, lmtime;
+    ss >> hexaTag;
+    ss.str(""), ss.clear();
+    ss << std::hex << LMTime;
+    ss >> lmtime;
+    std::string Etag = "ETag: "+ lmtime + "-" + hexaTag + "\r\n";   
     // search for the Range header
     index  = request.getHeaderIndex("Range");
     if (index != -1)
@@ -292,7 +304,7 @@ std::string	HandleHeaderFileStatus(Client& client, long long size)
 		long long e = resp.getFileEnd();
 		std::string start = ToString(s);
 		std::string end = ToString(e);
-		ResponseHeader += "Content-Range: bytes "+ start +"-"+ end +"/"+ FileSize + "\r\n";
+		ResponseHeader += "Content-Range: bytes "+ start +"-"+ end +"/"+ FileSize + "\r\n" + Etag;
 	}
     // Define if possible to add Accept-Range
 	if (index == -1)
@@ -302,12 +314,13 @@ std::string	HandleHeaderFileStatus(Client& client, long long size)
 	long long e = resp.getFileEnd();
 	long long rest = (e - s) + 1;
 	ResponseHeader += "Content-Length: " + ToString(rest) + "\r\n";
+    ResponseHeader += "Connection: keep-alive\r\n";
     if (index == -1)
     {
         std::string FileType = resp.getFileType();
 		if (FileType.find("video") != std::string::npos
 			|| FileType.find("audio") != std::string::npos)
-			ResponseHeader += "Accept-Ranges: bytes\r\n";
+			ResponseHeader += Etag + "Accept-Ranges: bytes\r\n"; 
     }
     ResponseHeader += "\r\n";
 	((response  &)resp).setBody_size(rest + ResponseHeader.size());
@@ -407,7 +420,8 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
                 if (error == 0)
                 {
                     long long size = stat_buff.st_size;
-                    std::string ExtratHeader = HandleHeaderFileStatus(client, size);
+                    long LMTime = stat_buff.st_mtimespec.tv_sec;
+                    std::string ExtratHeader = HandleHeaderFileStatus(client, size, LMTime);
                     send(poll_fds[i].fd, ExtratHeader.c_str(), ExtratHeader.size(), 0);
                     // printf("Body size %lld, body_index %lu File index %lu File End %lu ", resp.getBody_size(), resp.getBody_index(), resp.getFileIndex(), resp.getFileEnd());
                     if (resp.getBody_size() == resp.getBody_index())
@@ -454,7 +468,7 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
                     char buff[writeBytes];
 					if (resp.getFileEnd() - resp.getFileIndex() < writeBytes)
 						writeBytes = resp.getFileEnd() - resp.getFileIndex();
-                    // printf("rest Off the File %lu(File Index = %lu, File End = %lu) writeBytes Reading Size %lu", resp.getFileEnd() - resp.getFileIndex() , resp.getFileIndex(), resp.getFileEnd(), writeBytes);
+                    printf("rest Off the File %lu(File Index = %lu, File End = %lu) writeBytes Reading Size %lu", resp.getFileEnd() - resp.getFileIndex() , resp.getFileIndex(), resp.getFileEnd(), writeBytes);
                     ssize_t bytes = read(fd, buff, writeBytes);
                     // printf("Number of bytes Readed %lu ,", bytes);
                     if (bytes > 0)
@@ -465,14 +479,18 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 
                         resp.setBody_index(Bindex + bytes);
 						resp.setFileIndex(Findex + bytes);
-                        // printf(", New Body_index %lu New file Index %lu ,", resp.getBody_index(), resp.getFileIndex());
+                        printf(", New Body_index %lu New file Index %lu ,", resp.getBody_index(), resp.getFileIndex());
                         if (resp.getFileEnd() == resp.getFileIndex())
                             resp.setBody_sent(true), close(fd), resp.setFd(-1);
                     }
                     else if (bytes == -1)
                         write(2, "Something Went Wrong!\n", 22), exit(0);
-                    else if (bytes == 0)
-                        write(1, "Noting Read!\n", 13), exit(0);
+                    // else if (bytes == 0)
+                    // {
+
+                    // }
+                    if (resp.getFileEnd() == resp.getFileIndex())
+                        resp.setBody_sent(true), close(fd), resp.setFd(-1);
                 }
             }
         }
@@ -649,6 +667,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
             {
                 // if (poll_fds[i].revents == 0)
                 //     continue;
+                printf("Client Number : %lu\n", ClientsVector.size());
                 size_t client_it;
                 client_it = findClientBySocketFd(ClientsVector, poll_fds[i].fd);
                 if (client_it == ClientsVector.size())
@@ -696,14 +715,17 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
                     // pollFdsSize--;
                     // fds[i].events = POLLIN;
                 }
-                else
-                    std::cerr << RED << poll_fds[i].revents << RESET << std::endl;
-                // else
-                // {
-                //     std::cout<<RED<<"Client "<<poll_fds[i].fd<<" closed the connection"<<RESET<<std::endl;
-                //     close (poll_fds[i].fd);
-                //     poll_fds.erase(poll_fds.begin() + i);
-                // }
+                if (poll_fds[i].revents & POLLHUP)
+                {
+                    std::cout<<RED<<"Client "<<poll_fds[i].fd<<" closed the connection"<<RESET<<std::endl;
+                    if (ClientsVector[client_it].getHttp_response().getFd() != -1)
+                        close(ClientsVector[client_it].getHttp_response().getFd());
+                    ClientsVector.erase(ClientsVector.begin() + client_it);
+                    close(poll_fds[i].fd);
+                    printf("Segfault here\n");
+                    poll_fds.erase(poll_fds.begin() + i);
+                    i--;
+                }
             }
             // if ((poll_fds[i].revents & POLLIN))
             // {

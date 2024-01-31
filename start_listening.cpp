@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/29 00:07:32 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/31 15:19:31 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -317,7 +317,11 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
                 int fd = resp.getFd();
                 // printf("fd == %d\n", fd);
                 if (fd == -1)
-                    fd = open(file.c_str(), 0644), resp.setFd(fd), resp.setFileOpened(true);
+                {
+                    fd = open(file.c_str(),O_RDWR);
+                    if (fd > 0)
+                        resp.setFd(fd), resp.setFileOpened(true);
+                }
                 if (fd > 0)
                 {
                     char buff[writeBytes];
@@ -462,7 +466,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
     
     nfds_t size_fd = poll_fds.size();
     
-    std::cout<<GREEN<<"Waiting for an incomming request"<<RESET<<std::endl;
+    std::cout<<GREEN<<" Waiting for an incomming request "<<RESET<<std::endl;
     while (true)
     {
         pollRet = poll(poll_fds.data(), poll_fds.size(), TIME_OUT);
@@ -479,9 +483,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
             
         for (size_t i = 0; i < poll_fds.size(); i++)
         {
-            if (poll_fds[i].revents == 0)
-                continue;
-            else if (poll_fds[i].fd == sockets[i])
+            if (poll_fds[i].fd == sockets[i] && poll_fds[i].revents & POLLIN)
             {
                 Client client;
                 socklen_t len;
@@ -489,10 +491,9 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
                 len = sizeof(tmpAddr);
                 memset(&tmpAddr, 0, len);
                 
-                acceptRet = accept(poll_fds[i].fd, (struct sockaddr *)&tmpAddr, &len);
+                acceptRet = accept(sockets[i], (struct sockaddr *)&tmpAddr, &len);
                 // if (acceptRet < 0)
                 //     break;
-                printf("???????%lld %lu\n", client.getHttp_response().getHeader_size(),client.getHttp_response().getHeader_index());
                 client.setClientSocket(acceptRet);
                 printf("lol %lld %lu\n", client.getHttp_response().getHeader_size(),client.getHttp_response().getHeader_index());
                 ClientsVector.push_back(client);
@@ -501,15 +502,16 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
                 inet_ntop(AF_INET, &(tmpAddr.sin_addr), clientIP, INET_ADDRSTRLEN);
                 std::cout<<GREEN <<"New incomming connection from the client Socket ";
                 std::cout<<acceptRet<<" with the address : "<<clientIP<<":"<<clientPort<< " To the socket "<<poll_fds[i].fd<<RESET<<std::endl;
-                    // if (fcntl(acceptRet, F_SETFL, O_NONBLOCK | FD_CLOEXEC) < 0)
-                    //     errorHandler(socketsFds, "Fcntl");
+                    if (fcntl(acceptRet, F_SETFL, O_NONBLOCK | FD_CLOEXEC) < 0)
+                    {    perror("fctnl");
+                        exit(1);}
                     memset(&tmp, 0, sizeof(tmp));
                     tmp.fd = acceptRet; // add a client socket to the poll array
                     tmp.events = POLLIN; // waiting for I/O on this socket
                     poll_fds.push_back(tmp); 
                     // pollFdsSize++;
             }
-            else
+            else if (poll_fds[i].fd != sockets[i])
             {
                 // if (poll_fds[i].revents == 0)
                 //     continue;
@@ -527,38 +529,41 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
                     // request = requestHandler(fds, i);
                     // char c;
                     // read(fds[i].fd,&c, 1);
+                    // std::cerr << "In request\n";
                     handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, ClientsVector[client_it], status_codes);
-                    std::cout<<YELLOW<<"Request sent from Client "<<poll_fds[i].fd<<RESET<<std::endl;
-                    poll_fds[i].events = POLLOUT;
+                    std::cout<<YELLOW<<"Read Partion Of CLient Request  "<< poll_fds[i].fd <<RESET<<std::endl;
                     // printf("1-%lld %lu\n", ClientsVector[client_it].getHttp_response().getHeader_size(), ClientsVector[client_it].getHttp_response().getHeader_index());
 
-                        // fds[i].events = POLLOUT;
+                        poll_fds[i].events = POLLOUT;
                 }
                 else if (poll_fds[i].revents & POLLOUT)
                 {
+                   
                     // printf("2-%lld %lu\n", ClientsVector[client_it].getHttp_response().getHeader_size(), ClientsVector[client_it].getHttp_response().getHeader_index());
-
+                    std::cerr << "In response : ";
                     handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status,mime_type, ClientsVector[client_it], status_codes);
                     // exit(0);
-                    std::cout<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;
-                    std::cerr<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;
-
+                    std::cerr << ": OUT response \n";
+                    std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;
                     if (ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent())
                     {
+                        std::cerr << "Bro\n";
+                        std::cout<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;
                         std::cout<<YELLOW<<"Connection to Client "<<poll_fds[i].fd<<" closed"<<RESET<<std::endl;
                         ClientsVector.erase(ClientsVector.begin() + client_it);
                         close(poll_fds[i].fd);
                         poll_fds.erase(poll_fds.begin() + i);
+                        i--;
                     }
                     // pollFdsSize--;
                     // fds[i].events = POLLIN;
                 }
-                else
-                {
-                    std::cout<<RED<<"Client "<<poll_fds[i].fd<<" closed the connection"<<RESET<<std::endl;
-                    close (poll_fds[i].fd);
-                    poll_fds.erase(poll_fds.begin() + i);
-                }
+                // else
+                // {
+                //     std::cout<<RED<<"Client "<<poll_fds[i].fd<<" closed the connection"<<RESET<<std::endl;
+                //     close (poll_fds[i].fd);
+                //     poll_fds.erase(poll_fds.begin() + i);
+                // }
             }
             // if ((poll_fds[i].revents & POLLIN))
             // {

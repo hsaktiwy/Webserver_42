@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/01/28 17:07:33 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/31 16:29:30 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,12 @@ void CgiEnv::setCgiScriptPath()
     fullPath = root + worker.getPath();
     
 }
-// void cgiEnv::set
+void CgiEnv::setCgiPATHINFO()
+{
+    std::string root;
+    root =  worker.getRoot();
+    
+}
 std::string &CgiEnv::getCgiServerName() 
 {
     return envMap["SERVER_NAME"];

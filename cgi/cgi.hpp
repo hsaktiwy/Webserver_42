@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/01/31 18:04:14 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/31 22:29:00 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,15 @@ class CgiEnv
 {
 private:
     std::map<std::string, std::string> envMap;
-    
     Worker worker;
     char **cgiMetaData;
+    std::string cgiRoot; 
+    bool validRoot;
+    bool cgiDir;
 public:
     CgiEnv(const Worker &workerObj);
+
+    void setCgiRoot();
     void setCgiServerName();
     void setCgiServePort();
     void setCgiScriptPath();
@@ -31,9 +35,10 @@ public:
     void setCgiQueryString();
     std::string &getCgiServerName();
     std::string &getCgiServerPort();
-    // std::string getCgiScriptPath();
-    // std::string getCgiPATHINFO();
+    std::string getCgiScriptPath();
+    std::string &getCgiPATHINFO();
     std::string &getCgiQueryString();
+    std::string &getCgiRoot();
 };
 
 #endif

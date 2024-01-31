@@ -3,15 +3,15 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+         #
+#    By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/13 12:12:25 by adardour          #+#    #+#              #
-#    Updated: 2024/01/26 17:12:31 by aalami           ###   ########.fr        #
+#    Updated: 2024/01/31 20:06:57 by hsaktiwy         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC = c++ -std=c++98
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -fsanitze=address
 
 SRC = $(wildcard *.cpp) cgi/cgi.cpp
 HPP = $(wildcard *.hpp) cgi/cgi.hpp

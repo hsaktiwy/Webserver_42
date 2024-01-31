@@ -122,7 +122,13 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
         if (req.getMethod() == "GET")
         {
             FileType = GetFileType(req.getUri().path);
-            http_response = "HTTP/1.1 200 OK\r\nContent-Type: " + FileType + "\r\n";
+            int Range_index = http_request->getHeaderIndex("Range");
+            std::string Code;
+            if (Range_index == -1)
+                Code =  Status(200, status_codes);
+            else
+                Code =  Status(206, status_codes);
+            http_response = "HTTP/1.1 "+ Code +"\r\nContent-Type: " + FileType + "\r\n";
             file = wk.getRoot() + req.getUri().path;
             header_size = http_response.size();
         }

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/01/31 18:12:21 by aalami           ###   ########.fr       */
+/*   Updated: 2024/01/31 22:36:20 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,36 @@
 
 CgiEnv::CgiEnv(const Worker &workerObj) : worker(workerObj), cgiMetaData(NULL) 
 {
+    validRoot = true;
+    cgiDir = false;
 }
 
+void CgiEnv::setCgiRoot() //this function check if the root directive set for the appropriate cgi request have a "cgi-bin" subdirectory 
+{
+    std::string cgiDirecitory = "cgi-bin";
+    DIR *rootPath = opendir(worker.getRoot().c_str());
+
+    if (rootPath != NULL)
+    {
+        validRoot = false ;
+        return;
+    }
+    struct  dirent *entry = readdir(rootPath);
+    while(entry)
+    {
+        if (!cgiDirecitory.compare(entry->d_name))
+        {
+            std::string root = worker.getRoot();
+            if (root[root.size() - 1] != '/')
+                root.push_back('/');
+            cgiRoot = root + cgiDirecitory;
+            cgiDir = true;
+            break;
+        }
+        entry = readdir(rootPath);
+    }    
+    closedir(rootPath);
+}
 void CgiEnv::setCgiServerName()
 {
     std::string host;
@@ -37,26 +65,35 @@ void CgiEnv::setCgiQueryString()
 {
     envMap["QUERY_STRING"] = worker.getQuery();
 }
-void CgiEnv::setCgiScriptPath()
-{
-    std::string root;
-    std::string fullPath;
-    root = worker.getRoot();
-    fullPath = root + worker.getPath();
-    
-}
+
 void CgiEnv::setCgiPATHINFO()
 {
     std::string root;
-    std::string index;
     std::string path;
     root =  worker.getRoot();
     if (root[root.size() - 1] == '/')
         root.pop_back();
-    index = worker.getIndex();
     path = worker.getPath();
-    path = root + path;
+    path = root + path; // full path includes the extra info (PATH_INFO)
     envMap["PATH_INFO"] = path;
+}
+
+void CgiEnv::setCgiScriptPath()
+{
+    std::string root;
+    std::string path;
+    std::string fullPath; // include extra infos
+    std::stringstream stream;
+    root = worker.getRoot();
+    if (root[root.size() - 1] == '/')
+        root.pop_back();
+    path = worker.getPath();
+    fullPath = root + path;
+    
+}
+std::string &CgiEnv::getCgiPATHINFO()
+{
+    return envMap["PATH_INFO"];
 }
 std::string &CgiEnv::getCgiServerName() 
 {
@@ -69,4 +106,8 @@ std::string &CgiEnv::getCgiServerPort()
 std::string &CgiEnv::getCgiQueryString()
 {
     return envMap["QUERY_STRING"];
+}
+std::string &CgiEnv::getCgiRoot()
+{
+    return(cgiRoot);
 }

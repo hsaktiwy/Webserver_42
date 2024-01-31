@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/30 22:06:32 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/01/31 18:09:26 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,7 +224,7 @@ long long ft_atoll(const char* str)
  
     while (std::isdigit(str[i]))
     {
-        result *= 10 + str[i] - '0';
+        result = (result * 10) + str[i] - '0';
         i++;
     }
  

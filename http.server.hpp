@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/30 22:06:42 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/02 17:34:56 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@
 #define MAGENTA "\033[35m"
 #define CYAN    "\033[36m"
 #define WHITE   "\033[37m"
+#define SERVERNAME "Jhin"
 #define TIME_OUT 120000
 #define CHUNK_SIZE 1024
 
@@ -230,6 +231,20 @@ std::string     trim(const std::string& str);
 int             Is_Directory(const std::string &root);
 void            init_worker_block(Worker &worker, std::string &host, std::string &path,std::vector<ServerBlocks> &serverBlocks, int &is_dir, int &is_regular);
 void            check_duplications(std::vector<ServerBlocks> serverBlocks);
+
+// Tools
+void	        stringStreamRest(std::stringstream &ss);
 std::string     NormilisePath(std::string &Path);
 long long       ft_atoll(const char* str);
+
+// Template Function
+template <typename T> std::string ToString(T &data)
+{
+	std::string result;
+	std::stringstream ss;
+	ss << data;
+	ss >> result;
+	return (result);
+}
+
 #endif

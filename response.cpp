@@ -2,7 +2,7 @@
 
 response::response(request &req, Worker &wk): http_request(&req), worker(&wk), body_index(0), body_size(-1), header_index(0), header_size(-1), body_sent(0), header_sent(0), FileOpened(false), fd(-1)
 {
-   printf("%lld %lu\n", header_size, header_index);
+
 }
 
 std::string TimeToString(timespec time)
@@ -36,7 +36,7 @@ void    autoIndexing(request &req, Worker &wk,std::string &response_head, std::s
     DIR     *dir = opendir(Path.c_str());
     struct  dirent *dirent;
 
-    response_head = "HTTP/1.1 200 OK\r\nContent-Type: text/html;charset=UTF-8\r\n";
+    response_head = "HTTP/1.1 200 OK\r\nContent-Type: text/html;charset=UTF-8\r\nServer: " + ((std::string)SERVERNAME) + "\r\n";
     body = "<table>\n<thead>\n    <tr>\n        <th>File Name</th>\n        <th>Last modification</th>\n        <th>Size</th>\n    </tr>\n</thead>\n<tbody>";
     if (dir)
     {
@@ -90,6 +90,14 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
     request &req = *http_request;
     Worker &wk = *worker;
 
+    // Redirection Case
+    if (!wk.getRedirect().empty())
+    {
+        std::string path =  wk.getRedirect();
+        RedirectionResponse(status_codes, path);
+        return ;
+    }
+
     if (req.getError() == false)
     {
         // printf("--------->%d %d\n", req.getIs_dir(), req.getIs_regular());
@@ -99,6 +107,8 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
             {
                 // autoindexing
                 autoIndexing(req, wk,http_response, body_string, status_codes);
+                header_size = http_response.size();
+                body_size = body_string.size();
                 return ;
             }
             else if (req.getIs_dir() == 1 && index.size() == 0)
@@ -134,10 +144,33 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
         }
         else
         {
-            http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html>\r\n<head>\r\n	<title>Valide File</title>\r\n</head>\r\n<body>\r\n	<h1>The response must be here!.</h1>\r\n</body>\r\n</html>\r\n";
+            body_string = "<html>\r\n<head>\r\n	<title>Valide File</title>\r\n</head>\r\n<body>\r\n	<h1>The response must be here!.</h1>\r\n</body>\r\n</html>\r\n";
+            body_size = body_string.size();
+            http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nServer: " + ((std::string)SERVERNAME) + "Content-Length: " + ToString(body_size) + "\r\n\r\n";
             header_size = http_response.size();
+
         }
     }
+}
+
+void    response::RedirectionResponse(std::map<unsigned int, std::string> &status_codes, std::string &path)
+{
+    Worker &wk = *worker;
+    request &req = *http_request;
+    std::string HumanRead;
+    std::stringstream ss;
+    std::string statusCode;
+
+    req.setStatus(301);
+    std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
+    ss << req.getStatus();
+    ss >> statusCode;
+    if (iter != status_codes.end())
+        HumanRead = iter->second;
+    http_response = "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n" + "Content-Type: text/html\r\n" + "Location: "+ path + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n";
+    header_size = http_response.size();
+    body_size = 0;
+    printf("Responcse in redirect mode \n%s\n", http_response.c_str());
 }
 
 void    response::errorresponse(std::map<unsigned int, std::string> &status_codes)
@@ -145,7 +178,7 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
     Worker &wk = *worker;
     request &req = *http_request;
     std::string HumanRead;
-    std::stringstream ss,ss2;
+    std::stringstream ss;
     std::string statusCode;
 
     worker->setPathError(worker->getErrorPages(), req.getStatus(),worker->getRoot());
@@ -164,26 +197,31 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
         http_response += "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n";
         http_response += "Content-Type: text/html\r\n";
         std::string size;
-        ss2 << body_string.size();
-        ss2 >> size;
-        http_response += "Content-Length: " + size + "\r\n\r\n";
+        ss << body_string.size();
+        ss >> size;
+        http_response += "Content-Length: " + size + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n\r\n";
         body_size = body_string.size();
         header_size = http_response.size();
     }
     else
     {
-        req.setStatus(301);
-        std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
-        ss << req.getStatus();
-        ss >> statusCode;
-        if (iter != status_codes.end())
-            HumanRead = iter->second;
         std::string path = wk.getLocationWorker().getPath() + "/" + worker->getPathError();
         path = NormilisePath(path);
-        http_response = "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n" + "Content-Type: text/html\r\n" + "Location: http://" + req.getHost() + "/" + path + "\r\n";
-        header_size = http_response.size();
-        body_size = 0;
+        RedirectionResponse(status_codes, path);
     }
+    // {
+    //     // req.setStatus(301);
+    //     // std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
+    //     // ss << req.getStatus();
+    //     // ss >> statusCode;
+    //     // if (iter != status_codes.end())
+    //     //     HumanRead = iter->second;
+    //     // std::string path = wk.getLocationWorker().getPath() + "/" + worker->getPathError();
+    //     // path = NormilisePath(path);
+    //     // http_response = "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n" + "Content-Type: text/html\r\n" + "Location: http://" + req.getHost() + "/" + path + "\r\n";
+    //     // header_size = http_response.size();
+    //     // body_size = 0;
+    // }
 }
 
 std::string response::getHttp_response( void )
@@ -198,9 +236,6 @@ response::response():http_request(NULL), worker(NULL), body_index(0), body_size(
 
 response::~response()
 {
-    std::cerr << "Client Response Destruction " << std::endl;
-    // if (fd != -1)
-    //     close(fd);
 }
 
 response::response(const response& copy)

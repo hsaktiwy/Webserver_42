@@ -235,7 +235,7 @@ void	request::ParseRequest(char *r)
 	status = 200;
 	size_t index = 0;
 	// Turn any none quoted  *SP or HT or LWS to one space
-	// std::cout << "Before Request form :\n" << req <<std::endl;
+	std::cout << "Before Request form :\n" << req <<std::endl;
 	replaceConsecutiveSpaces(HTTPrequest, req);
 	// Define the method  ?
 	// printf("><<><><><%d %d\n", error, status);

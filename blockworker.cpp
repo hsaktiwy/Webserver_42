@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   blockworker.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/27 14:12:27 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/02 17:00:15 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -277,26 +277,6 @@ void Worker::setQuery(const std::string &query)
 std::string Worker::getQuery() const
 {
     return(this->query);
-}
-
-std::string     NormilisePath(std::string &Path)
-{
-    std::string result;
-    bool slash = false;
-    for (size_t i = 0; i < Path.size(); i++)
-    {
-        if (Path[i] == '/' && slash == false)
-        {
-            result += '/';
-            slash = true;
-        }
-        else if (Path[i] != '/')
-        {
-            result += Path[i];
-            slash = false;
-        }
-    }
-    return (result);
 }
 
 void Worker::setCgiStatus(bool state)

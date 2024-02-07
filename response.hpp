@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   response.hpp                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/02/07 11:15:50 by hsaktiwy          #+#    #+#             */
+/*   Updated: 2024/02/07 11:15:51 by hsaktiwy         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 #include "request.hpp"
@@ -32,6 +44,8 @@ class response {
 		void        errorresponse(std::map<unsigned int, std::string> &status_codes);
 		void        RedirectionResponse(std::map<unsigned int, std::string> &status_codes, std::string &path);
 		std::string Status(unsigned int status, std::map<unsigned int, std::string> &status_codes);
+		void		Get(std::map<unsigned int, std::string> &status_codes);
+		void		Post(std::map<unsigned int, std::string> &status_codes);
 
 		std::string	getHttp_response( void );
 		std::string	getHttp_response( void ) const;

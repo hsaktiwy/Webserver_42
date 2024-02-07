@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/02 17:34:56 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/07 22:43:52 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@
 #define CYAN    "\033[36m"
 #define WHITE   "\033[37m"
 #define SERVERNAME "Jhin"
-#define TIME_OUT 120000
+#define TIME_OUT 60000
 #define CHUNK_SIZE 1024
 
 const std::string DEFAULT_CONFIG_PATH = "/Users/adardour/Desktop/www/configs/default.conf";
@@ -173,10 +173,12 @@ private:
     std::string autoindex;
     std::string max_body_size;
     std::string path_error_page;
+    std::string path_upload;
     std::vector<std::vector<std::string> > error_page;
     std::vector<std::string> allow_methods;
     int track_status;
     bool isCgi;
+
 
 public:
     Worker();
@@ -192,6 +194,7 @@ public:
     std::string    getPathError() const;
     std::string getAutoIndex() const;
     std::string &get_max_body_size();
+    std::string &getPathUpload();
     std::vector<std::string> const &getAllowMethods() const;
     std::vector<std::vector<std::string> >  &getErrorPages() ;
     void    setBlockWorker(const ServerBlocks& blocks);
@@ -212,11 +215,11 @@ public:
     void    setPathError(const std::vector<std::vector<std::string> > &error_page, unsigned int status, const std::string &root);
     void    setIndex2(std::string const &path);
     void    setQuery(std::string const &query);
+    void    setPathUpload(std::string const &path);
     void set_track_status(int flag);
     void setCgiStatus(bool state);
     bool getCgiStatus();
     int get_track_status();
-;
 };
 
 void            start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks, std::map<unsigned int, std::string> &status_codes);
@@ -236,6 +239,8 @@ void            check_duplications(std::vector<ServerBlocks> serverBlocks);
 void	        stringStreamRest(std::stringstream &ss);
 std::string     NormilisePath(std::string &Path);
 long long       ft_atoll(const char* str);
+void	        *ft_memset(void *b, int c, size_t len);
+void	        ExtractValues(std::string &str, std::string  &holder, size_t &index);
 
 // Template Function
 template <typename T> std::string ToString(T &data)

@@ -51,3 +51,18 @@ std::string     NormilisePath(std::string &Path)
 	}
 	return (result);
 }
+
+void	ExtractValues(std::string &str, std::string  &holder, size_t &index)
+{
+	char c = '\0';
+	while (str[index])
+	{
+		if (str[index] == '\"' && c != '\"')
+			c = '\"';
+		else if ((str[index] == '\"' && c == '\"') || (str[index] == ' ' && c == '\0'))
+			break;
+		else
+			holder += str[index];
+		index++;
+	}
+}

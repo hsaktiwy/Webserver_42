@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/02 16:59:41 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/07 18:32:31 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,6 +111,7 @@ std::string getTokenType(const std::string& token)
     tokenTypes.insert(std::make_pair("error_page", "directive"));
     tokenTypes.insert(std::make_pair("autoindex", "directive"));
     tokenTypes.insert(std::make_pair("allow_methods", "directive"));
+    tokenTypes.insert(std::make_pair("uploads", "directive"));
     tokenTypes.insert(std::make_pair("index", "directive"));
     tokenTypes.insert(std::make_pair("root", "directive"));
     tokenTypes.insert(std::make_pair("to", "directive"));

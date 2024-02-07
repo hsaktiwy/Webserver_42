@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   request.hpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
+/*   Updated: 2024/02/07 22:30:12 by hsaktiwy         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
@@ -8,8 +20,9 @@
 #include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "http.server.hpp"
 // #include <dirent.h>
-#include "WorkerInit.hpp"
+// #include "WorkerInit.hpp"
 
 // special character
 #define CRLF "\r\n"
@@ -23,9 +36,17 @@
 typedef struct t_HTTPHeader
 {
 	std::string				name;
-	std::list<std::string>	values;
+	std::string				values;
 	bool					error;
 	int						status;
+
+	// this info are for POTS method handling
+	std::string				filename;
+	std::string				Form_name;
+	std::string 			boundry;
+	size_t					length;
+	long long				begin;
+	long long				end;
 } HTTPHeader;
 
 // enum that will have the type of method used
@@ -45,7 +66,7 @@ typedef  enum{
 typedef struct Uri
 {
 	URI_Type	type;
-	std::string	scheme;
+	std::string	scheme;//http:: 
 	std::string	authority;// this is the host
 	std::string	path; // our path
 	std::string	query; // query
@@ -54,6 +75,7 @@ typedef struct Uri
 
 class request {
     private:
+		size_t					request_length;
 		std::string				method;
 		std::string				method_uri;
 		t_uri					uri;
@@ -79,7 +101,7 @@ class request {
 		// const std::vector<std::string>&	getHeaders( void ) const;// get the headers after being prased
 		void							RequestDisplay( void );
 		int 							getHeaderIndex(const std::string &name) const;
-		void							AddToRawRequest(char *buff);
+		void							AddToRawRequest(char *buff,  ssize_t bytes_read);
 		std::string	const				&getMethod( void ) const;
 		std::string	const				&getMethod_uri( void ) const;
 		t_uri	const					&getUri( void ) const;
@@ -94,7 +116,9 @@ class request {
 		int 							getIs_regular( void ) const;
 		bool							getRequestRead( void ) const;
 		bool							getHandleRequest( void ) const;
+		size_t							getRequestLength( void ) const;
 
+		// void							setRequestLength(bool value);
 		void							setRequestRead(bool value);
 		void							setHandleRequest(bool value);
 		void							setError(bool value);

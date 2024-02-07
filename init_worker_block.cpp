@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/02 16:06:37 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/07 22:23:09 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,10 +69,10 @@ void    setDirectives(T &directives,Worker &worker)
 		{
 				worker.setIndex(directives[i].getArgument(),worker.getRoot());//, worker.get);
 		}
-		// else if (!directives[i].getDirective().compare("index"))
-		// {
-		//         worker.setIndex(directives[i].getArgument(),worker.getRoot());//, worker.get);
-		// }
+		else if (!directives[i].getDirective().compare("uploads"))
+		{
+				worker.setPathUpload(directives[i].getArgument()[0]);
+		}
 	}
     
 }
@@ -99,7 +99,7 @@ void find_ip_address(const std::string &host,std::string &ipAddresses)
 {
     
 	struct addrinfo hints, *result, *p;
-	std::memset(&hints, 0, sizeof(hints));
+	ft_memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 
@@ -202,10 +202,13 @@ void   init_worker_block(Worker &worker, std::string &host, std::string &path,st
 	setDirectives(worker.getLocationWorker().getDirectives(),worker);
 	// if (flag == 1 && !worker.getIndex().empty())
 	//     worker.setIndex2(((std::string &)worker.getLocationWorker().getPath()) + "/" + worker.getIndex());
+	printf("set allowed methode %lu\n", worker.getAllowMethods().size());
 	setAllowedmethods(worker,worker.getLocationWorker().getDirectives());
-
+	
 	if (worker.getAllowMethods().size() == 0)
+	{
 		setAllowedmethods(worker,worker.getBlockWorker().getDirectives());
+	}
 		
 	setErrorPages(worker,worker.getLocationWorker().getDirectives());
 	if (worker.getErrorPages().size() == 0)

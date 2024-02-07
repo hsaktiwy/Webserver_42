@@ -1,8 +1,21 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   request.cpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
+/*   Updated: 2024/02/07 22:28:10 by hsaktiwy         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "request.hpp"
 
 request::request()
 {
 	RequestRead = HandleRequest = false;
+	request_length = 0;
 }
 
 static bool CharacterUri(char c)
@@ -105,6 +118,7 @@ static void	ParseHeaders(std::vector<HTTPHeader> &headers, std::string &request,
 {
 	std::string tmp;
 	std::string delimiter = "\r\n";
+	std::string boundary;
 	bool stop = false;
 
 	while (!stop)
@@ -112,6 +126,7 @@ static void	ParseHeaders(std::vector<HTTPHeader> &headers, std::string &request,
 		if (index != std::string::npos)
 		{
 			HTTPHeader 	header;
+			header.end = header.begin = -1;
 			size_t i = 0;
 			// get a header
 			if (!CheckForBody(request, index))
@@ -136,17 +151,25 @@ static void	ParseHeaders(std::vector<HTTPHeader> &headers, std::string &request,
 					i++;
 				// should i handle seperators ? 
 				while (tmp[i])
-				{
-					if (tmp[i] == ' ')
-					{
-						if (value.size() > 0)
-							header.values.push_back(value), value = "";
-						i++;
-					}
 					value += tmp[i++];
-					if (!tmp[i])
-						if (value.size() > 0)
-							header.values.push_back(value), value = "";
+				// store the value of the header
+				header.values = value;
+				// after all this let us now identifie the header with the name of Content that have the multipart/form-data
+				if (header.name == "Content-Type")
+				{
+					std::string Format = "multipart/form-data;";
+					size_t pos = header.values.find(Format);
+					if (pos == 0)
+					{
+						std::string express = "boundary=";
+						size_t pos2 = header.values.find(express);
+						if (pos2 != std::string::npos && pos2 > pos + Format.size())
+						{
+							pos2 += express.size();
+							ExtractValues(header.values, boundary, pos2);
+							header.boundry = boundary;
+						}
+					}
 				}
 				headers.push_back(header);
 			}
@@ -220,7 +243,7 @@ static void	GetRequestHost(std::vector<HTTPHeader> &headers, std::string &host)
 	{
 		if (iter->name == "Host")
 		{
-			host = iter->values.front();
+			host = iter->values;
 			return ;
 		}
 	}
@@ -247,8 +270,9 @@ void	request::ParseRequest(char *r)
 	// printf("><<><><><%d %d\n", error, status);
 
 	GetRequestHost(headers, host);
+	RequestDisplay();
 	// printf("><<><><><%d %d\n", error, status);
-
+	// exit(0);
 	// files, plus check the syntaxe
 }
 
@@ -331,73 +355,73 @@ bool	ft_strcmp(const char *s1, const char *s2)
 	return (true);
 }
 
-static bool	CheckPathExistance(t_uri &uri, std::string root)
-{
-	// DIR *dir;
-	// struct dirent *dirent;
-	std::string src,path;
-	bool is_Directory = (uri.path[uri.path.size() - 1] == '/') ? true : false;
-	std::string file;
-	src = ((root[0] == '/') ? "" : "/") + root + ((root[root.size() - 1] == '/') ? "" : "/") + uri.path;
-	struct stat *statbuff = NULL;
-	// std::cout << src << std::endl;
-	int res = access(src.c_str(), F_OK | R_OK);
+// static bool	CheckPathExistance(t_uri &uri, std::string root)
+// {
+// 	// DIR *dir;
+// 	// struct dirent *dirent;
+// 	std::string src,path;
+// 	bool is_Directory = (uri.path[uri.path.size() - 1] == '/') ? true : false;
+// 	std::string file;
+// 	src = ((root[0] == '/') ? "" : "/") + root + ((root[root.size() - 1] == '/') ? "" : "/") + uri.path;
+// 	struct stat *statbuff = NULL;
+// 	// std::cout << src << std::endl;
+// 	int res = access(src.c_str(), F_OK | R_OK);
 
-	// std::cout << " res " << res << std::endl;
-	if (res == 0)
-		return (true);
-	// path = src;
-	// size_t s = path.rfind("/");
-	// if (s != std::string::npos)
-	// 	path = path.substr(0, s);
-	// std::cout << " Path " << path << std::endl;
-	// dir = opendir(path.c_str());
-	// if (dir)
-	// {
-	// 	if (s != std::string::npos)
-	// 	{
-	// 		std::string file = src.substr(s + 1);
-	// 		bool stop = false;
-	// 		while (!stop)
-	// 		{
-	// 			dirent = readdir(dir);
-	// 			if (dirent)
-	// 			{
-	// 				std::cout << dirent->d_name << std::endl;
-	// 				if (is_Directory && dirent->d_type == DT_DIR)
-	// 				{
-	// 					std::string tmp = file;
-	// 					tmp[tmp.size() - 1] = '\0';
-	// 					if (ft_strcmp(dirent->d_name, file.c_str()))
-	// 					{
-	// 						if (closedir(dir) == -1)
-	// 							std::cerr << "Error \n	closedir Failed" << std::endl;
-	// 						return (true);
-	// 					}
-	// 				}
-	// 				else
-	// 				{
-	// 					if (ft_strcmp(dirent->d_name, file.c_str()))
-	// 					{
-	// 						if (closedir(dir) == -1)
-	// 							std::cerr << "Error \n	closedir Failed" << std::endl;
-	// 						return (true);
-	// 					}
-	// 				}
-	// 			}
-	// 			else
-	// 				stop = true;
-	// 		}
-	// 	}
-	// 	else
-	// 	{
-	// 		if (closedir(dir) == -1)
-	// 			std::cerr << "Error \n	closedir Failed" << std::endl;
-	// 		return (true);
-	// 	}
-	// }
-	return (false);
-}
+// 	// std::cout << " res " << res << std::endl;
+// 	if (res == 0)
+// 		return (true);
+// 	// path = src;
+// 	// size_t s = path.rfind("/");
+// 	// if (s != std::string::npos)
+// 	// 	path = path.substr(0, s);
+// 	// std::cout << " Path " << path << std::endl;
+// 	// dir = opendir(path.c_str());
+// 	// if (dir)
+// 	// {
+// 	// 	if (s != std::string::npos)
+// 	// 	{
+// 	// 		std::string file = src.substr(s + 1);
+// 	// 		bool stop = false;
+// 	// 		while (!stop)
+// 	// 		{
+// 	// 			dirent = readdir(dir);
+// 	// 			if (dirent)
+// 	// 			{
+// 	// 				std::cout << dirent->d_name << std::endl;
+// 	// 				if (is_Directory && dirent->d_type == DT_DIR)
+// 	// 				{
+// 	// 					std::string tmp = file;
+// 	// 					tmp[tmp.size() - 1] = '\0';
+// 	// 					if (ft_strcmp(dirent->d_name, file.c_str()))
+// 	// 					{
+// 	// 						if (closedir(dir) == -1)
+// 	// 							std::cerr << "Error \n	closedir Failed" << std::endl;
+// 	// 						return (true);
+// 	// 					}
+// 	// 				}
+// 	// 				else
+// 	// 				{
+// 	// 					if (ft_strcmp(dirent->d_name, file.c_str()))
+// 	// 					{
+// 	// 						if (closedir(dir) == -1)
+// 	// 							std::cerr << "Error \n	closedir Failed" << std::endl;
+// 	// 						return (true);
+// 	// 					}
+// 	// 				}
+// 	// 			}
+// 	// 			else
+// 	// 				stop = true;
+// 	// 		}
+// 	// 	}
+// 	// 	else
+// 	// 	{
+// 	// 		if (closedir(dir) == -1)
+// 	// 			std::cerr << "Error \n	closedir Failed" << std::endl;
+// 	// 		return (true);
+// 	// 	}
+// 	// }
+// 	return (false);
+// }
 
 std::string	get_root(std::vector<Directives> &directives, std::vector<LocationsBlock>& locations, t_uri& uri)
 {
@@ -501,14 +525,17 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 			if (error == false && access(check.c_str(), rigths) != 0)
 				error = true, status = 403;
 		}
-		std::vector <std::string> allowedMethod = worker.getAllowMethods();
+		std::vector<std::string> allowedMethod = worker.getAllowMethods();
+		printf("ddd %s\n",worker.getAllowMethods()[0].c_str());
 		if (allowedMethod.size() != 0)
 		{
 			if (find(allowedMethod.begin(), allowedMethod.end(), method) == allowedMethod.end())
 				error = true, status = 405;
 		}
+		printf("--------------------\n");
 	}
 	// RequestDisplay();
+
 }
 
 void	request::RequestDisplay( void )
@@ -516,11 +543,12 @@ void	request::RequestDisplay( void )
 	std::cout << "methode : " << method << ", uri " << method_uri << ", http protocol : " << http << " hostname : " << host << " error " << error << " status " << status <<std::endl;
 	for (std::vector<HTTPHeader>::iterator iter = headers.begin();  iter != headers.end(); iter++)
 	{
-		std::cout <<"--> "<< iter->name << " : ";
-		for(std::list<std::string>::iterator it = iter->values.begin(); it != iter->values.end(); it++)
-		{
-			std::cout << *it << " ";
-		}
+		std::cout <<"--> " << iter->name << " : ";
+		std::cout << iter->values << std::endl;
+		std::cout <<"Form_name: " << iter->Form_name << " , Filename " << iter->filename << ", Probable length in bits = " << iter->end - iter->begin << ", Boundary " << iter->boundry << std::endl;
+		long long s = iter->begin;
+		while (s > 0 && s < req.size() && req[s])
+			std::cout << req[s];
 		std::cout << std::endl;
 	}
 	std::cout << "Body : \n";
@@ -529,14 +557,18 @@ void	request::RequestDisplay( void )
 	std::cout << "Uri scheme : " << uri.scheme  << ",URI authority " << uri.authority  << ",URI path " << uri.path << ",URI query " << uri.query << ",URI fragment " << uri.fragment << std::endl;
 }
 
-void							request::AddToRawRequest(char *buff)
+
+void							request::AddToRawRequest(char *buff, ssize_t bytes_read)
 {
-	req += buff;
+	printf("request_length %lu\n", request_length);
+	request_length += bytes_read;
+	for(ssize_t i = 0; i < bytes_read; i++)
+		req.push_back(buff[i]);
 }
 
 request::~request()
 {
- 
+	std::cout << "Request Detroyed\n";
 }
 
 request::request(const request& copy)
@@ -546,8 +578,10 @@ request::request(const request& copy)
 
 request& request::operator=(const request& obj)
 {
+	std::cout << "Request Copied\n";
 	if (this != &obj)
 	{
+		request_length = obj.request_length;
 		method = obj.method;
 		method_uri = obj.method_uri;
 		uri = obj.uri;
@@ -632,6 +666,22 @@ int						request::getIs_dir( void ) const
 	return (is_dir);
 }
 
+bool							request::getRequestRead( void ) const
+{
+	return (RequestRead);
+}
+
+bool							request::getHandleRequest( void ) const
+{
+	return (HandleRequest);
+}
+
+
+size_t							request::getRequestLength( void ) const
+{
+	return (request_length);
+}
+
 int 					request::getIs_regular( void ) const
 {
 	return (is_regular);
@@ -647,14 +697,6 @@ void						request::setStatus(int value)
 	status = value;
 }
 
-bool							request::getRequestRead( void ) const
-{
-	return (RequestRead);
-}
-bool							request::getHandleRequest( void ) const
-{
-	return (HandleRequest);
-}
 void							request::setRequestRead(bool value)
 {
 	RequestRead = value;

@@ -99,6 +99,8 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
             {
                 // autoindexing
                 autoIndexing(req, wk,http_response, body_string, status_codes);
+                header_size = http_response.size();
+                body_size = body_string.size();
                 return ;
             }
             else if (req.getIs_dir() == 1 && index.size() == 0)

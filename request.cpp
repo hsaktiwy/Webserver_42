@@ -1,4 +1,5 @@
 #include "request.hpp"
+#include "./cgi/cgi.hpp"
 
 request::request()
 {
@@ -477,13 +478,16 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		bool indexed = false;
 		if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/"))
 		{
+			CgiEnv obj(worker);
+			// obj.setPathUriVector();
+			exit (1);
 			std::string fullpath;
 			std::string rootTmp = worker.getRoot();
 			std::string pathTmp = worker.getPath();
 			if (rootTmp[rootTmp.size() - 1] == '/')
 				rootTmp.pop_back();
 			fullpath = rootTmp+pathTmp;
-			std::cout<< "location : "<<worker.getLocationWorker().getPath()<< " fullpath: "<< fullpath<< " index: "<< worker.getIndex()<<std::endl;
+			std::cout<< "location : "<<worker.getLocationWorker().getPath()<< " fullpath: "<< fullpath<< " index: " << worker.getIndex()<<" autoindex:"<< worker.getAutoIndex()<<std::endl;
 			worker.setCgiStatus(true);
 			exit (1);
 			return;

@@ -6,16 +6,23 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/07 22:28:10 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/08 23:25:40 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "request.hpp"
 
-request::request()
+request::request(): RequestRead(false), Parsed_StartLine(false), Parsed_Header(false), Body_Exist(false), Parsed_Body(false), ContentLengthExist(false), HandleRequest(false), R_Method(false), R_URI(false), R_PROTOCOL(false), R_FUll_HEADERS(false), R_FULL_BODY(false)
 {
-	RequestRead = HandleRequest = false;
+	FillingBuffer = false;
+	SLValidity = false;
 	request_length = 0;
+	error = false;
+	status = 200;
+	left_CR = false;
+	NewLine = false;
+	R_HEADER = true;
+	R_VALUE = true;
 }
 
 static bool CharacterUri(char c)
@@ -248,32 +255,318 @@ static void	GetRequestHost(std::vector<HTTPHeader> &headers, std::string &host)
 		}
 	}
 }
-void	request::ParseRequest(char *r)
+// void	request::ParseRequest(char *r)
+// {
+// 	req = r;
+// 	std::string HTTPrequest;
+// 	// HTTPHeader HTTPHeaders;
+
+// 	error = false;
+// 	status = 200;
+// 	size_t index = 0;
+// 	// Turn any none quoted  *SP or HT or LWS to one space
+// 	std::cout << "Before Request form :\n" << req <<std::endl;
+// 	replaceConsecutiveSpaces(HTTPrequest, req);
+// 	// Define the method  ?
+// 	// printf("><<><><><%d %d\n", error, status);
+// 	MethodParsing(error, status, HTTPrequest, method, method_uri, http, index);
+// 	// printf("><<><><><%d %d\n", error, status);
+
+// 	// parsthe headers
+// 	ParseHeaders(headers, req, body, index, error, status);
+// 	// printf("><<><><><%d %d\n", error, status);
+
+// 	GetRequestHost(headers, host);
+// 	RequestDisplay();
+// 	// printf("><<><><><%d %d\n", error, status);
+// 	// exit(0);
+// 	// files, plus check the syntaxe
+// }
+
+static	bool	getToken(char *buff, size_t &index, ssize_t bytes, std::string &holder, bool &boolean, bool &readStatus)
 {
-	req = r;
-	std::string HTTPrequest;
-	// HTTPHeader HTTPHeaders;
+	while (index < bytes && buff[index] != ' ')
+	{
+		if (buff[index] == '\r' || buff[index] == '\n')
+			return (false);
+		holder += buff[index++];
+		readStatus = true;
+	}
+	// if i reach buffer limites
+	if (index < bytes && buff[index] == ' ')
+	{
+		readStatus = false;
+		boolean = true;	
+	}
+	return (true);
+}
 
-	error = false;
-	status = 200;
+bool	is_ctl(char c)
+{
+	if ((c >= 0 && c <= 31) || c == 127)
+		return (true);
+	return (false);
+}
+
+bool	is_seperator(char c)
+{
+	if (c == '(' || c == ')' || c == '<' || c == '>' || c == '@'
+		|| c == ',' || c == ';' || c == ':' || c == '\\' || c == '\"'
+		|| c == '/' || c == '[' || c == ']' || c == '?' || c == '='
+		|| c == '{' || c == '}' || c == SP || c == HT )
+		return (true);
+	return (false);
+}
+
+void	AddEmptyNode(std::vector<HTTPHeader> &vec)
+{
+	HTTPHeader empty;
+	vec.push_back(empty);
+}
+
+void	request::ParseRequest(char *buff, ssize_t bytes_size)
+{
+	// Check if the start line is parsed
+	// static int i;
+	// if (i >= 13)
+	// {
+	// 	exit(0);
+	// }
+	// i++;
+	std::string allowedMethod[] = {"POST", "GET", "DELETE"};
 	size_t index = 0;
-	// Turn any none quoted  *SP or HT or LWS to one space
-	std::cout << "Before Request form :\n" << req <<std::endl;
-	replaceConsecutiveSpaces(HTTPrequest, req);
-	// Define the method  ?
-	// printf("><<><><><%d %d\n", error, status);
-	MethodParsing(error, status, HTTPrequest, method, method_uri, http, index);
-	// printf("><<><><><%d %d\n", error, status);
-
-	// parsthe headers
-	ParseHeaders(headers, req, body, index, error, status);
-	// printf("><<><><><%d %d\n", error, status);
-
-	GetRequestHost(headers, host);
-	RequestDisplay();
-	// printf("><<><><><%d %d\n", error, status);
-	// exit(0);
-	// files, plus check the syntaxe
+	if (!Parsed_StartLine)
+	{
+		printf("--HERE\n");
+		if (!R_Method)
+		{
+			// check if the buff start with sapce this case is not valide at all
+			if (FillingBuffer == false && index < bytes_size && buff[index] == ' ')
+			{
+				error = true, status = 400;
+				return ;
+			}
+			// new let us get our method if it possible
+			if (!getToken(buff, index, bytes_size, method, R_Method, FillingBuffer))
+			{
+				error = true, status = 400;
+				return ;
+			}
+		}
+		printf("%s _ %s _ %s\n", (R_Method) ? "true":"false", (FillingBuffer) ? "true":"false", (R_Method && !R_URI && index < bytes_size) ? "true":"false");
+		if (R_Method && !R_URI && index < bytes_size)
+		{
+			// i will try to avoid all spaces
+			while (FillingBuffer == false && index < bytes_size && buff[index] == ' ')
+				index++;
+			// now let try to get the Fully URI
+			if (!getToken(buff, index, bytes_size, method_uri, R_URI, FillingBuffer))
+			{
+				error = true, status = 400;
+				return ;
+			}
+			printf("%s _ %s _ %s _ valide index %s\n", (R_Method) ? "true":"false", (FillingBuffer) ? "true":"false", (R_Method && !R_URI)? "true":"false", (index < bytes_size)? "true":"false" );
+		}
+		printf("%s _ %s _ %s _ next condition %s\n", (R_Method) ? "true":"false", (FillingBuffer) ? "true":"false", (R_URI) ? "true":"false", (R_URI && !R_PROTOCOL && index < bytes_size) ? "true":"false");
+		if (R_URI && !R_PROTOCOL && index < bytes_size)
+		{
+			while (FillingBuffer == false && index < bytes_size && buff[index] == ' ')
+				index++;
+			// now let try to get the Fully URI
+			while (index < bytes_size && buff[index] != ' ')
+			{
+				// suppose we will handle only the \r\n clients request
+				if (buff[index] == '\r' || buff[index] == '\n')
+					break;
+				http += buff[index++];
+				FillingBuffer = true;
+			}
+			//imagine someone sente a request with a space after the protocol 
+			if (index < bytes_size && buff[index] != '\r')
+			{
+				error = true, status = 400;
+				return ;
+			}
+			else if (FillingBuffer && index < bytes_size && buff[index] == '\r')
+				FillingBuffer = false, R_PROTOCOL = true;
+			if (index < bytes_size && buff[index] == '\r' &&  index + 1 < bytes_size && buff[index + 1] == '\n')
+				index +=2,Parsed_StartLine = true, NewLine = true;
+			else if (index < bytes_size && buff[index] == '\r' &&  index + 1 == bytes_size)
+			{
+				index++, left_CR = true;
+				return ;
+			}
+			else if (index < bytes_size && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] != '\n')
+			{
+				error = true, status = 400;
+				return ;
+			}
+		}
+		printf("method %s && uri %s && %s\n", method.c_str(), method_uri.c_str(), http.c_str());
+		if (!SLValidity && R_Method && R_URI && R_PROTOCOL)
+		{
+			printf("Nope\n");
+			bool MethodeExist = false;
+			for (int i = 0; i < 3; i++)
+			{
+				if (method == allowedMethod[i])
+				{
+					MethodeExist = true;
+					break;
+				}
+			}
+			if (http != "HTTP/1.1" || !MethodeExist)
+			{
+				error = true, status = 400;
+				return ;
+			}
+			SLValidity = true;
+		}
+		printf("condition1 %s condition2 %s\n", (left_CR == true && index < bytes_size && buff[index] == '\n') ? "true":"false", (left_CR == true && index < bytes_size && buff[index] != '\n') ? "true":"false");
+		if (left_CR == true && index < bytes_size && buff[index] == '\n')
+			Parsed_StartLine = true, left_CR = false, index++,NewLine = true;
+		else if (left_CR == true && index < bytes_size && buff[index] != '\n')
+		{
+			error = true, status = 400;
+			return ;
+		}
+	}
+	// check if the header is parsed
+	if (Parsed_StartLine && !Parsed_Header && index < bytes_size)
+	{
+		if (!R_FUll_HEADERS)
+		{
+			// if (R_VALUE && R_HEADER && NewLine)
+			// {
+			// 	FillingBuffer = false;
+			// 	NewLine = false;
+			// 	AddEmptyNode(headers);
+			// 	R_VALUE = false, R_HEADER = false;
+			// }
+			while (index < bytes_size)
+			{
+				printf("suppereb\n");
+				// when i should create a header ? when i have flag saying that i passed new line
+				// when i need to stop this shite when i get new line the annalyse a new line after
+				printf("R_HEADER %d R_VALUE %d FillingBuffer %d _ %c[%d], %lu\n", R_HEADER, R_VALUE, FillingBuffer, buff[index], buff[index], index);
+				printf("in while first condition :%d _ second condition %d\n", (left_CR == false && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n' && NewLine), (buff[index] == '\n' && left_CR && NewLine));
+				if ((left_CR == false && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n' && NewLine)/*In normale case where \r\n are are not splited*/
+				|| (buff[index] == '\n' && left_CR && NewLine))
+				{
+					NewLine = false, R_VALUE = false, R_HEADER = false;
+					index +=((left_CR) ? 1:2), R_FUll_HEADERS = true;
+					left_CR = false;
+					printf("1\n");
+					break;
+				}
+				printf("3 condition %d\n", (left_CR && buff[index] == '\n' && !NewLine));
+				if (left_CR && buff[index] == '\n' && !NewLine)
+				{
+					printf("ggggggggg Fillingbuffer %d, R_HEADER %d\n", FillingBuffer , R_HEADER);
+					index += 1;
+					if (FillingBuffer && !R_HEADER)
+					{
+						error = true, status = 400;
+						printf("2\n");
+						return ;
+					}
+					else if (R_HEADER)
+					{
+						NewLine = true, R_VALUE = true, R_HEADER = true;
+						left_CR = false;
+						FillingBuffer = false;
+						if (index == bytes_size)
+							break;
+					}
+					left_CR = false;
+					NewLine = true;
+				}
+				if (buff[index] == '\r' && index + 1 == bytes_size)
+				{
+					printf("to the freedom\n");
+					index +=1, left_CR = true;
+					break;
+				}
+				if (NewLine)
+				{
+					printf("?1");
+					NewLine = false, R_VALUE = false, R_HEADER = false;
+					FillingBuffer = false;
+					if (index < bytes_size)
+						AddEmptyNode(headers);
+					continue;
+				}
+				if (!R_HEADER && !is_seperator(buff[index]) && !is_ctl(buff[index]))
+				{
+					headers[headers.size() - 1].name += buff[index];
+					FillingBuffer = true;
+				}
+				else if (!R_HEADER && buff[index] == ':')
+				{
+					printf(">>>>>>>>>>>>>>\n");
+					R_HEADER = true, index++, FillingBuffer = false;
+					continue;
+				}
+				else if (!R_HEADER && (is_seperator(buff[index]) || is_ctl(buff[index])))
+				{
+					for(int i = 0; i < headers.size(); i++)
+					{
+						printf("-->%s : %s\n", headers[i].name.c_str(), headers[i].values.c_str());
+					}
+					printf("for  %d  in %s\n",buff[index], &buff[index]);
+					error = true, status = 400;
+					printf("3\n");
+					return ;
+				}
+				if (R_HEADER && !R_VALUE && buff[index] != '\r')
+				{
+					printf("added to the value >>><<<<\n");
+					headers[headers.size() - 1].values += buff[index];
+					FillingBuffer = true;
+				}
+				if (R_HEADER && !R_VALUE && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n')
+				{
+					printf("$2 _ %s", (left_CR) ? "true":"false");
+					index += 2, NewLine = true, R_VALUE = true;
+					FillingBuffer = false;
+					continue;
+				}
+				if (R_HEADER && !R_VALUE && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] != '\n')
+				{
+					error = true, status = 400;
+					printf("4\n");
+					return ;
+				}
+				index++;
+				printf("////////////////////////////////////////\n");
+				for(int i = 0; i < headers.size(); i++)
+				{
+					printf("-->%s : %s\n", headers[i].name.c_str(), headers[i].values.c_str());
+				}
+			}
+			printf("Fully readed %s\n", (R_FUll_HEADERS) ? "true":"false");
+			// when i need stop the header insertion, when i passed new line
+		}
+		if (R_FUll_HEADERS)
+		{
+			// parse the headers
+			printf("method %s && uri %s && %s\n", method.c_str(), method_uri.c_str(), http.c_str());
+			for(int i = 0; i < headers.size(); i++)
+			{
+				printf("%s : %s\n", headers[i].name.c_str(), headers[i].values.c_str());
+			}
+			exit(0);
+			// define the body limiter 
+		}
+	}
+	// check the body existance the read and define the end of it
+	// if ()
+	// {
+	// 	// added to the body, and identifie if it get to the end or not using
+	// 	// one of the defined methode in body limites
+	// 	printf("Bro\n");
+	// 	exit(0);
+	// }
 }
 
 static bool absoluteURI(std::string &uri)
@@ -563,7 +856,11 @@ void							request::AddToRawRequest(char *buff, ssize_t bytes_read)
 	printf("request_length %lu\n", request_length);
 	request_length += bytes_read;
 	for(ssize_t i = 0; i < bytes_read; i++)
+	{
 		req.push_back(buff[i]);
+		std::cout << buff[i];
+	}
+		
 }
 
 request::~request()

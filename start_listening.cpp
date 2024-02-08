@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/07 14:43:36 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/08 13:09:44 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,15 +187,16 @@ void    handle_request(std::vector<struct pollfd> &poll_fds,int checker, int i,i
 		// while (bytes_toread > 0)
 		// {
 			bytes_read = read(poll_fds[i].fd,buffer, CHUNK_SIZE);
-			if (checker && poll_fds[i].revents == 0 && poll_fds[i].events == POLLIN)
-				((request &)client.getHttp_request()).setRequestRead(true), printf("2part \n");
-			printf("%ld \n", bytes_read);
+			// if (checker && poll_fds[i].revents == 0 && poll_fds[i].events == POLLIN)
+			// 	((request &)client.getHttp_request()).setRequestRead(true), printf("2part \n");
+			// printf("%ld \n", bytes_read);
 			if (bytes_read > 0)
 			{
 				// bytes_toread -= bytes_read;
 				printf("Brand %ld\n", bytes_read);
 				std::cerr << bytes_read << "Ola" << std::endl;
-				((request &)client.getHttp_request()).AddToRawRequest(buffer, bytes_read);
+				((request &)client.getHttp_request()).ParseRequest(buffer, bytes_read);
+				// ((request &)client.getHttp_request()).AddToRawRequest(buffer, bytes_read);
 				std::cerr << bytes_read << "Flash" << std::endl;
 			}
 			// if (bytes_read <= 0)
@@ -629,7 +630,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 		
 		// printf("%lu\n", poll_fds.size());
 
-		pollRet = poll(poll_fds.data(), poll_fds.size(), 1000);
+		pollRet = poll(poll_fds.data(), poll_fds.size(), TIME_OUT);
 		// printf("dd = %d && sockets size %lu\n",pollRet, sockets.size());
 		// for(int i = 0; i < poll_fds.size(); i++)
 		// {

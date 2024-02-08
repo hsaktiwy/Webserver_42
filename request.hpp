@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/07 22:30:12 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/08 18:57:24 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,19 +84,47 @@ class request {
 		std::vector<HTTPHeader>	headers;
 		std::string				body;
 		std::string				req;
+		char					*header_start;
+		char					*body_start;
 		bool					error;
 		int						status;
 		int						is_dir;
 		int 					is_regular;
+
+		//
+		// tmp
+		bool					left_CR;// this can hold a incomplete dilimiter 0 noting \r will have 1 or \r\n\r
+		bool					NewLine;// in case were there is \r\n
 		bool					RequestRead;
+		bool					ReadedFullToken;
+		bool					FillingBuffer;
+		// booleans to check for the Start line parsing Method URI, PROTOCOL
+		bool					Parsed_StartLine;
+		bool					SLValidity;
+		bool					R_Method;
+		bool					R_URI;
+		bool					R_PROTOCOL;
+		//  booleans to check for the Headerfileparsing, 
+		bool					R_FUll_HEADERS;//reading full headers
+		bool					Parsed_Header;
+		bool					R_HEADER;
+		bool					R_VALUE;
+		//	Body Reading
+		int						BodyLimiterType; // 1 for Content-length 2 for chunked 3 for boundary
+		bool					R_FULL_BODY;
+		bool					Body_Exist;
+		bool					Parsed_Body;
+		bool					ContentLengthExist;
 		bool					HandleRequest;
     public:
 		request();
 		~request();
 		request(const request& copy);
-		void							ParseRequest(char *request);
+		// void							ParseRequest(char *request);
+		void							ParseRequest(char *buff, ssize_t bytes);
 		void							CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker);// THIS WILL CHECK THE REQUEST VALIDITY
 		request&						operator=(const request& obj);
+
 		// Method							getMethod( void ) const; // to get the method when we need it
 		// const std::vector<std::string>&	getHeaders( void ) const;// get the headers after being prased
 		void							RequestDisplay( void );

@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/08 23:25:40 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/09 06:12:49 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 request::request(): RequestRead(false), Parsed_StartLine(false), Parsed_Header(false), Body_Exist(false), Parsed_Body(false), ContentLengthExist(false), HandleRequest(false), R_Method(false), R_URI(false), R_PROTOCOL(false), R_FUll_HEADERS(false), R_FULL_BODY(false)
 {
+	BodyLimiterType = 0;
 	FillingBuffer = false;
 	SLValidity = false;
 	request_length = 0;
@@ -23,6 +24,10 @@ request::request(): RequestRead(false), Parsed_StartLine(false), Parsed_Header(f
 	NewLine = false;
 	R_HEADER = true;
 	R_VALUE = true;
+	BIndex = 0;
+	ChunkedRead = false;
+	ChunkedSizeRead = false;
+	ChunkedSize = 0;
 }
 
 static bool CharacterUri(char c)
@@ -318,6 +323,22 @@ bool	is_seperator(char c)
 	return (false);
 }
 
+bool	ishexa(char c)
+{
+	if (std::isdigit(c) || c == 'A' || c == 'B' || c == 'C' || c == 'D' || c == 'E' || c == 'F'
+    || c == 'a' || c == 'b' || c == 'c' || c == 'd' || c == 'e' || c == 'f')
+		return (true);
+	return (false);
+}
+
+size_t	hexaToDecimal(std::string &str)
+{
+	std::stringstream ss(str);
+    size_t s;
+    ss >> std::hex >> s;
+    return (s);
+}
+
 void	AddEmptyNode(std::vector<HTTPHeader> &vec)
 {
 	HTTPHeader empty;
@@ -326,30 +347,28 @@ void	AddEmptyNode(std::vector<HTTPHeader> &vec)
 
 void	request::ParseRequest(char *buff, ssize_t bytes_size)
 {
-	// Check if the start line is parsed
-	// static int i;
-	// if (i >= 13)
-	// {
-	// 	exit(0);
-	// }
-	// i++;
 	std::string allowedMethod[] = {"POST", "GET", "DELETE"};
 	size_t index = 0;
+	printf("wtff????? %d\n", Parsed_StartLine);
 	if (!Parsed_StartLine)
 	{
+		
 		printf("--HERE\n");
 		if (!R_Method)
 		{
+			printf("outof\n");
 			// check if the buff start with sapce this case is not valide at all
 			if (FillingBuffer == false && index < bytes_size && buff[index] == ' ')
 			{
-				error = true, status = 400;
+				printf("outof\n");
+				error = true, RequestRead = true, status = 400;
 				return ;
 			}
 			// new let us get our method if it possible
 			if (!getToken(buff, index, bytes_size, method, R_Method, FillingBuffer))
 			{
-				error = true, status = 400;
+				printf("outof\n");
+				error = true, RequestRead = true, status = 400;
 				return ;
 			}
 		}
@@ -362,7 +381,7 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 			// now let try to get the Fully URI
 			if (!getToken(buff, index, bytes_size, method_uri, R_URI, FillingBuffer))
 			{
-				error = true, status = 400;
+				error = true, RequestRead = true, status = 400;
 				return ;
 			}
 			printf("%s _ %s _ %s _ valide index %s\n", (R_Method) ? "true":"false", (FillingBuffer) ? "true":"false", (R_Method && !R_URI)? "true":"false", (index < bytes_size)? "true":"false" );
@@ -384,7 +403,7 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 			//imagine someone sente a request with a space after the protocol 
 			if (index < bytes_size && buff[index] != '\r')
 			{
-				error = true, status = 400;
+				error = true, RequestRead = true, status = 400;
 				return ;
 			}
 			else if (FillingBuffer && index < bytes_size && buff[index] == '\r')
@@ -398,36 +417,38 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 			}
 			else if (index < bytes_size && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] != '\n')
 			{
-				error = true, status = 400;
+				error = true, RequestRead = true, status = 400;
 				return ;
 			}
 		}
 		printf("method %s && uri %s && %s\n", method.c_str(), method_uri.c_str(), http.c_str());
 		if (!SLValidity && R_Method && R_URI && R_PROTOCOL)
 		{
-			printf("Nope\n");
+			// printf("Nope\n");
 			bool MethodeExist = false;
 			for (int i = 0; i < 3; i++)
 			{
 				if (method == allowedMethod[i])
 				{
 					MethodeExist = true;
+					if (allowedMethod[i] == "POST")
+						Body_Exist = true;
 					break;
 				}
 			}
 			if (http != "HTTP/1.1" || !MethodeExist)
 			{
-				error = true, status = 400;
+				error = true, RequestRead = true, status = 400;
 				return ;
 			}
 			SLValidity = true;
 		}
-		printf("condition1 %s condition2 %s\n", (left_CR == true && index < bytes_size && buff[index] == '\n') ? "true":"false", (left_CR == true && index < bytes_size && buff[index] != '\n') ? "true":"false");
+		// printf("condition1 %s condition2 %s\n", (left_CR == true && index < bytes_size && buff[index] == '\n') ? "true":"false", (left_CR == true && index < bytes_size && buff[index] != '\n') ? "true":"false");
 		if (left_CR == true && index < bytes_size && buff[index] == '\n')
 			Parsed_StartLine = true, left_CR = false, index++,NewLine = true;
 		else if (left_CR == true && index < bytes_size && buff[index] != '\n')
 		{
-			error = true, status = 400;
+			error = true, RequestRead = true, status = 400;
 			return ;
 		}
 	}
@@ -436,38 +457,31 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 	{
 		if (!R_FUll_HEADERS)
 		{
-			// if (R_VALUE && R_HEADER && NewLine)
-			// {
-			// 	FillingBuffer = false;
-			// 	NewLine = false;
-			// 	AddEmptyNode(headers);
-			// 	R_VALUE = false, R_HEADER = false;
-			// }
 			while (index < bytes_size)
 			{
-				printf("suppereb\n");
+				// printf("suppereb\n");
 				// when i should create a header ? when i have flag saying that i passed new line
 				// when i need to stop this shite when i get new line the annalyse a new line after
-				printf("R_HEADER %d R_VALUE %d FillingBuffer %d _ %c[%d], %lu\n", R_HEADER, R_VALUE, FillingBuffer, buff[index], buff[index], index);
-				printf("in while first condition :%d _ second condition %d\n", (left_CR == false && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n' && NewLine), (buff[index] == '\n' && left_CR && NewLine));
+				// printf("R_HEADER %d R_VALUE %d FillingBuffer %d _ %c[%d], %lu\n", R_HEADER, R_VALUE, FillingBuffer, buff[index], buff[index], index);
+				// printf("in while first condition :%d _ second condition %d\n", (left_CR == false && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n' && NewLine), (buff[index] == '\n' && left_CR && NewLine));
 				if ((left_CR == false && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n' && NewLine)/*In normale case where \r\n are are not splited*/
 				|| (buff[index] == '\n' && left_CR && NewLine))
 				{
 					NewLine = false, R_VALUE = false, R_HEADER = false;
 					index +=((left_CR) ? 1:2), R_FUll_HEADERS = true;
 					left_CR = false;
-					printf("1\n");
+					// printf("1\n");
 					break;
 				}
-				printf("3 condition %d\n", (left_CR && buff[index] == '\n' && !NewLine));
+				// printf("3 condition %d\n", (left_CR && buff[index] == '\n' && !NewLine));
 				if (left_CR && buff[index] == '\n' && !NewLine)
 				{
-					printf("ggggggggg Fillingbuffer %d, R_HEADER %d\n", FillingBuffer , R_HEADER);
+					// printf("ggggggggg Fillingbuffer %d, R_HEADER %d\n", FillingBuffer , R_HEADER);
 					index += 1;
 					if (FillingBuffer && !R_HEADER)
 					{
-						error = true, status = 400;
-						printf("2\n");
+						error = true, RequestRead = true, status = 400;
+						// printf("2\n");
 						return ;
 					}
 					else if (R_HEADER)
@@ -483,13 +497,13 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 				}
 				if (buff[index] == '\r' && index + 1 == bytes_size)
 				{
-					printf("to the freedom\n");
+					// printf("to the freedom\n");
 					index +=1, left_CR = true;
 					break;
 				}
 				if (NewLine)
 				{
-					printf("?1");
+					// printf("?1\n");
 					NewLine = false, R_VALUE = false, R_HEADER = false;
 					FillingBuffer = false;
 					if (index < bytes_size)
@@ -503,48 +517,48 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 				}
 				else if (!R_HEADER && buff[index] == ':')
 				{
-					printf(">>>>>>>>>>>>>>\n");
+					// printf(">>>>>>>>>>>>>>\n");
 					R_HEADER = true, index++, FillingBuffer = false;
 					continue;
 				}
 				else if (!R_HEADER && (is_seperator(buff[index]) || is_ctl(buff[index])))
 				{
-					for(int i = 0; i < headers.size(); i++)
-					{
-						printf("-->%s : %s\n", headers[i].name.c_str(), headers[i].values.c_str());
-					}
-					printf("for  %d  in %s\n",buff[index], &buff[index]);
-					error = true, status = 400;
-					printf("3\n");
+					// for(int i = 0; i < headers.size(); i++)
+					// {
+					// 	printf("-->%s : %s\n", headers[i].name.c_str(), headers[i].values.c_str());
+					// }
+					// printf("for  %d  in %s\n",buff[index], &buff[index]);
+					error = true, RequestRead = true, status = 400;
+					// printf("3\n");
 					return ;
 				}
 				if (R_HEADER && !R_VALUE && buff[index] != '\r')
 				{
-					printf("added to the value >>><<<<\n");
+					// printf("added to the value %c\n", buff[index]);
 					headers[headers.size() - 1].values += buff[index];
 					FillingBuffer = true;
 				}
 				if (R_HEADER && !R_VALUE && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n')
 				{
-					printf("$2 _ %s", (left_CR) ? "true":"false");
+					// printf("$2 _ %s", (left_CR) ? "true":"false");
 					index += 2, NewLine = true, R_VALUE = true;
 					FillingBuffer = false;
 					continue;
 				}
 				if (R_HEADER && !R_VALUE && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] != '\n')
 				{
-					error = true, status = 400;
+					error = true, RequestRead = true, status = 400;
 					printf("4\n");
 					return ;
 				}
 				index++;
-				printf("////////////////////////////////////////\n");
-				for(int i = 0; i < headers.size(); i++)
-				{
-					printf("-->%s : %s\n", headers[i].name.c_str(), headers[i].values.c_str());
-				}
+				// printf("////////////////////////////////////////\n");
+				// for(int i = 0; i < headers.size(); i++)
+				// {
+				// 	printf("-->%s : %s\n", headers[i].name.c_str(), headers[i].values.c_str());
+				// }
 			}
-			printf("Fully readed %s\n", (R_FUll_HEADERS) ? "true":"false");
+			// printf("Fully readed %s\n", (R_FUll_HEADERS) ? "true":"false");
 			// when i need stop the header insertion, when i passed new line
 		}
 		if (R_FUll_HEADERS)
@@ -555,18 +569,198 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 			{
 				printf("%s : %s\n", headers[i].name.c_str(), headers[i].values.c_str());
 			}
-			exit(0);
+
 			// define the body limiter 
+			// call them in this orther will made sure the priority so be carefull
+			// check if we have contnetlength header
+			for(size_t i = 0; i < headers.size(); i++)
+			{
+				headers[i].values = ft_trim(headers[i].values, " ");
+			}
+			int HOSTindex = getHeaderIndex("Host");
+			if (HOSTindex != -1)
+			{
+				int i = 0;
+				host = &headers[HOSTindex].values[i];
+			}
+			else
+			{
+				error = true, RequestRead = true, status = 400;
+				return ;
+			}
+			
+			int CLIndex = getHeaderIndex("Content-Length");
+			if (CLIndex != -1)
+			{
+				ContentLengthExist =  true;
+				ContentLengthSize = ft_atoll(headers[CLIndex].values.c_str());
+				BodyLimiterType = 1;
+			}
+			// even thougth there is a content length check for the boundary is if there
+			int CTindex = getHeaderIndex("Content-Type");
+			if (CTindex != -1)
+			{
+				std::string Format = "multipart/form-data;";
+				// check for the multipart/form-data
+				size_t pos = headers[CTindex].values.find(Format);
+				if (pos != std::string::npos)
+				{
+					std::string express = "boundary=";
+					size_t pos2 = headers[CTindex].values.find(express);
+					if (pos2 != std::string::npos && pos2 > pos + Format.size())
+					{
+						pos2 += express.size();
+						ExtractValues(headers[CTindex].values, boundary, pos2);
+						headers[CTindex].boundry = boundary;
+						boundary = "--" + boundary + "--";
+						BodyLimiterType = 3;
+					}
+				}
+			}
+			// check transfer-encoding
+			int TEindex = getHeaderIndex("Transfer-Encoding");
+			if (TEindex != -1)
+			{
+				std::string Format = "chunked";
+				// check for the chunked
+				size_t pos = headers[TEindex].values.find(Format);
+				if (pos != std::string::npos)
+					BodyLimiterType = 2;
+			}
+			Parsed_Header = true;
+			FillingBuffer = false;
+			left_CR = false;
+			printf("Does the bodyExist %d, and what delimiter whe need %d\n", Body_Exist, BodyLimiterType);
+			// exit(0);
 		}
 	}
 	// check the body existance the read and define the end of it
-	// if ()
-	// {
-	// 	// added to the body, and identifie if it get to the end or not using
-	// 	// one of the defined methode in body limites
-	// 	printf("Bro\n");
-	// 	exit(0);
-	// }
+	if (Parsed_StartLine && Parsed_Header && Body_Exist)
+	{
+		if (BodyLimiterType == 0)
+		{
+			RequestRead = true;
+		}
+		else if (BodyLimiterType == 1)
+		{
+			while (index < bytes_size)
+			{
+				body += buff[index];
+				if (buff[index] != '\r' || buff[index] != '\n')
+					BIndex++;
+				index++;
+			}
+			if (BIndex == ContentLengthSize)
+			{
+				RequestRead = true;
+				// printf("body : %s\n", body.c_str());
+				// exit(0);
+			}
+			else if (BIndex > ContentLengthSize)
+			{
+				error = true, RequestRead = true, status = 400;
+				// printf("body IndexBody[%lu]ContentLengthSize[%lu]: %s\n", BIndex ,ContentLengthSize, body.c_str());
+				// exit(0);
+				return ;
+			}
+		}
+		else if (BodyLimiterType == 2)
+		{
+			// first i need to define the size of the chunked
+			while (index < bytes_size)
+			{
+				if (!ChunkedSizeRead && ishexa(buff[index]))
+				{
+					FillingBuffer = true;
+					ChunkSizeString += buff[index];
+				}
+				if ((!ChunkedSizeRead && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n')
+				||	(!ChunkedSizeRead && left_CR && buff[index] == '\n'))
+				{
+					ChunkedSizeRead = true;
+					FillingBuffer = false;
+					index +=(left_CR) ? 1:2;
+					left_CR = false;
+					ChunkedSize = hexaToDecimal(ChunkSizeString);
+					printf("Chunked size %lu %s\n", ChunkedSize, ChunkSizeString.c_str());
+					ChunkSizeString = "";
+					BIndex = 0;
+					if (ChunkedSize == 0)
+					{
+						RequestRead = true;
+						// printf("body : %s\n", body.c_str());
+						// exit(0);
+						return ;
+					}
+					continue;
+				}
+				if (ChunkedSizeRead && BIndex < ChunkedSize)
+				{
+					FillingBuffer = true;
+					body += buff[index];
+					BIndex++;
+				}
+				if (ChunkedSizeRead && FillingBuffer && BIndex == ChunkedSize)
+				{
+					if ((buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n')
+						||	(left_CR && buff[index] == '\n'))
+					{
+						index +=(left_CR) ? 1 : 2, ChunkedSizeRead = false, FillingBuffer = false, left_CR = false;
+						continue;
+					}
+					if (buff[index] == '\r' && index + 1 == bytes_size)
+						index++, left_CR = true;
+				}
+				if (!ChunkedSizeRead && buff[index] == '\r' && index + 1 == bytes_size)
+				{
+					index++, left_CR = true;
+					break;
+				}
+				index++;
+			}
+		}
+		else if (BodyLimiterType == 3)
+		{
+			static std::string tmp;
+			while (index < bytes_size)
+			{
+				body += buff[index];
+				if (buff[index] == '-' && !FillingBuffer)
+				{
+					tmp +=buff[index];
+					FillingBuffer = true;
+				}
+				else if (FillingBuffer && buff[index] != '\r')
+				{
+					tmp += buff[index];
+				}
+				else if (FillingBuffer && buff[index] == '\r')
+				{
+					if (tmp == boundary)
+					{
+						RequestRead = true;
+						// printf("body : %s\n", body.c_str());
+						// exit(0);
+						return ;
+					}
+					tmp = "";
+					FillingBuffer = false;
+				}
+				index++;
+			}
+			if (tmp == boundary)
+			{
+				RequestRead = true;
+				// printf("body : %s\n", body.c_str());
+				// exit(0);
+				return ;
+			}
+		}
+	}
+	else if (Parsed_StartLine && Parsed_Header)
+	{
+		RequestRead = true;
+	}
 }
 
 static bool absoluteURI(std::string &uri)
@@ -778,6 +972,7 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 	// ServerBlocks block = get_server_block(host, serverBlocks);
 	// printf("error %d\n",error);
 	// printf("status %d\n",status);
+	RequestDisplay();
 	if (error == false)
 	{
 		// splite uri to scheme, authority, path, query
@@ -891,8 +1086,33 @@ request& request::operator=(const request& obj)
 		status = obj.status;
 		is_dir = obj.is_dir;
 		is_regular = obj.is_regular;
-		RequestRead  = obj.RequestRead;
 		HandleRequest  = obj.HandleRequest;
+		BIndex = obj.BIndex;
+		left_CR = obj.left_CR;
+		NewLine = obj.NewLine;
+		RequestRead = obj.RequestRead;
+		ReadedFullToken = obj.ReadedFullToken;
+		FillingBuffer = obj.FillingBuffer;
+		Parsed_StartLine = obj.Parsed_StartLine;
+		SLValidity = obj.SLValidity;
+		R_Method = obj.R_Method;
+		R_URI = obj.R_URI;
+		R_PROTOCOL = obj.R_PROTOCOL;
+		R_FUll_HEADERS = obj.R_FUll_HEADERS;
+		Parsed_Header = obj.Parsed_Header;
+		R_HEADER = obj.R_HEADER;
+		R_VALUE = obj.R_VALUE;
+		BodyLimiterType = obj.BodyLimiterType;
+		R_FULL_BODY = obj.R_FULL_BODY;
+		Body_Exist = obj.Body_Exist;
+		Parsed_Body = obj.Parsed_Body;
+		ContentLengthExist = obj.ContentLengthExist;
+		ContentLengthSize = obj.ContentLengthSize;
+		ChunkedRead = obj.ChunkedRead;
+		ChunkedSizeRead = obj.ChunkedSizeRead;
+		ChunkedSize = obj.ChunkedSize;
+		ChunkSizeString = obj.ChunkSizeString;
+		boundary = obj.boundary;
 	}
 	return (*this);
 }

@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/08 13:09:44 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/09 05:06:36 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,7 +176,7 @@ int create_socket_client(std::vector<int> &sockets,std::vector<struct pollfd> &p
 //     }
 // }
 
-void    handle_request(std::vector<struct pollfd> &poll_fds,int checker, int i,int *ready_to_write, nfds_t *size_fd,std::vector<ServerBlocks> &serverBlocks,std::string &response, Client & client, std::map<unsigned int, std::string> &status_codes)
+void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to_write, nfds_t *size_fd,std::vector<ServerBlocks> &serverBlocks,std::string &response, Client & client, std::map<unsigned int, std::string> &status_codes)
 {
 	ssize_t bytes_read, bytes_toread = CHUNK_SIZE;
 	static size_t file_size;
@@ -209,9 +209,9 @@ void    handle_request(std::vector<struct pollfd> &poll_fds,int checker, int i,i
 	}
 	if (client.getHttp_request().getRequestRead())
 	{
-		std::string str = client.getHttp_request().getReq();
+		std::string str = client.getHttp_request().getBody();
 		printf("Printf size %lu\n", client.getHttp_request().getRequestLength());
-		for(size_t i = 0; i < client.getHttp_request().getRequestLength(); i++)
+		for(size_t i = 0; i < client.getHttp_request().getBody().size(); i++)
 			printf("%c", str[i]);
 		// exit(0);
 		client.ParseRequest((char *)(client.getHttp_request().getReq().c_str()), serverBlocks);
@@ -290,6 +290,7 @@ std::string	HandleHeaderFileStatus(Client& client, long long size, long long LMT
 	std::string Etag = "ETag: "+ lmtime + "-" + hexaTag + "\r\n";   
 	// search for the Range header
 	index  = request.getHeaderIndex("Range");
+	printf("Range index is %d, headers size %lu\n", index, headers.size());
 	if (index != -1)
 	{
 		const HTTPHeader &header = headers[index];
@@ -427,7 +428,7 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 					// printf("Body size %lld, body_index %lu File index %lu File End %lu ", resp.getBody_size(), resp.getBody_index(), resp.getFileIndex(), resp.getFileEnd());
 					if (resp.getBody_size() == resp.getBody_index())
 						resp.setBody_sent(true);
-					writeBytes -= ExtratHeader.size();
+					// writeBytes -= ExtratHeader.size();
 				}
 			}
 			// printf("Body sent2 %d\n", resp.getBody_sent());
@@ -469,10 +470,13 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 					char buff[writeBytes];
 					// if ((resp.getFileEnd() + 1) > resp.getFileIndex())
 					// {
+						printf("	%lu\n", writeBytes);
 						if (resp.getFileEnd() - resp.getFileIndex() < writeBytes)
 							writeBytes = (resp.getFileEnd() - resp.getFileIndex()) + 1;
-						// printf("rest Off the File %lu(File Index = %lu, File End = %lu) writeBytes Reading Size %lu", (resp.getFileEnd() - resp.getFileIndex()) , resp.getFileIndex(), resp.getFileEnd(), writeBytes);
+						printf("rest Off the File %lu(File Index = %lu, File End = %lu) writeBytes Reading Size %lu", (resp.getFileEnd() - resp.getFileIndex()) , resp.getFileIndex(), resp.getFileEnd(), writeBytes);
+						printf("	%lu\n", writeBytes);
 						ssize_t bytes = read(fd, buff, writeBytes);
+						
 						// printf("Number of bytes Readed %lu ,", bytes);
 						if (bytes > 0)
 						{
@@ -612,7 +616,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 	int status;
 	std::string human_status;
 	std::string mime_type;
-	std::vector<int> checker;
+	// std::vector<int> checker;
 
 	create_sockets(serverBlocks, sockets);
 	init_poll_fds(poll_fds, serverBlocks.size(), sockets);
@@ -642,11 +646,11 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 			perror("poll ");
 			exit(0);
 		}
-		// if (pollRet == 0)
-		// {
-		// 	std::cout<<RED<<"Connection timeout...."<<RESET<<std::endl;
-		// 	continue;
-		// }
+		if (pollRet == 0)
+		{
+			std::cout<<RED<<"Connection timeout...."<<RESET<<std::endl;
+			continue;
+		}
 			
 		for (size_t i = 0; i < poll_fds.size(); i++)
 		{
@@ -676,7 +680,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				tmp.fd = acceptRet; // add a client socket to the poll array
 				tmp.events = POLLIN; // waiting for I/O on this socket
 				poll_fds.push_back(tmp); 
-				checker.push_back(0);
+				// checker.push_back(0);
 					// pollFdsSize++;
 			}
 			else if (i >= sockets.size())
@@ -692,19 +696,18 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 					exit(0);
 					continue ;
 				}
-				if ((poll_fds[i].revents & POLLIN) || (checker[i - sockets.size()] && poll_fds[i].revents == 0 && poll_fds[i].events == POLLIN))
+				if (poll_fds[i].revents & POLLIN)
 				{
 					// if (checker[i - sockets.size()] && poll_fds[i].revents == 0 && poll_fds[i].events == POLLIN)
 					// 	{printf("blabla\n");exit(0);}
 					std::cout<<YELLOW<<"Read Partion Of CLient Request  "<< poll_fds[i].fd <<RESET<<std::endl;
-					handle_request(poll_fds, checker[i - sockets.size()],i,&ready_to_write,&size_fd,serverBlocks, response, ClientsVector[client_it], status_codes);
+					handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, ClientsVector[client_it], status_codes);
 					std::cerr << "Partion I Added" << std::endl;
 					if (ClientsVector[client_it].getHttp_request().getHandleRequest())
 					{
 						std::cerr <<GREEN<< "Request Fully Read\n" << RESET <<std::endl;
 						poll_fds[i].events = POLLOUT;
 					}
-					checker[i - sockets.size()] = 1;
 				}
 				else if (poll_fds[i].revents & POLLOUT)
 				{
@@ -720,7 +723,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 						std::cout<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;
 						std::cout<<YELLOW<<"Connection to Client "<<poll_fds[i].fd<<" closed"<<RESET<<std::endl;
 						ClientsVector.erase(ClientsVector.begin() + client_it);
-						checker.erase(checker.begin() + (i - sockets.size()));
 						close(poll_fds[i].fd);
 						poll_fds.erase(poll_fds.begin() + i);
 						i--;

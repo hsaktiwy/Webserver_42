@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/07 22:13:45 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/09 05:12:32 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,17 @@ std::string trim(const std::string& str)
 		return "";
 
 	size_t end = str.find_last_not_of(" \t\n\r\f\v");
+	return str.substr(start, end - start + 1);
+}
+
+std::string ft_trim(const std::string& str, const std::string& targets)
+{
+	size_t start = str.find_first_not_of(targets);
+
+	if (start == std::string::npos) 
+		return "";
+
+	size_t end = str.find_last_not_of(targets);
 	return str.substr(start, end - start + 1);
 }
 

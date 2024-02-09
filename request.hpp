@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/08 18:57:24 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/09 04:52:56 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,9 +90,9 @@ class request {
 		int						status;
 		int						is_dir;
 		int 					is_regular;
-
 		//
 		// tmp
+		size_t					BIndex;
 		bool					left_CR;// this can hold a incomplete dilimiter 0 noting \r will have 1 or \r\n\r
 		bool					NewLine;// in case were there is \r\n
 		bool					RequestRead;
@@ -115,7 +115,15 @@ class request {
 		bool					Body_Exist;
 		bool					Parsed_Body;
 		bool					ContentLengthExist;
+		size_t					ContentLengthSize;
 		bool					HandleRequest;
+		// chunk reading
+		bool					ChunkedRead;
+		bool					ChunkedSizeRead;
+		size_t					ChunkedSize;
+		std::string				ChunkSizeString;
+		// boundary case
+		std::string				boundary;
     public:
 		request();
 		~request();

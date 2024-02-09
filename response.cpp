@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/07 23:19:56 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/09 17:56:52 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -290,21 +290,12 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 				code = 201;
 			std::string human_read = Status(code, status_codes);
 			http_response = "HTTP/1.1 " + human_read + "\r\nContent-Type: text/plain\r\n";
-			if (files.size() == 1)
-			{
-				std::string path = UploadPath + ((UploadPath[UploadPath.size() - 1] == '/') ? "" : "/") + files[0];
-				http_response = "Location: " + path + "\r\n";
-			}
-			else
-			{
-				for(size_t i = 0; i < files.size(); i++)
-				{
-					body_string += "Resource is Created : " + files[i] + "\r\n"; 
-				}
-			}
+			for(size_t i = 0; i < files.size(); i++)
+				body_string += "Resource is Created : " + files[i] + "\r\n"; 
 			body_size = body_string.size();
 			http_response += "Content-Length: " + ToString(body_size) + "\r\n\r\n";
 			header_size = http_response.size();
+			printf("%s\n%s\n", http_response.c_str(), body_string.c_str());
 		}
 		else
 		{

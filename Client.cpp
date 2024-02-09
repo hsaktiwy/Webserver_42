@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/08 13:08:34 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/09 19:53:18 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,10 +47,7 @@ Client& Client::operator=(const Client& obj)
 
 void	Client::ParseRequest(char *buffer, std::vector<ServerBlocks> &serverBlocks)
 {
-	// http_request.ParseRequest(buffer);
     http_request.CheckRequest(serverBlocks, worker);;
-	// printf("ss\n");
-	// printf("size size     %lu\n", http_response.worker->getErrorPages().size());
 }
 
 void	Client::CreateResponse(std::map<unsigned int, std::string> &status_codes)

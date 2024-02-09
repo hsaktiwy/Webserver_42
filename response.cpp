@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/09 17:56:52 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/09 20:56:28 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,7 +112,6 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 
 	if (req.getError() == false)
 	{
-		// printf("--------->%d %d\n", req.getIs_dir(), req.getIs_regular());
 		if (req.getIs_dir() == 1 || req.getIs_regular() == 1)
 		{
 			if (req.getMethod() == "GET" && req.getIs_dir() == 1 &&  wk.getAutoIndex() == "on")
@@ -125,13 +124,11 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 			}
 			else if (req.getMethod() == "GET" && req.getIs_dir() == 1 && index.size() == 0)
 			{
-				printf("NONONONo\n");
 				req.setError(true), req.setStatus(404);
 			}
 		}
 		else
 		{
-			printf("Ohayo\n");
 			req.setError(true), req.setStatus(404);
 		}
 	}
@@ -149,7 +146,6 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 		}
 		else if (req.getMethod() == "POST")
 		{
-			printf("POST\n");
 			Post(status_codes);
 		}
 		else
@@ -353,7 +349,6 @@ void    response::RedirectionResponse(std::map<unsigned int, std::string> &statu
 	http_response = "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n" + "Content-Type: text/html\r\n" + "Location: "+ path + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n";
 	header_size = http_response.size();
 	body_size = 0;
-	printf("Responcse in redirect mode \n%s\n", http_response.c_str());
 }
 
 void    response::errorresponse(std::map<unsigned int, std::string> &status_codes)

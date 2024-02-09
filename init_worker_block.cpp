@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/07 22:23:09 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/09 19:53:41 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,14 +195,8 @@ void   init_worker_block(Worker &worker, std::string &host, std::string &path,st
 	set(worker.getLocationWorker().getDirectives(),worker,worker.getPath());
 	if (worker.getRoot().empty())
 		set(worker.getBlockWorker().getDirectives(),worker,worker.getPath());
-	// int flag = 0;
 	setDirectives(worker.getBlockWorker().getDirectives(),worker);
-	// if (worker.getIndex().empty())
-	//     flag = 1;
 	setDirectives(worker.getLocationWorker().getDirectives(),worker);
-	// if (flag == 1 && !worker.getIndex().empty())
-	//     worker.setIndex2(((std::string &)worker.getLocationWorker().getPath()) + "/" + worker.getIndex());
-	printf("set allowed methode %lu\n", worker.getAllowMethods().size());
 	setAllowedmethods(worker,worker.getLocationWorker().getDirectives());
 	
 	if (worker.getAllowMethods().size() == 0)
@@ -227,10 +221,4 @@ void   init_worker_block(Worker &worker, std::string &host, std::string &path,st
 		else if (Is_Directory(tmp_path) == 1)
 			is_regular = 1;
 	}
-	// if (is_regular)
-	// {
-	//     printf("server this %s\n",path.c_str());
-	// }
-	// printf("path %s\n",worker.getPath().c_str());
-	// printf("size %lu\n",(worker.getErrorPages().size()));
 }

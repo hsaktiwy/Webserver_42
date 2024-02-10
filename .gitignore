@@ -1,4 +1,4 @@
-.vscode/
+.vscode/*
 a.out
 *.o
 *.txt
@@ -6,6 +6,9 @@ client
 server
 configs/
 public/
-UsableTools/
+.UsableTools/
 DockerFolder/
+Uploads/*
 webserv
+Coding_notes.md
+my_webserv

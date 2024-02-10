@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/09 12:17:44 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/31 16:44:26 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/10 18:34:42 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,15 @@ void    handle_directives(std::string &type, std::string &directive,std::string 
     static std::vector<std::string> error_page_token;
     if (!type.compare("argument"))
     {
+        if (!directive.compare("uploads"))
+        {   
+            number_of_args++;
+            if (number_of_args > 1 || number_of_args < 0)
+            {
+                error = "invalid number of arguments in " + directive + " directive in " + convertToString(line);
+                throw error;
+            }
+        }
         if (!directive.compare("error_page"))
         {
             number_of_args++;

@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/31 18:09:26 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/07 18:32:31 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,6 +111,7 @@ std::string getTokenType(const std::string& token)
     tokenTypes.insert(std::make_pair("error_page", "directive"));
     tokenTypes.insert(std::make_pair("autoindex", "directive"));
     tokenTypes.insert(std::make_pair("allow_methods", "directive"));
+    tokenTypes.insert(std::make_pair("uploads", "directive"));
     tokenTypes.insert(std::make_pair("index", "directive"));
     tokenTypes.insert(std::make_pair("root", "directive"));
     tokenTypes.insert(std::make_pair("to", "directive"));
@@ -204,29 +205,4 @@ void    parse_line(const std::string &line, tokens_map &tokens, int line_number)
         tokenize(trim, tokens, line_number);
         token = strtok(NULL, " ");
     }
-}
-
-long long ft_atoll(const char* str)
-{
-    size_t i = 0;
-    bool Psign = true;
-    long long result = 0;
-    // surpace all the spaces
-    while (str[i] == ' ')
-        i++;
-    if (str[i] == '+')
-        i++;
-    else if (str[i] == '-')
-    {
-        Psign = false;
-        i++;
-    }
- 
-    while (std::isdigit(str[i]))
-    {
-        result = (result * 10) + str[i] - '0';
-        i++;
-    }
- 
-    return Psign ? result : -result;
 }

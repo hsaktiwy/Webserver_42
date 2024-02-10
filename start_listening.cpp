@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/09 21:08:03 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/10 17:11:19 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -253,14 +253,14 @@ std::string	HandleHeaderFileStatus(Client& client, long long size, long long LMT
 	int             index;
 	std::string FileSize = ToString(size);
 	// cach ttag this can be deleteed in later
-	std::stringstream ss;
-	ss << std::hex << size;
-	std::string hexaTag, lmtime;
-	ss >> hexaTag;
-	ss.str(""), ss.clear();
-	ss << std::hex << LMTime;
-	ss >> lmtime;
-	std::string Etag = "ETag: "+ lmtime + "-" + hexaTag + "\r\n";   
+	// std::stringstream ss;
+	// ss << std::hex << size;
+	// std::string hexaTag, lmtime;
+	// ss >> hexaTag;
+	// ss.str(""), ss.clear();
+	// ss << std::hex << LMTime;
+	// ss >> lmtime;
+	// std::string Etag = "ETag: "+ lmtime + "-" + hexaTag + "\r\n";   
 	// search for the Range header
 	index  = request.getHeaderIndex("Range");
 	if (index != -1)
@@ -277,7 +277,7 @@ std::string	HandleHeaderFileStatus(Client& client, long long size, long long LMT
 		long long e = resp.getFileEnd();
 		std::string start = ToString(s);
 		std::string end = ToString(e);
-		ResponseHeader += "Content-Range: bytes "+ start +"-"+ end +"/"+ FileSize + "\r\n" + Etag;
+		ResponseHeader += "Content-Range: bytes "+ start +"-"+ end +"/"+ FileSize + "\r\n";// + Etag;
 	}
 	// Define if possible to add Accept-Range
 	if (index == -1)
@@ -293,7 +293,7 @@ std::string	HandleHeaderFileStatus(Client& client, long long size, long long LMT
 		std::string FileType = resp.getFileType();
 		if (FileType.find("video") != std::string::npos
 			|| FileType.find("audio") != std::string::npos)
-			ResponseHeader += Etag + "Accept-Ranges: bytes\r\n"; 
+			ResponseHeader += "Accept-Ranges: bytes\r\n"; 
 	}
 	ResponseHeader += "Server: " + ((std::string)SERVERNAME) + "\r\n"; 
 	ResponseHeader += "\r\n";
@@ -303,13 +303,14 @@ std::string	HandleHeaderFileStatus(Client& client, long long size, long long LMT
 
 void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &string_response,int *flag,int *status,std::string &human_status,std::string &mime_type, Client & client, std::map<unsigned int, std::string> &status_codes)
 {
+	std::string buffer;// this will hold our chunked response
 	response &resp = (response &)client.getHttp_response();
 	client.CreateResponse(status_codes);
+	size_t writeBytes = CHUNK_SIZE;
 	if (resp.getFile() == "")
 	{
 		// BODY STRING CASE : where i our code creat the body and it don't need a file at all, this scope will handle it
 		// SEND Headers
-		size_t writeBytes = CHUNK_SIZE;
 		if (resp.getHeader_sent() == false)
 		{
 			long long Hsize = resp.getHeader_size();
@@ -321,13 +322,11 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 				long long rest = Hsize - Hindex;
 				if (rest <  CHUNK_SIZE)
 					bytes = rest;
-				ssize_t bytes_written = send(poll_fds[i].fd, &resp.getHttp_response()[Hindex], bytes, MSG_DONTWAIT);
+				buffer = resp.getHttp_response().substr(Hindex, bytes);
 				resp.setHeader_index(Hindex + bytes);
 				if (resp.getHeader_size() == resp.getHeader_index())
 					resp.setHeader_sent(true);
 				writeBytes -= bytes;
-				if (bytes_written < 0)
-					perror("write ");
 			}
 		}
 		// SEND Body
@@ -342,13 +341,11 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 				long long rest = Bsize - Bindex;
 				if (rest <  CHUNK_SIZE)
 					bytes = rest;
-				ssize_t bytes_written = send(poll_fds[i].fd, &resp.getBody_string()[Bindex], bytes, MSG_DONTWAIT);
+				buffer += resp.getBody_string().substr(Bindex, bytes);
 				resp.setBody_index(Bindex + bytes);
 				if (resp.getBody_size() == resp.getBody_index())
 					resp.setBody_sent(true);
 				writeBytes -= bytes; 
-				if (bytes_written < 0)
-					perror("write ");
 			}
 		}
 		if (resp.getBody_sent() == false && resp.getBody_size() <= 0)
@@ -358,7 +355,6 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 	{
 		// BODY FILE : when our body is in file format
 		// SEND Headers
-		size_t writeBytes = CHUNK_SIZE;
 		if (resp.getHeader_sent() == false)
 		{
 			long long Hsize = resp.getHeader_size();
@@ -370,9 +366,7 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 				long long rest = Hsize - Hindex;
 				if (rest <  CHUNK_SIZE)
 					bytes = rest;
-				ssize_t bytes_written = send(poll_fds[i].fd, &resp.getHttp_response()[Hindex], bytes, MSG_DONTWAIT);
-				if (bytes_written < 0)
-					perror("write ");
+				buffer = resp.getHttp_response().substr(Hindex, bytes);
 				resp.setHeader_index(Hindex + bytes);
 				if (resp.getHeader_size() == resp.getHeader_index())
 					resp.setHeader_sent(true);
@@ -393,7 +387,7 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 					long long size = stat_buff.st_size;
 					long LMTime = stat_buff.st_mtimespec.tv_sec;
 					std::string ExtratHeader = HandleHeaderFileStatus(client, size, LMTime);
-					send(poll_fds[i].fd, ExtratHeader.c_str(), ExtratHeader.size(), MSG_DONTWAIT);
+					buffer += ExtratHeader;
 					if (resp.getBody_size() == resp.getBody_index())
 						resp.setBody_sent(true);
 				}
@@ -440,7 +434,8 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 					ssize_t bytes = read(fd, buff, writeBytes);
 					if (bytes > 0)
 					{
-						send(poll_fds[i].fd, buff, bytes, MSG_DONTWAIT);
+						for (size_t i = 0; i < bytes; i++)
+							buffer += buff[i];
 						size_t Bindex = resp.getBody_index();
 						size_t Findex = resp.getFileIndex();
 
@@ -460,7 +455,13 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 			}
 		}
 	}
+	if (buffer.size() > 0)
+	{
+		ssize_t bytes_written = send(poll_fds[i].fd, buffer.c_str(), buffer.size(), MSG_DONTWAIT);
+		// here we need to chekc if we have 0 or -1 as result
+	}
 }
+// here we will write our response in all cases in our client socket
 
 int    new_connection(int client_socket,std::vector<int> new_connections)
 {

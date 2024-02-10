@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/09 20:54:39 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/10 14:52:34 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -286,7 +286,6 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 				if (R_HEADER && !R_VALUE && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] != '\n')
 				{
 					error = true, RequestRead = true, status = 400;
-					printf("4\n");
 					return ;
 				}
 				index++;

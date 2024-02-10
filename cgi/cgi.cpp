@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/07 22:56:31 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/10 17:05:50 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,15 @@ CgiEnv::CgiEnv(const Worker &workerObj) : worker(workerObj), cgiMetaData(NULL)
     setCgiQueryString();
     setCgiServerName();
     setCgiServePort();
+    setRequestMethod();
     constructScriptEnv();
     std::cout<<RED<<envMap["SCRIPT_NAME"]<<" "<<status <<RESET<<std::endl;
     std::cout<<RED<<envMap["PATH_INFO"]<<" "<<status <<RESET<<std::endl;
 }
-
+void CgiEnv::setRequestMethod()
+{
+    envMap["REQUEST_METHOD"]="GET";
+}
 void CgiEnv::setPathUriVector()
 {
     std::string path = worker.getPath();
@@ -267,10 +271,6 @@ void CgiEnv::findScript()
     }
 }
 
-void CgiEnv::setRequestMethod()
-{
-    
-}
 void CgiEnv::constructScriptEnv()
 {
     size_t env_size = envMap.size();
@@ -370,7 +370,27 @@ std::string &CgiEnv::getCgiQueryString()
 {
     return envMap["QUERY_STRING"];
 }
+std::string &CgiEnv::getCgiScriptName()
+{
+    return envMap["SCRIPT_NAME"];
+}
 std::string &CgiEnv::getCgiRoot()
 {
     return(cgiRoot);
+}
+bool CgiEnv::getStatus()
+{
+    return status;
+}
+bool CgiEnv::getCgiDirStatus()
+{
+    return cgiDir;
+}
+bool CgiEnv::isScriptFound()
+{
+    return cgiScript;
+}
+char **CgiEnv::getenvArray()
+{
+    return cgiMetaData;
 }

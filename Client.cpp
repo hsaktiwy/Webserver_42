@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/09 19:53:18 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/10 17:23:19 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ Client& Client::operator=(const Client& obj)
 	return (*this);
 }
 
-void	Client::ParseRequest(char *buffer, std::vector<ServerBlocks> &serverBlocks)
+void	Client::ParseRequest(std::vector<ServerBlocks> &serverBlocks)
 {
     http_request.CheckRequest(serverBlocks, worker);;
 }

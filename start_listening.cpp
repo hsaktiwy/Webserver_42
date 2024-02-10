@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/10 17:11:19 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/10 21:02:37 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,7 +193,7 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to
 	// this part where we will handle some additional request parsing, at the time where the request was fully read
 	if (client.getHttp_request().getRequestRead())
 	{
-		client.ParseRequest((char *)(client.getHttp_request().getReq().c_str()), serverBlocks);
+		client.ParseRequest(serverBlocks);
 		((request &)client.getHttp_request()).setHandleRequest(true);
 	}
 	else if (bytes_read < 0)
@@ -231,9 +231,9 @@ bool	RangeFormat(const HTTPHeader &header, response  &response, long long FileSi
 		if (S != "")
 			start = ft_atoll(S.c_str());
 		if (E != "")
-			end = ft_atoll(E.c_str());
+			end = ft_atoll(E.c_str()) + 1;
 		else
-			end = FileSize - 1;
+			end = FileSize;
 		if (end < start || start < 0 || end < 0 || end > FileSize || start > FileSize)
 			return (false);
 		response.setFileIndex(start);
@@ -271,21 +271,21 @@ std::string	HandleHeaderFileStatus(Client& client, long long size, long long LMT
 		{
 			// default form start  = 0 to end  == file size
 			((response  &)resp).setFileIndex(0);
-			((response  &)resp).setFileEnd(size - 1);
+			((response  &)resp).setFileEnd(size);
 		}
 		size_t s = resp.getFileIndex();
-		long long e = resp.getFileEnd();
+		long long e = resp.getFileEnd() - 1;
 		std::string start = ToString(s);
 		std::string end = ToString(e);
 		ResponseHeader += "Content-Range: bytes "+ start +"-"+ end +"/"+ FileSize + "\r\n";// + Etag;
 	}
 	// Define if possible to add Accept-Range
 	if (index == -1)
-		((response  &)resp).setFileIndex(0), ((response  &)resp).setFileEnd(size - 1);
+		((response  &)resp).setFileIndex(0), ((response  &)resp).setFileEnd(size);
 	// Define the Content-Lenght
 	size_t s = resp.getFileIndex();
 	long long e = resp.getFileEnd();
-	long long rest = (e - s) + 1;
+	long long rest = (e - s);
 	ResponseHeader += "Content-Length: " + ToString(rest) + "\r\n";
 	ResponseHeader += "Connection: keep-alive\r\n";
 	if (index == -1)
@@ -404,46 +404,55 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 					if (fd == -1)
 						perror("Open :");
 					resp.setFd(fd), resp.setFileOpened(true);
-					// IN RANGE CASE GO TO FILEINDEX POSITION
-					if (fd > 0 && resp.getFileIndex()  > 0)
-					{
-						char	buff[4444];
-						ssize_t bytes_read;
-						size_t fileIndex = resp.getFileIndex(), readed = 0, size_buff;
-						while (readed != fileIndex)
-						{
-							if (fileIndex - readed >= 4444)
-								size_buff = 4444;
-							else
-								size_buff = fileIndex - readed;
-							bytes_read = read(fd, buff, size_buff);
-							if (bytes_read > 0)
-								readed += bytes_read;
-						}
-						printf("Seeker New Position %lu file Index %lu ", readed, fileIndex);
-					}
 				}
 				// SEND BODY FILE: IN THE FORM OFF CHUNKS MAX SIZE == CHUNK_SIZE
+				// IN RANGE CASE GO TO FILEINDEX POSITION
 				if (fd > 0)
 				{
-					char buff[writeBytes];
-					if (resp.getFileEnd() - resp.getFileIndex() < writeBytes)
-						writeBytes = (resp.getFileEnd() - resp.getFileIndex()) + 1;
-					printf("rest Off the File %lu(File Index = %lu, File End = %lu) writeBytes Reading Size %lu", (resp.getFileEnd() - resp.getFileIndex()) , resp.getFileIndex(), resp.getFileEnd(), writeBytes);
-					printf("	%lu\n", writeBytes);
-					ssize_t bytes = read(fd, buff, writeBytes);
-					if (bytes > 0)
+					if (!resp.getFileSeeked())
 					{
-						for (size_t i = 0; i < bytes; i++)
-							buffer += buff[i];
-						size_t Bindex = resp.getBody_index();
-						size_t Findex = resp.getFileIndex();
-
-						resp.setBody_index(Bindex + bytes);
-						resp.setFileIndex(Findex + bytes);
+						size_t 	size_buff = 1000000;
+						char	*buff = (char *)malloc(sizeof(char) * 1000000);
+						if (!buff)
+							size_buff = 0; 
+						ssize_t bytes_read;
+						size_t fileIndex = resp.getFileIndex();
+						if (size_buff != 0 && resp.getSeeker() != fileIndex)
+						{
+							if (fileIndex - resp.getSeeker() >= size_buff)
+								size_buff = size_buff;
+							else
+								size_buff = fileIndex - resp.getSeeker();
+							bytes_read = read(fd, buff, size_buff);
+							if (bytes_read > 0)
+								resp.setSeeker(resp.getSeeker() + bytes_read);
+						}
+						if (resp.getSeeker() == fileIndex)
+							resp.setFileSeeked(true);
+						free(buff), buff = NULL;
+						printf("Seeker New Position %lu file Index %lu ", resp.getSeeker(), fileIndex);
 					}
-					else if (bytes == -1)
-						write(2, "Something Went Wrong!\n", 22), exit(0);
+					if (resp.getFileSeeked())
+					{
+						char buff[writeBytes];
+						if (resp.getFileEnd() - resp.getFileIndex() < writeBytes)
+							writeBytes = (resp.getFileEnd() - resp.getFileIndex());
+						printf("rest Off the File %lu(File Index = %lu, File End = %lu) writeBytes Reading Size %lu", (resp.getFileEnd() - resp.getFileIndex()) , resp.getFileIndex(), resp.getFileEnd(), writeBytes);
+						printf("	%lu\n", writeBytes);
+						ssize_t bytes = read(fd, buff, writeBytes);
+						if (bytes > 0)
+						{
+							for (size_t i = 0; i < bytes; i++)
+								buffer += buff[i];
+							size_t Bindex = resp.getBody_index();
+							size_t Findex = resp.getFileIndex();
+
+							resp.setBody_index(Bindex + bytes);
+							resp.setFileIndex(Findex + bytes);
+						}
+						else if (bytes == -1)
+							write(2, "Something Went Wrong!\n", 22), exit(0);
+					}
 				}
 			}
 			// the case where thw file has no size i mean 0

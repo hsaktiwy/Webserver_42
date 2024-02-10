@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:50 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/07 11:15:51 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/10 19:16:24 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@ class response {
 		bool		header_sent;
 		bool		body_sent;
 		bool		FileOpened;
+		bool		FileSeeked;// this in case where our file need to be seeked first to a special position then send data to our user
+		size_t		Seeker;
 		int			fd;
 
 	public:
@@ -68,7 +70,11 @@ class response {
 		std::string	getFileType( void ) const;
 		size_t		getFileIndex( void ) const;
 		size_t		getFileEnd( void ) const;
+		bool		getFileSeeked( void ) const;
+		size_t		getSeeker( void ) const;
 
+		void		setFileSeeked(bool value);
+		void		setSeeker(size_t value);
 		void		setFileIndex(size_t value);
 		void		setFileEnd(size_t value);
 		void		setWorker(Worker &worker);

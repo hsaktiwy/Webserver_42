@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/10 14:52:34 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/10 22:26:49 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ bool	ishexa(char c)
 	return (false);
 }
 
-size_t	hexaToDecimal(std::string &str)
+size_t	hexaToDecimal(const std::string &str)
 {
 	std::stringstream ss(str);
     size_t s;
@@ -108,6 +108,39 @@ void	AddEmptyNode(std::vector<HTTPHeader> &vec)
 {
 	HTTPHeader empty;
 	vec.push_back(empty);
+}
+
+std::string		EscapedEncoding(std::string &uri, bool &error, int &status)
+{
+	std::string result;
+
+	for (size_t i = 0; i < uri.size(); i++)
+	{
+		if (uri[i] == '%' && i + 1 < uri.size() && ishexa(uri[i + 1]))
+		{
+			if (i + 2 < uri.size() && ishexa(uri[i + 2]))
+			{
+				std::string  tmp = uri.substr(i + 1, 2);
+
+				size_t hexa = hexaToDecimal(tmp);
+				if (hexa > 31)
+				{
+					result += (char)hexa;
+					i +=2;
+				}
+				else
+				{
+					error = true, status = 400;
+					return (uri);
+				}
+			}
+			else
+				result += uri[i];
+		}
+		else
+			result += uri[i];
+	}
+	return (result);
 }
 
 void	request::ParseRequest(char *buff, ssize_t bytes_size)
@@ -182,18 +215,7 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 		}
 		if (!SLValidity && R_Method && R_URI && R_PROTOCOL)
 		{
-			bool MethodeExist = false;
-			for (int i = 0; i < 3; i++)
-			{
-				if (method == allowedMethod[i])
-				{
-					MethodeExist = true;
-					if (allowedMethod[i] == "POST")
-						Body_Exist = true;
-					break;
-				}
-			}
-			if (http != "HTTP/1.1" || !MethodeExist || !CheckUriFormat(method_uri))
+			if (!CheckUriFormat(method_uri))
 			{
 				error = true, RequestRead = true, status = 400;
 				return ;
@@ -544,16 +566,32 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 {
 	is_dir = 0;
 	is_regular = 0;
-	std::string KnownHeaders[] = {"Host", "Accept", "Accept-Language", "Accept-Encoding", "Connection", "Referer"};
-	std::string mimeType[] = {"image/avif", "image/avif", "image/jpeg", "image/gif", "image/png", "text/csv",  "text/html",   "text/javascript", "text/plain", "text/xml", "text/plain", "audio/mpeg", "video/mp4", "video/mpeg", "application/xml"};
 	// ServerBlocks block = get_server_block(host, serverBlocks);
-
+	std::string allowedMethode[] = {"POST", "DELETE", "GET"};
 	// RequestDisplay();
 	if (error == false)
 	{
+		// check if we have a valide Escaped Encoding
+		printf("Before---------->%s\n", method_uri.c_str());
+		method_uri = EscapedEncoding(method_uri, error, status);
+		printf("After---------->%s\n", method_uri.c_str());
+		// chekc if the method is supported bye the server
+		bool supported = false;
+		for(size_t i = 0; i < 3; i++)
+		{
+			if (method == allowedMethode[i])
+			{
+				supported = true;
+				break;
+			}
+		}
+		if (supported == false)
+			error = true, status = 405;
 		// splite uri to scheme, authority, path, query
 		UriFormat(uri, method_uri, host);
 		std::string path = "/"  + uri.path;
+		if (http != "HTTP/1.1")
+			error = true, status = 505;
 		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
 		worker.setHost(host);
 		// ServerBlocks block = worker.getBlockWorker();
@@ -567,6 +605,8 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 			worker.setCgiStatus(true);
 			return;
 		}
+
+		// static level
 		if (is_dir == 1 && index.size() != 0)
 		{
 			std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
@@ -596,6 +636,7 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 			if (find(allowedMethod.begin(), allowedMethod.end(), method) == allowedMethod.end())
 				error = true, status = 405;
 		}
+		printf("error %d, status %d\n", error, status);
 	}
 }
 

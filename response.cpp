@@ -6,13 +6,13 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/09 20:56:28 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/10 22:44:22 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "response.hpp"
 
-response::response(request &req, Worker &wk): http_request(&req), worker(&wk), body_index(0), body_size(-1), header_index(0), header_size(-1), body_sent(0), header_sent(0), FileOpened(false), fd(-1)
+response::response(request &req, Worker &wk): http_request(&req), worker(&wk), body_index(0), body_size(-1), header_index(0), header_size(-1), body_sent(0), header_sent(0), FileOpened(false), fd(-1) ,FileSeeked(false) , Seeker(0)
 {
 
 }
@@ -136,6 +136,7 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 	if (req.getError() == true)
 	{
 		// response for Error handling
+		printf("bom\n");
 		errorresponse(status_codes);
 	}
 	else
@@ -362,7 +363,7 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 	worker->setPathError(worker->getErrorPages(), req.getStatus(),worker->getRoot());
 	if (wk.get_track_status() == 0 || (wk.get_track_status() == 1 && wk.getPathError().empty()))
 	{
-		// printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());
+		printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());
 		if (wk.get_track_status() == 1 && wk.getPathError() == "")
 			req.setStatus(404);
 		std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
@@ -374,15 +375,17 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 		body_string = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n<title>Error Page</title>\r\n<style>\r\nbody {\r\nfont-family: Arial, sans-serif;\r\ntext-align: center;\r\npadding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\nmargin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\nmargin-bottom: 50px;\r\n}\r\n</style>\r\n</head>\r\n<body>\r\n<h1>Error "+ statusCode + "("+ HumanRead +")"+"</h1>\r\n<p>Unhable to reserve a propore response.</p>\r\n</body>\r\n</html>";
 		http_response += "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n";
 		http_response += "Content-Type: text/html\r\n";
-		std::string size;
-		ss << body_string.size();
-		ss >> size;
-		http_response += "Content-Length: " + size + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n\r\n";
-		body_size = body_string.size();
+		size_t size = body_string.size();
+		http_response += "Content-Length: " + ToString(size) + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n\r\n";
+		body_size = 0;
+		http_response += body_string;
 		header_size = http_response.size();
+		printf("Reponse : %s\n", http_response.c_str());
+		printf("%s", body_string.c_str());
 	}
 	else
 	{
+		printf("error %d\n", req.getError());
 		std::string path = wk.getLocationWorker().getPath() + "/" + worker->getPathError();
 		path = NormilisePath(path);
 		RedirectionResponse(status_codes, path);
@@ -431,6 +434,8 @@ response& response::operator=(const response& obj)
 		body_sent = obj.body_sent;
 		FileOpened = obj.FileOpened;
 		fd = obj.fd;
+		FileSeeked = obj.FileSeeked;
+		Seeker = obj.Seeker;
 		printf("After setting %lld %lu\n", header_size, header_index);
 	}
 	return (*this);
@@ -450,6 +455,8 @@ std::string response::Status(unsigned int status, std::map<unsigned int, std::st
 	return (result);
 }
 
+// GETTERS
+
 std::string response::getHttp_response( void ) const
 {
 	return (http_response);
@@ -463,17 +470,6 @@ std::string response::getBody_string( void ) const
 std::string response::getFile( void ) const
 {
 	return (file);
-}
-
-
-void        response::setHttp_request(request &request)
-{
-	http_request = &request;
-}
-
-void        response::setWorker(Worker &wk)
-{
-	worker = &wk;
 }
 
 size_t      response::getHeader_index( void ) const
@@ -521,6 +517,17 @@ std::string response::getFileType( void ) const
 	return (FileType);
 }
 
+bool	response::getFileSeeked( void ) const
+{
+	return (FileSeeked);
+}
+size_t	response::getSeeker( void ) const
+{
+	return (Seeker);
+}
+
+
+// SETTERS
 void        response::setHeader_index(size_t value)
 {
 	header_index = value;
@@ -580,4 +587,23 @@ void        response::setFileIndex(size_t value)
 void        response::setFileEnd(size_t value)
 {
 	FileEnd = value;
+}
+
+void	response::setFileSeeked(bool value)
+{
+	FileSeeked = value;
+}
+void	response::setSeeker(size_t value)
+{
+	Seeker = value;
+}
+
+void        response::setHttp_request(request &request)
+{
+	http_request = &request;
+}
+
+void        response::setWorker(Worker &wk)
+{
+	worker = &wk;
 }

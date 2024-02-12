@@ -6,13 +6,13 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/10 22:44:22 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/12 23:44:20 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "response.hpp"
 
-response::response(request &req, Worker &wk): http_request(&req), worker(&wk), body_index(0), body_size(-1), header_index(0), header_size(-1), body_sent(0), header_sent(0), FileOpened(false), fd(-1) ,FileSeeked(false) , Seeker(0)
+response::response(request &req, Worker &wk): http_request(&req), worker(&wk), body_index(0), body_size(-1), header_index(0), header_size(-1), body_sent(0), header_sent(0), FileOpened(false), fd(-1) ,FileSeeked(false) , Seeker(0), readyToResponed(false), StoringFile(false)
 {
 
 }
@@ -107,6 +107,7 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 	{
 		std::string path =  wk.getRedirect();
 		RedirectionResponse(status_codes, path);
+		readyToResponed = true;
 		return ;
 	}
 
@@ -120,6 +121,7 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 				autoIndexing(req, wk,http_response, body_string, status_codes);
 				header_size = http_response.size();
 				body_size = body_string.size();
+				readyToResponed = true;
 				return ;
 			}
 			else if (req.getMethod() == "GET" && req.getIs_dir() == 1 && index.size() == 0)
@@ -136,26 +138,29 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 	if (req.getError() == true)
 	{
 		// response for Error handling
-		printf("bom\n");
 		errorresponse(status_codes);
+		readyToResponed = true;
 	}
 	else
 	{
 		if (req.getMethod() == "GET")
 		{
 			Get(status_codes);
+			readyToResponed = true;
 		}
 		else if (req.getMethod() == "POST")
 		{
 			Post(status_codes);
+			readyToResponed = true;
 		}
 		else
 		{
+			// this must be deleted
 			body_string = "<html>\r\n<head>\r\n	<title>Valide File</title>\r\n</head>\r\n<body>\r\n	<h1>The response must be here!.</h1>\r\n</body>\r\n</html>\r\n";
 			body_size = body_string.size();
 			http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nServer: " + ((std::string)SERVERNAME) + "Content-Length: " + ToString(body_size) + "\r\n\r\n";
 			header_size = http_response.size();
-
+			readyToResponed = true;
 		}
 	}
 }
@@ -200,6 +205,7 @@ std::string	getFilename(std::stringstream &stream, std::string &boundary, bool &
 	return ("");
 }
 
+
 bool	OpenFile(std::string &filename, std::stringstream& stream, std::string &boundary, bool &stop)
 {
 	std::ofstream	Outfile(filename.c_str());
@@ -231,86 +237,235 @@ bool	OpenFile(std::string &filename, std::stringstream& stream, std::string &bou
 		return (false);
 }
 
+bool ft_getline(std::string &stream, size_t &index, std::string &buff,char delimiter)
+{
+	bool	isthere_data = (index < stream.size()) ? true : false;
+	buff = "";
+	while (index < stream.size())
+	{
+		
+		if (stream[index] == delimiter)
+		{
+			index++;
+			break;
+		}
+		buff += stream[index];
+		index++;
+	}
+	return (isthere_data);
+}
+
+std::string	getFilenameExp(std::string &stream, size_t &index, std::string &boundary, bool &stop)
+{
+	std::string filename;
+	std::string buff;
+	std::string boundary2 = "--" + boundary, boundaryEnd = "--" + boundary + "--";
+	while (true)
+	{
+		if (ft_getline(stream, index, buff, '\n'))
+		{
+			printf("index %lu, buff : %s\n", buff.size(), buff.c_str());
+			if (buff.find(boundary2) == std::string::npos && buff.find(boundaryEnd) == std::string::npos)
+			{
+				size_t	npos = buff.find("Content-Disposition");
+				if (npos != std::string::npos && npos == 0)
+				{
+					std::string Format = "filename=";
+					size_t npos2 = buff.find(Format);
+					if (npos2 != std::string::npos)
+					{
+						npos2 += Format.size();
+						ExtractValues(buff, filename, npos2);
+						// adjust the stream this will surpace any line untell it get a empty line or in our case a line with only \r
+						printf("index_0_ %lu\n", index);
+						int i = 0;
+						while (ft_getline(stream, index, buff, '\n'))
+						{
+							printf("buff  : %s\n", buff.c_str());
+							if (buff == "\r")
+								break;
+							i++;
+							if (i == 2)
+								exit(0);
+						}
+						printf("index_1_ %lu\n", index);
+						return (filename);
+					}
+				}
+			}
+		}
+		else
+		{
+			stop = true;
+			break;
+		}
+	}
+	return ("");
+}
+
+// this function will try to fill our file with the data from the body untell
+// it reach the end (boundary) and return (1) mean it finished or it return 0 meaning it
+// just get to the MaxWriteSize defined, else -1 for any error case
+int	fillFile(int fd, std::string &stream, size_t &index, std::string &boundary, size_t MaxWriteSize)
+{
+	size_t		writtenBytes = 0;
+	size_t		indexBegin = index;
+	bool		finished = false;
+	std::string boundary2 = "--" + boundary, boundaryEnd = "--" + boundary + "--";
+	char *buff = (char *)malloc(sizeof(char) * MaxWriteSize);
+	if (!buff)
+		return (-1);
+	printf("writeBytes %lu, index %lu\n", writtenBytes, index);		
+	while (index < stream.size() && writtenBytes < MaxWriteSize)
+	{
+		if (stream[index] == '-')
+		{
+			size_t j = 0;
+			while (index + j < stream.size() && j < boundary2.size() && stream[index + j] == boundary2[j])
+				j++;
+			if (j == boundary2.size())
+			{
+				while (index + j < stream.size() && j < boundaryEnd.size() && stream[index + j] == boundaryEnd[j])
+					j++;
+				index += j, finished = true;
+				break;
+			}
+		}
+		buff[writtenBytes] = stream[index];
+		writtenBytes++;
+		index++;
+	}
+	printf("writeBytes %lu, index %lu\n", writtenBytes, index);
+	if (write(fd, buff, writtenBytes) == -1)
+		return (free(buff), -1);
+	return (free(buff), finished);
+}
+
 void	response::Post(std::map<unsigned int, std::string> &status_codes)
 {
-	std::string UploadPath = "Uploads/";
 	request	&req = *http_request;
 	Worker	&wk = *worker;
-	int		MFD_index = req.getHeaderIndex("Content-Type");
+	std::string &body = (std::string &)req.getBody();
+	std::string &UploadPath = wk.getPathUpload();
 	bool	stop = false;
-	std::vector<std::string> files;
 
-	// check first for the Content-Type  == multipart/form-data then define the boundary value
-	if (MFD_index != -1)
+	if (POST_Init == false)
 	{
-		printf("Solo leveling\n");
-		std::vector<HTTPHeader> const & headers = req.getHeaders();
-		HTTPHeader &header = (HTTPHeader&)headers[MFD_index];
-		size_t valide = header.values.find("multipart/form-data"); 
-		if (valide != std::string::npos)
+		printf("%s _  %s\n", wk.getRoot().c_str(), UploadPath.c_str());
+		// check first for the Content-Type  == multipart/form-data then define the boundary value
+		int		MFD_index = req.getHeaderIndex("Content-Type");
+		if (MFD_index != -1)
 		{
-			std::string &boundary = header.boundry;
-			std::string &body = (std::string &)req.getBody();
-			std::stringstream stream(body);
-			std::string buff;
-			// loop on all data relate to the files we want to create
-			// eliminate boundary if there is one
-			if (boundary.size() > 0)
-				getline(stream, buff, '\n');
-			while (!stop)
+			std::vector<HTTPHeader> const & headers = req.getHeaders();
+			HTTPHeader &header = (HTTPHeader&)headers[MFD_index];
+			size_t valide = header.values.find("multipart/form-data");
+			if (valide != std::string::npos)
 			{
-				// get the filename from the Content-Disposition
-				std::string filename = getFilename(stream, boundary, stop);
-				printf("filename %s\n", filename.c_str());
-				// first check for the file info and get all it data 
-				if (!filename.empty())
+				body_index = 0;
+				boundary = header.boundry;
+				std::string buff;
+				if (boundary.size() > 0)
+					ft_getline(body, body_index, buff,'\n');
+				POST_Init = true;
+			}
+			else
+			{
+				// Not impemented
+				printf("ola\n");
+				req.setStatus(501); req.setError(true);
+				errorresponse(status_codes);
+				readyToResponed = true;
+				return ;
+			}
+		}
+		if (MFD_index == -1)
+		{
+			req.setStatus(400); req.setError(true);
+			errorresponse(status_codes);
+			return ;
+		}
+	}
+	if (POST_Init == true)
+	{
+		// loop on all data relate to the files we want to create
+		// eliminate boundary if there is one
+		// get the filename from the Content-Disposition
+		if (StoringFile == false)
+			CurrentFilename = getFilenameExp(body, body_index, boundary, stop), StoringFile = true;
+		printf("filename %s, body_index %lu\n", CurrentFilename.c_str(), body_index);
+		// first check for the file info and get all it data 
+		if (stop == false && StoringFile == true)
+		{
+			if (!CurrentFilename.empty())
+			{
+				// open the file and start writing in the file
+				if (fd == -1)
 				{
-					// open the file and start writing in the file
-					std::string path = UploadPath + "/" + filename;
+					std::string path = UploadPath + "/" + CurrentFilename;
 					printf("Path %s\n", path.c_str());
-					if (!OpenFile(path, stream, boundary, stop))
+					fd = open(path.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
+					if (fd == -1)
+					{
+						perror("open ");
+						printf("ola2\n");
+						req.setStatus(501); req.setError(true);
+						errorresponse(status_codes);
+						readyToResponed = true;
+						return ;
+					}
+					if (fd > 0)
+						files.push_back(CurrentFilename);
+				}
+				if (fd > 0)
+				{
+					// if (!OpenFile(path, stream, boundary, stop))
+					int result = fillFile(fd, body, body_index, boundary, UPLOADCHUNK_SIZE);
+					if (result == -1)
 					{
 						// handle error 500 in the server;
 						req.setStatus(500); req.setError(true);
 						errorresponse(status_codes);
 						return ;
 					}
-					else
-						files.push_back(filename);
+					if (result == 1)
+					{
+						if (close(fd) == - 1)
+						{
+							req.setStatus(500); req.setError(true);
+							errorresponse(status_codes);
+							return ;
+						}
+						fd = -1;
+						StoringFile = false;
+						stop = true;
+					}
+					printf("index_body %lu\n", body_index);
 				}
 			}
-			// create the response
-			int code;
-			if (files.size() == 0)
-				code = 200;
-			else	
-				code = 201;
-			std::string human_read = Status(code, status_codes);
-			http_response = "HTTP/1.1 " + human_read + "\r\nContent-Type: text/plain\r\n";
-			for(size_t i = 0; i < files.size(); i++)
-				body_string += "Resource is Created : " + files[i] + "\r\n"; 
-			body_size = body_string.size();
-			http_response += "Content-Length: " + ToString(body_size) + "\r\n\r\n";
-			header_size = http_response.size();
-			printf("%s\n%s\n", http_response.c_str(), body_string.c_str());
 		}
-		else
+		if (stop == true)
 		{
-			// Not impemented
-			req.setStatus(501); req.setError(true);
-			errorresponse(status_codes);
-			return ;
+			body_index = 0;
+			readyToResponed = true;
 		}
+		// create the response
 	}
-
-	if (MFD_index == -1)
+	if (readyToResponed)
 	{
-		printf("Solo leveling2\n");
-		// in case where we don't knew the type of data that we are handling
-		// 400 bad request;
-		req.setStatus(400); req.setError(true);
-		errorresponse(status_codes);
-		return ;
+		printf("responding\n");
+		int code;
+		if (files.size() == 0)
+			code = 200;
+		else	
+			code = 201;
+		std::string human_read = Status(code, status_codes);
+		http_response = "HTTP/1.1 " + human_read + "\r\nContent-Type: text/plain\r\n";
+		for(size_t i = 0; i < files.size(); i++)
+			body_string += "Resource is Created : " + files[i] + "\r\n"; 
+		body_size = body_string.size();
+		http_response += "Content-Length: " + ToString(body_size) + "\r\n\r\n";
+		header_size = http_response.size();
+		printf("%s\n%s\n", http_response.c_str(), body_string.c_str());
 	}
 	// where is should put the file  for new let put them in
 	// std::vector<HTTPHeader> &header = req.getHeaders();
@@ -436,6 +591,8 @@ response& response::operator=(const response& obj)
 		fd = obj.fd;
 		FileSeeked = obj.FileSeeked;
 		Seeker = obj.Seeker;
+		readyToResponed = obj.readyToResponed;
+		StoringFile = obj.StoringFile;
 		printf("After setting %lld %lu\n", header_size, header_index);
 	}
 	return (*this);
@@ -578,6 +735,13 @@ size_t      response::getFileEnd( void ) const
 {
 	return (FileEnd);
 }
+
+
+bool	response::getReadyToResponed( void ) const
+{
+	return this->readyToResponed;
+}
+
 
 void        response::setFileIndex(size_t value)
 {

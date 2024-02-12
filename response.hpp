@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:50 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/10 19:16:24 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/12 22:37:49 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,25 +17,33 @@
 
 class response {
 	private:
-		std::string	http_response;
-		std::string	body_string;
-		std::string	file;
-		request		*http_request;
-		Worker		*worker;
-		size_t		header_index;
-		size_t		body_index;// this will play the role of the index where the reading start untell it reash the body size;
-		size_t		FileIndex;
-		size_t		FileEnd;
-		std::string	FileType;
-		long		long header_size;
-		long		long body_size;// this play the role of the range (even the size of the full file)
-		bool		header_sent;
-		bool		body_sent;
-		bool		FileOpened;
-		bool		FileSeeked;// this in case where our file need to be seeked first to a special position then send data to our user
-		size_t		Seeker;
-		int			fd;
-
+		std::string					http_response;
+		std::string					body_string;
+		std::string					file;
+		request						*http_request;
+		Worker						*worker;
+		size_t						header_index;
+		size_t						body_index;// this will play the role of the index where the reading start untell it reash the body size;this can be reused in post method, to get the body, last processed value
+		size_t						FileIndex;
+		size_t						FileEnd;
+		std::string					FileType;
+		long						long header_size;
+		long						long body_size;// this play the role of the range (even the size of the full file)
+		bool						header_sent;
+		bool						body_sent;
+		bool						FileOpened;
+		bool						FileSeeked;// this in case where our file need to be seeked first to a special position then send data to our user
+		size_t						Seeker;
+		int							fd;// this also will be reused for file in 
+		bool						readyToResponed;
+		// to handle post		
+		bool						POST_Init;
+		std::stringstream			stream;
+		size_t 						index;
+		std::string 				boundary;
+		bool						StoringFile;
+		std::string					CurrentFilename;
+		std::vector<std::string>	files;
 	public:
 		response();
 		response(request &http_request, Worker& worker);
@@ -72,6 +80,8 @@ class response {
 		size_t		getFileEnd( void ) const;
 		bool		getFileSeeked( void ) const;
 		size_t		getSeeker( void ) const;
+		bool		getReadyToResponed( void ) const;
+
 
 		void		setFileSeeked(bool value);
 		void		setSeeker(size_t value);

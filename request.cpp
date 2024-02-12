@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/10 22:26:49 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/12 20:14:56 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,7 +145,7 @@ std::string		EscapedEncoding(std::string &uri, bool &error, int &status)
 
 void	request::ParseRequest(char *buff, ssize_t bytes_size)
 {
-	std::string allowedMethod[] = {"POST", "GET", "DELETE"};
+	// std::string allowedMethod[] = {"POST", "GET", "DELETE"};
 	size_t index = 0;
 
 	if (!Parsed_StartLine)
@@ -215,6 +215,8 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 		}
 		if (!SLValidity && R_Method && R_URI && R_PROTOCOL)
 		{
+			if (method == "POST")
+				Body_Exist = true;
 			if (!CheckUriFormat(method_uri))
 			{
 				error = true, RequestRead = true, status = 400;
@@ -449,7 +451,7 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 					if ((buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n')
 						||	(left_CR && buff[index] == '\n'))
 					{
-						index +=(left_CR) ? 1 : 2, ChunkedSizeRead = false, FillingBuffer = false, left_CR = false;
+						index += (left_CR) ? 1 : 2, ChunkedSizeRead = false, FillingBuffer = false, left_CR = false;
 						continue;
 					}
 					if (buff[index] == '\r' && index + 1 == bytes_size)
@@ -572,9 +574,9 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 	if (error == false)
 	{
 		// check if we have a valide Escaped Encoding
-		printf("Before---------->%s\n", method_uri.c_str());
+		// printf("Before---------->%s\n", method_uri.c_str());
 		method_uri = EscapedEncoding(method_uri, error, status);
-		printf("After---------->%s\n", method_uri.c_str());
+		// printf("After---------->%s\n", method_uri.c_str());
 		// chekc if the method is supported bye the server
 		bool supported = false;
 		for(size_t i = 0; i < 3; i++)
@@ -622,12 +624,16 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		if (is_regular == 1)
 		{
 			int exist = F_OK;
-			int rigths =(method == "POST") ? (F_OK | R_OK | W_OK):(F_OK | R_OK); 
+			int rigths =(method == "POST") ? (F_OK | R_OK):(F_OK | R_OK); 
 			std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
-			if (access(check.c_str(), exist) != 0)
-				error = true, status = 404;
-			if (error == false && access(check.c_str(), rigths) != 0)
-				error = true, status = 403;
+			if (access(check.c_str(), rigths) != 0)
+			{
+				(errno == EACCES) ? (error = true, status = 403) : (error = true, status = 404);
+				// if (errno == EACCES)
+				// 	;
+				// else
+				// 	;
+			}
 		}
 
 		std::vector<std::string> allowedMethod = worker.getAllowMethods();
@@ -636,7 +642,7 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 			if (find(allowedMethod.begin(), allowedMethod.end(), method) == allowedMethod.end())
 				error = true, status = 405;
 		}
-		printf("error %d, status %d\n", error, status);
+		// printf("error %d, status %d\n", error, status);
 	}
 }
 

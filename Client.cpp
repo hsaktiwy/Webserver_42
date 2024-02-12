@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/10 17:23:19 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/12 18:03:38 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ Client& Client::operator=(const Client& obj)
 
 void	Client::ParseRequest(std::vector<ServerBlocks> &serverBlocks)
 {
-    http_request.CheckRequest(serverBlocks, worker);;
+    http_request.CheckRequest(serverBlocks, worker);
 }
 
 void	Client::CreateResponse(std::map<unsigned int, std::string> &status_codes)
@@ -70,33 +70,34 @@ const Worker &Client::getWorker( void ) const
 	return worker;
 }
 
-void Client::setClientSocket(int fd)
+void	Client::setClientSocket(int fd)
 {
 	this->socket = fd;
 }
 
-void Client::setClientRequestState(bool state)
+void	Client::setClientRequestState(bool state)
 {
 	this->requestReceived = state;
 }
 
-void Client::setClientResponseState(bool state)
+void	Client::setClientResponseState(bool state)
 {
 	this->responseSent = state;
 }
 
-int Client::getClientSocket() const
+int	Client::getClientSocket() const
 {
 	return this->socket;
 }
 
-bool Client::getClientResponseSate() const
+bool	Client::getClientResponseSate() const
 {
 	return this->responseSent;
 }
 
-bool Client::getClientRequestSate() const
+bool	Client::getClientRequestSate() const
 {
 	return this->requestReceived;
 
 }
+

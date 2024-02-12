@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:04 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/10 17:23:14 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/12 20:42:51 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,12 +17,12 @@
 #include "response.hpp"
 class Client {
 	private:
-		Worker worker;
-		request http_request;
-		response http_response;
-		bool requestReceived;
-		bool responseSent;
-		int socket;
+		Worker		worker;
+		request		http_request;
+		response	http_response;
+		bool		requestReceived;
+		bool		responseSent;
+		int			socket;
 	public:
 		Client();
 		~Client();

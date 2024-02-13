@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/12 23:44:20 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/13 14:25:45 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,7 +151,6 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 		else if (req.getMethod() == "POST")
 		{
 			Post(status_codes);
-			readyToResponed = true;
 		}
 		else
 		{
@@ -264,7 +263,7 @@ std::string	getFilenameExp(std::string &stream, size_t &index, std::string &boun
 	{
 		if (ft_getline(stream, index, buff, '\n'))
 		{
-			printf("index %lu, buff : %s\n", buff.size(), buff.c_str());
+			// printf("index %lu, buff : %s\n", buff.size(), buff.c_str());
 			if (buff.find(boundary2) == std::string::npos && buff.find(boundaryEnd) == std::string::npos)
 			{
 				size_t	npos = buff.find("Content-Disposition");
@@ -277,18 +276,18 @@ std::string	getFilenameExp(std::string &stream, size_t &index, std::string &boun
 						npos2 += Format.size();
 						ExtractValues(buff, filename, npos2);
 						// adjust the stream this will surpace any line untell it get a empty line or in our case a line with only \r
-						printf("index_0_ %lu\n", index);
+						// printf("index_0_ %lu\n", index);
 						int i = 0;
 						while (ft_getline(stream, index, buff, '\n'))
 						{
-							printf("buff  : %s\n", buff.c_str());
+							// printf("buff  : %s\n", buff.c_str());
 							if (buff == "\r")
 								break;
 							i++;
 							if (i == 2)
 								exit(0);
 						}
-						printf("index_1_ %lu\n", index);
+						// printf("index_1_ %lu\n", index);
 						return (filename);
 					}
 				}
@@ -315,7 +314,7 @@ int	fillFile(int fd, std::string &stream, size_t &index, std::string &boundary, 
 	char *buff = (char *)malloc(sizeof(char) * MaxWriteSize);
 	if (!buff)
 		return (-1);
-	printf("writeBytes %lu, index %lu\n", writtenBytes, index);		
+	// printf("writeBytes %lu, index %lu\n", writtenBytes, index);		
 	while (index < stream.size() && writtenBytes < MaxWriteSize)
 	{
 		if (stream[index] == '-')
@@ -335,7 +334,7 @@ int	fillFile(int fd, std::string &stream, size_t &index, std::string &boundary, 
 		writtenBytes++;
 		index++;
 	}
-	printf("writeBytes %lu, index %lu\n", writtenBytes, index);
+	// printf("writeBytes %lu, index %lu\n", writtenBytes, index);
 	if (write(fd, buff, writtenBytes) == -1)
 		return (free(buff), -1);
 	return (free(buff), finished);
@@ -351,7 +350,7 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 
 	if (POST_Init == false)
 	{
-		printf("%s _  %s\n", wk.getRoot().c_str(), UploadPath.c_str());
+		// printf("%s _  %s\n", wk.getRoot().c_str(), UploadPath.c_str());
 		// check first for the Content-Type  == multipart/form-data then define the boundary value
 		int		MFD_index = req.getHeaderIndex("Content-Type");
 		if (MFD_index != -1)
@@ -371,7 +370,7 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 			else
 			{
 				// Not impemented
-				printf("ola\n");
+				// printf("ola\n");
 				req.setStatus(501); req.setError(true);
 				errorresponse(status_codes);
 				readyToResponed = true;
@@ -392,7 +391,7 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 		// get the filename from the Content-Disposition
 		if (StoringFile == false)
 			CurrentFilename = getFilenameExp(body, body_index, boundary, stop), StoringFile = true;
-		printf("filename %s, body_index %lu\n", CurrentFilename.c_str(), body_index);
+		// printf("filename %s, body_index %lu\n", CurrentFilename.c_str(), body_index);
 		// first check for the file info and get all it data 
 		if (stop == false && StoringFile == true)
 		{
@@ -402,12 +401,12 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 				if (fd == -1)
 				{
 					std::string path = UploadPath + "/" + CurrentFilename;
-					printf("Path %s\n", path.c_str());
+					// printf("Path %s\n", path.c_str());
 					fd = open(path.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
 					if (fd == -1)
 					{
 						perror("open ");
-						printf("ola2\n");
+						// printf("ola2\n");
 						req.setStatus(501); req.setError(true);
 						errorresponse(status_codes);
 						readyToResponed = true;
@@ -437,9 +436,8 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 						}
 						fd = -1;
 						StoringFile = false;
-						stop = true;
 					}
-					printf("index_body %lu\n", body_index);
+					printf("index_body %lu, stop %d result %d\n", body_index, stop, result);
 				}
 			}
 		}
@@ -452,7 +450,7 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 	}
 	if (readyToResponed)
 	{
-		printf("responding\n");
+		// printf("responding\n");
 		int code;
 		if (files.size() == 0)
 			code = 200;
@@ -465,7 +463,7 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 		body_size = body_string.size();
 		http_response += "Content-Length: " + ToString(body_size) + "\r\n\r\n";
 		header_size = http_response.size();
-		printf("%s\n%s\n", http_response.c_str(), body_string.c_str());
+		// printf("%s\n%s\n", http_response.c_str(), body_string.c_str());
 	}
 	// where is should put the file  for new let put them in
 	// std::vector<HTTPHeader> &header = req.getHeaders();
@@ -518,7 +516,7 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 	worker->setPathError(worker->getErrorPages(), req.getStatus(),worker->getRoot());
 	if (wk.get_track_status() == 0 || (wk.get_track_status() == 1 && wk.getPathError().empty()))
 	{
-		printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());
+		// printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());
 		if (wk.get_track_status() == 1 && wk.getPathError() == "")
 			req.setStatus(404);
 		std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
@@ -535,12 +533,12 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 		body_size = 0;
 		http_response += body_string;
 		header_size = http_response.size();
-		printf("Reponse : %s\n", http_response.c_str());
-		printf("%s", body_string.c_str());
+		// printf("Reponse : %s\n", http_response.c_str());
+		// printf("%s", body_string.c_str());
 	}
 	else
 	{
-		printf("error %d\n", req.getError());
+		// printf("error %d\n", req.getError());
 		std::string path = wk.getLocationWorker().getPath() + "/" + worker->getPathError();
 		path = NormilisePath(path);
 		RedirectionResponse(status_codes, path);
@@ -570,9 +568,9 @@ response& response::operator=(const response& obj)
 {
 	if (this != &obj)
 	{
-		printf("Copy Assigned oPERATOR IS CALLED\n");
-		printf("Before setting ->%lld %lu\n", header_size, header_index);
-		printf("To Copy setting %lld %lu\n", obj.header_size, obj.header_index);
+		// printf("Copy Assigned oPERATOR IS CALLED\n");
+		// printf("Before setting ->%lld %lu\n", header_size, header_index);
+		// printf("To Copy setting %lld %lu\n", obj.header_size, obj.header_index);
 
 		http_response = obj.http_response;
 		http_request = obj.http_request;
@@ -593,7 +591,7 @@ response& response::operator=(const response& obj)
 		Seeker = obj.Seeker;
 		readyToResponed = obj.readyToResponed;
 		StoringFile = obj.StoringFile;
-		printf("After setting %lld %lu\n", header_size, header_index);
+		// printf("After setting %lld %lu\n", header_size, header_index);
 	}
 	return (*this);
 }

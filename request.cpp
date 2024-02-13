@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/12 20:14:56 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/13 14:24:21 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -319,11 +319,11 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 		if (R_FUll_HEADERS)
 		{
 			// parse the headers
-			printf("method %s && uri %s && %s\n", method.c_str(), method_uri.c_str(), http.c_str());
-			for(int i = 0; i < headers.size(); i++)
-			{
-				printf("%s : %s\n", headers[i].name.c_str(), headers[i].values.c_str());
-			}
+			// printf("method %s && uri %s && %s\n", method.c_str(), method_uri.c_str(), http.c_str());
+			// for(int i = 0; i < headers.size(); i++)
+			// {
+			// 	printf("%s : %s\n", headers[i].name.c_str(), headers[i].values.c_str());
+			// }
 
 			// define the body limiter 
 			// call them in this orther will made sure the priority so be carefull
@@ -385,7 +385,7 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 			Parsed_Header = true;
 			FillingBuffer = false;
 			left_CR = false;
-			printf("Does the bodyExist %d, and what delimiter whe need %d\n", Body_Exist, BodyLimiterType);
+			// printf("Does the bodyExist %d, and what delimiter whe need %d\n", Body_Exist, BodyLimiterType);
 			// exit(0);
 		}
 	}

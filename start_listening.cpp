@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/12 20:45:12 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/13 14:27:30 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -306,7 +306,7 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 	std::string buffer;// this will hold our chunked response
 	response &resp = (response &)client.getHttp_response();
 	Worker &wk = (Worker&)client.getWorker();
-	printf("wk.root : %s\n", wk.getRoot().c_str());
+	// printf("wk.root : %s\n", wk.getRoot().c_str());
 	client.CreateResponse(status_codes);
 	size_t writeBytes = CHUNK_SIZE;
 	if (resp.getReadyToResponed())
@@ -686,7 +686,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 					ClientsVector.erase(ClientsVector.begin() + client_it);
 					close(poll_fds[i].fd);
 					poll_fds.erase(poll_fds.begin() + i);
-					printf("Segfault here\n");
+					// printf("Segfault here\n");
 					i--;
 				}
 			}

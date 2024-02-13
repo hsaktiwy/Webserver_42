@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/13 14:24:21 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/13 21:26:54 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -231,6 +231,8 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 			error = true, RequestRead = true, status = 400;
 			return ;
 		}
+		// if (R_Method && R_URI && R_PROTOCOL)
+		// 	printf("Start line  : %s %s %s\n", method.c_str(), method_uri.c_str(), http.c_str());
 	}
 	// check if the header is parsed
 	if (Parsed_StartLine && !Parsed_Header && index < bytes_size)
@@ -595,6 +597,14 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		if (http != "HTTP/1.1")
 			error = true, status = 505;
 		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
+		if (worker.get_max_body_size() != "")
+		{
+			size_t max_body_size = std::atoi(worker.get_max_body_size().c_str());
+			if (body.size() > max_body_size)
+			{
+				error = true, status = 413;
+			}
+		}
 		worker.setHost(host);
 		// ServerBlocks block = worker.getBlockWorker();
 		std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
@@ -609,7 +619,7 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		}
 
 		// static level
-		if (is_dir == 1 && index.size() != 0)
+		if (error == false && is_dir == 1 && index.size() != 0)
 		{
 			std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
 			if (access(check.c_str(), F_OK) == 0)
@@ -621,7 +631,7 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		}
 
 		// check for allowed method
-		if (is_regular == 1)
+		if (error && is_regular == 1)
 		{
 			int exist = F_OK;
 			int rigths =(method == "POST") ? (F_OK | R_OK):(F_OK | R_OK); 
@@ -637,7 +647,7 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		}
 
 		std::vector<std::string> allowedMethod = worker.getAllowMethods();
-		if (allowedMethod.size() != 0)
+		if (error && allowedMethod.size() != 0)
 		{
 			if (find(allowedMethod.begin(), allowedMethod.end(), method) == allowedMethod.end())
 				error = true, status = 405;
@@ -668,7 +678,7 @@ void	request::RequestDisplay( void )
 
 request::~request()
 {
-	std::cout << "Request Detroyed\n";
+	// std::cout << "Request Detroyed\n";
 }
 
 request::request(const request& copy)
@@ -678,7 +688,7 @@ request::request(const request& copy)
 
 request& request::operator=(const request& obj)
 {
-	std::cout << "Request Copied\n";
+	// std::cout << "Request Copied\n";
 	if (this != &obj)
 	{
 		request_length = obj.request_length;

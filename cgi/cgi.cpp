@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/10 17:05:50 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/13 16:17:14 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -293,6 +293,18 @@ void CgiEnv::constructScriptEnv()
         printf("%s\n", cgiMetaData[i]);
     }
     
+}
+void CgiEnv::setEnvironementData()
+{
+    setPathUriVector();
+    setCgiRoot();
+    findScript();
+    setCgiPATHINFO();
+    setCgiQueryString();
+    setCgiServerName();
+    setCgiServePort();
+    setRequestMethod();
+    constructScriptEnv();
 }
 // bool CgiEnv::isDirectoryRequest()
 // {

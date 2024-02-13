@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/09 04:52:56 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/13 16:30:10 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,6 +124,8 @@ class request {
 		std::string				ChunkSizeString;
 		// boundary case
 		std::string				boundary;
+
+		bool					isCgiRequest;
     public:
 		request();
 		~request();
@@ -153,7 +155,8 @@ class request {
 		bool							getRequestRead( void ) const;
 		bool							getHandleRequest( void ) const;
 		size_t							getRequestLength( void ) const;
-
+		bool							getCgiStatus( void ) const;
+		bool
 		// void							setRequestLength(bool value);
 		void							setRequestRead(bool value);
 		void							setHandleRequest(bool value);

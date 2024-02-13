@@ -6,13 +6,14 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/10 17:05:22 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/13 16:15:54 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CGI_HPP
 #define CGI_HPP
 #include "../http.server.hpp"
+#include "../request.hpp"
 
 
 //script-URI = <scheme> "://" <server-name> ":" <server-port><script-path> <extra-path> "?" <query-string>
@@ -46,6 +47,7 @@ public:
     void findScript();
     void setRequestMethod();
     void constructScriptEnv();
+    void setEnvironementData();
     bool isDirectoryRequest();
     std::string &getCgiServerName();
     std::string &getCgiServerPort();

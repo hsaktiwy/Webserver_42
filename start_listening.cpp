@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/10 18:38:33 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/10 23:36:58 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,6 +193,8 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to
 	// this part where we will handle some additional request parsing, at the time where the request was fully read
 	if (client.getHttp_request().getRequestRead())
 	{
+		if (client.getHttp_request().getCgiStatus())
+			handleCgiRequest();
 		client.ParseRequest((char *)(client.getHttp_request().getReq().c_str()), serverBlocks);
 		((request &)client.getHttp_request()).setHandleRequest(true);
 	}

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/10 14:52:34 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/10 23:35:13 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ request::request(): RequestRead(false), Parsed_StartLine(false), Parsed_Header(f
 	ChunkedRead = false;
 	ChunkedSizeRead = false;
 	ChunkedSize = 0;
+	isCgiRequest = false;
 }
 
 static bool CharacterUri(char c)
@@ -566,48 +567,52 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		bool indexed = false;
 		if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/"))
 		{
-			CgiEnv obj(worker);
-			// obj.setPathUriVector();
-			exit (1);
-			std::string fullpath;
-			std::string rootTmp = worker.getRoot();
-			std::string pathTmp = worker.getPath();
-			if (rootTmp[rootTmp.size() - 1] == '/')
-				rootTmp.pop_back();
-			fullpath = rootTmp+pathTmp;
-			std::cout<< "location : "<<worker.getLocationWorker().getPath()<< " fullpath: "<< fullpath<< " index: " << worker.getIndex()<<" autoindex:"<< worker.getAutoIndex()<<std::endl;
-			worker.setCgiStatus(true);
-			exit (1);
-			return;
+			isCgiRequest = true;
+			// CgiEnv obj(worker);
+			// // obj.setPathUriVector();
+			// exit (1);
+			// std::string fullpath;
+			// std::string rootTmp = worker.getRoot();
+			// std::string pathTmp = worker.getPath();
+			// if (rootTmp[rootTmp.size() - 1] == '/')
+			// 	rootTmp.pop_back();
+			// fullpath = rootTmp+pathTmp;
+			// std::cout<< "location : "<<worker.getLocationWorker().getPath()<< " fullpath: "<< fullpath<< " index: " << worker.getIndex()<<" autoindex:"<< worker.getAutoIndex()<<std::endl;
+			// worker.setCgiStatus(true);
+			// exit (1);
+			// return;
 		}
-		if (is_dir == 1 && index.size() != 0)
+		else
 		{
-			std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
-			if (access(check.c_str(), F_OK) == 0)
+			if (is_dir == 1 && index.size() != 0)
 			{
-				uri.path += index;
-				indexed = true;
-				is_dir = 0; is_regular = 1;
+				std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
+				if (access(check.c_str(), F_OK) == 0)
+				{
+					uri.path += index;
+					indexed = true;
+					is_dir = 0; is_regular = 1;
+				}
 			}
-		}
 
-		// check for allowed method
-		if (is_regular == 1)
-		{
-			int exist = F_OK;
-			int rigths =(method == "POST") ? (F_OK | R_OK | W_OK):(F_OK | R_OK); 
-			std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
-			if (access(check.c_str(), exist) != 0)
-				error = true, status = 404;
-			if (error == false && access(check.c_str(), rigths) != 0)
-				error = true, status = 403;
-		}
+			// check for allowed method
+			if (is_regular == 1)
+			{
+				int exist = F_OK;
+				int rigths =(method == "POST") ? (F_OK | R_OK | W_OK):(F_OK | R_OK); 
+				std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
+				if (access(check.c_str(), exist) != 0)
+					error = true, status = 404;
+				if (error == false && access(check.c_str(), rigths) != 0)
+					error = true, status = 403;
+			}
 
-		std::vector<std::string> allowedMethod = worker.getAllowMethods();
-		if (allowedMethod.size() != 0)
-		{
-			if (find(allowedMethod.begin(), allowedMethod.end(), method) == allowedMethod.end())
-				error = true, status = 405;
+			std::vector<std::string> allowedMethod = worker.getAllowMethods();
+			if (allowedMethod.size() != 0)
+			{
+				if (find(allowedMethod.begin(), allowedMethod.end(), method) == allowedMethod.end())
+					error = true, status = 405;
+			}
 		}
 	}
 }
@@ -795,4 +800,8 @@ void							request::setRequestRead(bool value)
 void							request::setHandleRequest(bool value)
 {
 	HandleRequest = value;
+}
+bool ::request::getCgiStatus()
+{
+	return isCgiRequest;
 }

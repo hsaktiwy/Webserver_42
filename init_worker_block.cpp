@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/10 18:34:48 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/13 14:20:48 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,65 +175,6 @@ void    set_based_ip_address(Worker &worker, std::vector<ServerBlocks> &serverBl
 void   init_worker_block(Worker &worker, std::string &host, std::string &path,std::vector<ServerBlocks> &serverBlocks, int &is_dir, int &is_regular)
 {
 
-<<<<<<< HEAD
-    int find;
-
-    std::string hostname;
-    std::string ip_address;
-    std::string port;
-
-    worker.setHost(host);
-    worker.setPath(path);
-    hostname = trim(host.substr(0,host.find(':'))).c_str();
-    get_matched_server_block(hostname,serverBlocks,worker,ip_address);
-    if (!ip_address.empty())
-    {
-        port = host.substr(host.find(':')).c_str();
-        host = ip_address + port;
-    set_based_ip_address(worker,serverBlocks,host);
-    }
-    worker.setLocationWorker(worker.getBlockWorker(),path);
-    set(worker.getLocationWorker().getDirectives(),worker,worker.getPath());
-    if (worker.getRoot().empty())
-        set(worker.getBlockWorker().getDirectives(),worker,worker.getPath());
-    // int flag = 0;
-    setDirectives(worker.getBlockWorker().getDirectives(),worker);
-    // if (worker.getIndex().empty())
-    //     flag = 1;
-    setDirectives(worker.getLocationWorker().getDirectives(),worker);
-    // if (flag == 1 && !worker.getIndex().empty())
-    //     worker.setIndex2(((std::string &)worker.getLocationWorker().getPath()) + "/" + worker.getIndex());
-    setAllowedmethods(worker,worker.getLocationWorker().getDirectives());
-
-    if (worker.getAllowMethods().size() == 0)
-        setAllowedmethods(worker,worker.getBlockWorker().getDirectives());
-        
-    setErrorPages(worker,worker.getLocationWorker().getDirectives());
-    if (worker.getErrorPages().size() == 0)
-        setErrorPages(worker,worker.getBlockWorker().getDirectives());
-    std::string tmp_path = worker.getRoot() + path;
-    if (Is_Directory(tmp_path) == 0 \
-    || Is_Directory(tmp_path) == 1 \
-    || Is_Directory(tmp_path) == -1)
-    {
-        if (Is_Directory(tmp_path) == 0)
-        {
-            if (worker.getIndex().empty())
-                worker.found_index_file(tmp_path);
-            is_dir = 1;
-        }
-        else if (Is_Directory(tmp_path) == 1)
-            is_regular = 1;
-    }
-
-    printf("index %s\n",worker.getIndex().c_str());
-    // if (is_regular)
-    // {
-    //     printf("server this %s\n",path.c_str());
-    // }
-    // printf("path %s\n",worker.getPath().c_str());
-    // printf("size %lu\n",(worker.getErrorPages().size()));
-=======
 	int find;
 
 	std::string hostname;
@@ -280,5 +221,4 @@ void   init_worker_block(Worker &worker, std::string &host, std::string &path,st
 		else if (Is_Directory(tmp_path) == 1)
 			is_regular = 1;
 	}
->>>>>>> hsaktiwy2
 }

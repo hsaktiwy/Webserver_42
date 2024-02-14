@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/14 15:31:46 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/14 18:48:36 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -506,6 +506,7 @@ void    response::RedirectionResponse(std::map<unsigned int, std::string> &statu
 	ss >> statusCode;
 	if (iter != status_codes.end())
 		HumanRead = iter->second;
+	// int index = 
 	http_response = "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\nConnection: keep-alive\r\nContent-Type: text/html\r\n" + "Location: "+ path + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n\r\n";
 	header_size = http_response.size();
 	body_size = 0;
@@ -535,7 +536,7 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 		// this maybe need to be in a folder i mean like a error_page file but with out being define in the http configue file
 		body_string = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n<title>Error Page</title>\r\n<style>\r\nbody {\r\nfont-family: Arial, sans-serif;\r\ntext-align: center;\r\npadding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\nmargin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\nmargin-bottom: 50px;\r\n}\r\n</style>\r\n</head>\r\n<body>\r\n<h1>Error "+ statusCode + "("+ HumanRead +")"+"</h1>\r\n<p>Unhable to reserve a propore response.</p>\r\n</body>\r\n</html>";
 		http_response += "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n";
-		http_response += "Connection: keep-alive\r\nContent-Type: text/html\r\n";
+		http_response += "Connection: close\r\nContent-Type: text/html\r\n";
 		size_t size = body_string.size();
 		http_response += "Content-Length: " + ToString(size) + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n\r\n";
 		body_size = 0;

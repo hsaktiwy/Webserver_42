@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/14 18:19:56 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/14 18:47:50 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -704,7 +704,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 					// std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;
 					if (ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent())
 					{
-						if(!isAlive(ClientsVector[client_it]))// || ClientsVector[client_it].getHttp_request().getError())
+						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError())
 						{
 							std::cout<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;
 							std::cout<<YELLOW<<"Connection to Client "<<poll_fds[i].fd<<" closed"<<RESET<<std::endl;

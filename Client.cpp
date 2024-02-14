@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/13 22:09:10 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/14 17:20:41 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@ Client::Client() : http_response(http_request, worker)
 {
 	requestReceived = false;
 	responseSent = false;
+	inProcess = false;
+	time = CurrentTime();
 }
 
 Client::~Client()
@@ -41,6 +43,8 @@ Client& Client::operator=(const Client& obj)
 		responseSent = obj.responseSent;
 		http_response.setHttp_request(http_request);
 		http_response.setWorker(worker);
+		inProcess = obj.inProcess;
+		time = obj.time;
 	}
 	return (*this);
 }
@@ -57,6 +61,8 @@ void	Client::CreateResponse(std::map<unsigned int, std::string> &status_codes)
 
 void	Client::BufferingRequest(std::vector<ServerBlocks> &serverBlocks, char *buff, size_t bytes)
 {
+	if (inProcess == false)
+		inProcess = true;
     http_request.ParseRequest(serverBlocks, worker, buff, bytes);
 }
 
@@ -106,3 +112,22 @@ bool	Client::getClientRequestSate() const
 
 }
 
+long			Client::getTime( void ) const
+{
+	return (time);
+}
+
+bool			Client::getInProcess( void ) const
+{
+	return (inProcess);
+}
+
+void			Client::setTime( long value)
+{
+	time = value;
+}
+
+void			Client::setInProcess( bool value)
+{
+	inProcess = value;
+}

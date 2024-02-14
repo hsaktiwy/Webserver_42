@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/14 17:01:17 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/14 17:47:20 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -244,6 +244,7 @@ std::string     NormilisePath(std::string &Path);
 long long       ft_atoll(const char* str);
 void	        *ft_memset(void *b, int c, size_t len);
 void	        ExtractValues(std::string &str, std::string  &holder, size_t &index);
+long	        CurrentTime( void );
 
 // Template Function
 template <typename T> std::string ToString(T &data)

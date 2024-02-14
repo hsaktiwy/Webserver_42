@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/14 15:48:56 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/14 18:19:56 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -678,12 +678,24 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				}
 				if (poll_fds[i].revents & POLLIN)
 				{
+					// printf("%sClient info [%lu][%d] client time here from %ld%s\n", YELLOW, client_it, ClientsVector[client_it].getClientSocket(),  ClientsVector[client_it].getTime(), RESET);
 					// std::cout<<YELLOW<<"Read Partion Of CLient Request  "<< poll_fds[i].fd <<RESET<<std::endl;
 					handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, ClientsVector[client_it], status_codes);
 					if (ClientsVector[client_it].getHttp_request().getHandleRequest())
 					{
 						std::cerr <<GREEN<< "Request Fully Read\n" << RESET <<std::endl;
 						poll_fds[i].events = POLLOUT;
+					}
+					if ( ClientsVector[client_it].getInProcess() == false 
+						&& CurrentTime() - ClientsVector[client_it].getTime() > C_TIMEOUT)
+					{
+						std::cout<<RED<<"Too long time waiting for data  Client "<<poll_fds[i].fd<<" closed the connection"<<RESET<<std::endl;
+						if (ClientsVector[client_it].getHttp_response().getFd() != -1)
+							close(ClientsVector[client_it].getHttp_response().getFd());
+						ClientsVector.erase(ClientsVector.begin() + client_it);
+						close(poll_fds[i].fd);
+						poll_fds.erase(poll_fds.begin() + i);
+						i--;
 					}
 				}
 				else if (poll_fds[i].revents & POLLOUT)
@@ -703,6 +715,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 						}
 						else
 						{
+							printf("Client info [%lu][%d] client time here from %ld\n", client_it, ClientsVector[client_it].getClientSocket(),  ClientsVector[client_it].getTime());
 							printf("socket %d REInitialized\n", ClientsVector[client_it].getClientSocket());
 							Client client;
 							client.setClientSocket(ClientsVector[client_it].getClientSocket());
@@ -720,8 +733,20 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 					ClientsVector.erase(ClientsVector.begin() + client_it);
 					close(poll_fds[i].fd);
 					poll_fds.erase(poll_fds.begin() + i);
-					// printf("Segfault here\n");
 					i--;
+				}
+				else
+				{
+					if (CurrentTime() - ClientsVector[client_it].getTime() > C_TIMEOUT)
+					{
+						std::cout<<RED<<"Unknown Client "<<poll_fds[i].fd<<" closed the connection"<<RESET<<std::endl;
+						if (ClientsVector[client_it].getHttp_response().getFd() != -1)
+							close(ClientsVector[client_it].getHttp_response().getFd());
+						ClientsVector.erase(ClientsVector.begin() + client_it);
+						close(poll_fds[i].fd);
+						poll_fds.erase(poll_fds.begin() + i);
+						i--;
+					}
 				}
 			}
 		}

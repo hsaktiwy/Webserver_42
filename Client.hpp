@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:04 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/13 16:39:59 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/14 21:54:01 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "request.hpp"
 // #include "WorkerInit.hpp"
 #include "cgi/cgi.hpp"
+#include "cgi/cgiResponse.hpp"
 #include "response.hpp"
 class Client {
 	private:
@@ -25,7 +26,7 @@ class Client {
 		bool		responseSent;
 		int			socket;
 		CgiEnv      cgiRequest;
-		
+		CgiResponse cgiResponse;
 	public:
 		Client();
 		~Client();
@@ -43,6 +44,9 @@ class Client {
 		response const	&getHttp_response( void ) const;
 		request const	&getHttp_request( void ) const;
 		Worker const	&getWorker( void ) const;
+		CgiResponse  &getcgiResponse();
+		CgiEnv  &getcgiRequest();
+		
 };
 
 #endif

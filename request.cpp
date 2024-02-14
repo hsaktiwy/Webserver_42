@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/14 01:44:18 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/14 15:45:53 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -568,7 +568,6 @@ bool	ft_strcmp(const char *s1, const char *s2)
 
 void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker)
 {
-	std::cerr<<"zazaza"<<std::endl;
 	is_dir = 0;
 	is_regular = 0;
 	// ServerBlocks block = get_server_block(host, serverBlocks);

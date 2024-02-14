@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/14 01:18:40 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/14 22:49:22 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@ private:
     std::map<std::string, std::string> envMap;
     std::vector<std::string> pathUri;
     Worker worker;
-    char **cgiMetaData;
     std::string cgiRoot; //full path to the Root dir of cgi "cgi-bin"
     bool validRoot; //check if the root of the request is present and could be opened
     bool cgiDir; //is the Dir of cgi ("cgi-bin") is present
@@ -32,12 +31,15 @@ private:
     bool autoIndex;
     bool isDir;
     bool isFile;
+    bool ismetaDataset;
     int status;
     int extraPathIndex;
     
 public:
     CgiEnv();
     CgiEnv(const Worker &workerObj);
+    CgiEnv(const CgiEnv &obj);
+    CgiEnv &operator=(const CgiEnv &obj);
     void setCgiWorker(const Worker &obj);
     void setPathUriVector();
     void setCgiRoot();
@@ -48,8 +50,8 @@ public:
     void setCgiPATHINFO();
     void setCgiQueryString();
     void findScript();
-    void setRequestMethod();
-    void constructScriptEnv();
+    // void setRequestMethod();
+    // void constructScriptEnv();
     void setEnvironementData();
     bool isDirectoryRequest();
     std::string &getCgiServerName();
@@ -61,7 +63,8 @@ public:
     bool getStatus();
     bool getCgiDirStatus();
     bool isScriptFound();
-    char **getenvArray();
+    // char **getenvArray();
+    const std::map<std::string, std::string> &getEnvMap() const;
 };
 
 #endif

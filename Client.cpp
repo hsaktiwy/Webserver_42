@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/14 01:37:29 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/14 22:39:00 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ Client::Client() : http_response(http_request, worker) , cgiRequest(worker)
 {
 	requestReceived = false;
 	responseSent = false;
+	cgiResponse.setCgiEnvObject(cgiRequest);
 }
 
 Client::~Client()
@@ -43,6 +44,8 @@ Client& Client::operator=(const Client& obj)
 		http_response.setWorker(worker);
 		cgiRequest = obj.cgiRequest;
 		cgiRequest.setCgiWorker(obj.worker);
+		cgiResponse = obj.cgiResponse;
+		
 	}
 	return (*this);
 }
@@ -51,7 +54,7 @@ void	Client::ParseRequest(std::vector<ServerBlocks> &serverBlocks)
 {
     http_request.CheckRequest(serverBlocks, worker);
 	if (http_request.getCgiStatus())
-	{	std::cout<<"ss : "<< this->getHttp_request().getMethod()<<std::endl;
+	{
 		cgiRequest.setCgiWorker(worker);
 		cgiRequest.setRequest(this->getHttp_request().getMethod());
 		cgiRequest.setEnvironementData();
@@ -109,5 +112,14 @@ bool	Client::getClientRequestSate() const
 {
 	return this->requestReceived;
 
+}
+
+CgiResponse &Client::getcgiResponse()
+{
+	return cgiResponse;
+}
+CgiEnv &Client::getcgiRequest()
+{
+	return cgiRequest;
 }
 

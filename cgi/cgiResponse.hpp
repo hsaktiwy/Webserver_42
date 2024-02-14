@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 14:12:57 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/10 16:13:07 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/14 22:01:46 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,25 @@
 #include "cgi.hpp"
 #include "../http.server.hpp"
 
-class cgiResponse
+class CgiResponse
 {
 private:
     CgiEnv Env;
+    char **scriptData;
+    int socket_fd;
+    bool responseSent;
+    int errorpipe[2];
+    int trackerPipe[2];
 public:
-    cgiResponse(CgiEnv &obj);
-    void creatCgiResponse();
+    CgiResponse();
+    ~CgiResponse();
+    CgiResponse(const CgiResponse &obj);
+    CgiResponse &operator=(const CgiResponse &obj);
+    void constructScriptEnv();
+    void setCgiEnvObject(CgiEnv &obj);
+    // void creatCgiResponse();
     void handleError();
+    bool isResponseSent();
 };
 
 

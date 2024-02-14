@@ -6,13 +6,13 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/14 01:39:44 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/14 22:49:40 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cgi.hpp"
 
-CgiEnv::CgiEnv(const Worker &workerObj) : worker(workerObj), cgiMetaData(NULL) 
+CgiEnv::CgiEnv(const Worker &workerObj) : worker(workerObj)
 {
     validRoot = true;
     cgiDir = false;
@@ -35,8 +35,9 @@ CgiEnv::CgiEnv(const Worker &workerObj) : worker(workerObj), cgiMetaData(NULL)
     // std::cout<<RED<<envMap["SCRIPT_NAME"]<<" "<<status <<RESET<<std::endl;
     // std::cout<<RED<<envMap["PATH_INFO"]<<" "<<status <<RESET<<std::endl;
 }
-CgiEnv::CgiEnv() : cgiMetaData(NULL)
+CgiEnv::CgiEnv()
 {
+    ismetaDataset = false;
     validRoot = true;
     cgiDir = false;
     cgiScript = false;
@@ -47,14 +48,38 @@ CgiEnv::CgiEnv() : cgiMetaData(NULL)
     status = 0;
     extraPathIndex = -1;
 }
+CgiEnv::CgiEnv(const CgiEnv &obj)
+{
+    *this = obj;
+}
+CgiEnv &CgiEnv::operator=(const CgiEnv &obj)
+{
+    if (this != &obj)
+    {
+        envMap = obj.envMap;
+        pathUri = obj.pathUri;
+        worker = obj.worker;
+        cgiRoot = obj.cgiRoot;
+        validRoot = obj.validRoot;
+        cgiDir = obj.cgiDir;
+        cgiScript = obj.cgiScript;
+        extrapath = obj.extrapath;
+        autoIndex = obj.autoIndex;
+        isDir = obj.isDir;
+        isFile = obj.isFile;
+        status = obj.status;
+        extraPathIndex = obj.extraPathIndex;
+    }
+    return (*this);
+}
 void CgiEnv::setCgiWorker(const Worker &obj)
 {
     worker = obj;
 }
-void CgiEnv::setRequestMethod()
-{
-    envMap["REQUEST_METHOD"]="GET";
-}
+// void CgiEnv::setRequestMethod()
+// {
+//     envMap["REQUEST_METHOD"]="GET";
+// }
 void CgiEnv::setPathUriVector()
 {
     std::string path = worker.getPath();
@@ -162,7 +187,6 @@ void CgiEnv::setCgiPATHINFO()
                 extraPath += "/"; 
                 extraPath += pathUri[i];
             }
-                printf("hhhhhhh    %s\n", extraPath.c_str());
             if (!access(extraPath.c_str(), F_OK | R_OK | X_OK))
             {
                 envMap["PATH_INFO"] = extraPath;
@@ -283,32 +307,31 @@ void CgiEnv::findScript()
     }
 }
 
-void CgiEnv::constructScriptEnv()
-{
-    size_t env_size = envMap.size();
-    std::map<std::string, std::string>::iterator it;
-    std::string data;
-    int count = 0;
-    if (env_size)
-    {
-        cgiMetaData = new char* [env_size + 1];
-        for (it = envMap.begin(); it != envMap.end(); it++)
-        {
-            data = it->first + "=" + it->second;
-            cgiMetaData[count] = strdup(data.c_str());
-            count++;
-        }
-        cgiMetaData[count] = NULL;
-    }
-    for (size_t i = 0; cgiMetaData[i] != NULL; i++)
-    {
-        printf("%s\n", cgiMetaData[i]);
-    }
+// void CgiEnv::constructScriptEnv()
+// {
+//     size_t env_size = envMap.size();
+//     std::map<std::string, std::string>::iterator it;
+//     std::string data;
+//     int count = 0;
+//     if (env_size)
+//     {
+//         cgiMetaData = new char* [env_size + 1];
+//         for (it = envMap.begin(); it != envMap.end(); it++)
+//         {
+//             data = it->first + "=" + it->second;
+//             cgiMetaData[count] = strdup(data.c_str());
+//             count++;
+//         }
+//         cgiMetaData[count] = NULL;
+//     }
+//     for (size_t i = 0; cgiMetaData[i] != NULL; i++)
+//     {
+//         printf("%s\n", cgiMetaData[i]);
+//     }
     
-}
+// }
 void CgiEnv::setEnvironementData()
 {
-    std::cout<<"dd "<<worker.getHost()<<std::endl;
     setPathUriVector();
     setCgiRoot();
     findScript();
@@ -316,7 +339,7 @@ void CgiEnv::setEnvironementData()
     setCgiQueryString();
     setCgiServerName();
     setCgiServePort();
-    constructScriptEnv();
+    
 }
 void CgiEnv::setRequest(const std::string &req)
 {
@@ -418,7 +441,12 @@ bool CgiEnv::isScriptFound()
 {
     return cgiScript;
 }
-char **CgiEnv::getenvArray()
+// char **CgiEnv::getenvArray()
+// {
+//     return cgiMetaData;
+// }
+
+const std::map<std::string, std::string> &CgiEnv::getEnvMap() const
 {
-    return cgiMetaData;
+    return (envMap);
 }

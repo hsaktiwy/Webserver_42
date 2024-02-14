@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/13 16:34:50 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/14 22:37:52 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <map>
 #include <unistd.h>
 #include "cgi/cgi.hpp"
+#include "cgi/cgiResponse.hpp"
 
 bool valid_port(const std::string &port)
 {
@@ -572,6 +573,15 @@ size_t findClientBySocketFd(std::vector<Client> &ClientsVector, int fd)
 	}
 	return i;
 }
+void handleCgiResponse(std::vector<struct pollfd> &poll_fds, size_t i, Client & client)
+{
+	CgiResponse resp = client.getcgiResponse();
+	if (!resp.isResponseSent())
+	{
+		printf("hello from cgi response\n");
+		exit(1);
+	}
+}
 void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,std::map<unsigned int, std::string> &status_codes)
 {
 	std::string response;
@@ -666,8 +676,11 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				}
 				else if (poll_fds[i].revents & POLLOUT)
 				{
-					handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status,mime_type, ClientsVector[client_it], status_codes);
-					std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;
+					if (ClientsVector[client_it].getHttp_request().getCgiStatus())
+						handleCgiResponse(poll_fds, i, ClientsVector[client_it]);
+					else
+						{handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status,mime_type, ClientsVector[client_it], status_codes);
+						std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;}
 					if (ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent())
 					{
 						std::cout<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;

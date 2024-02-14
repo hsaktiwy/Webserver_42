@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/14 17:36:51 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/14 20:31:58 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,6 +139,7 @@ class request {
 		// const std::vector<std::string>&	getHeaders( void ) const;// get the headers after being prased
 		void							RequestDisplay( void );
 		int 							getHeaderIndex(const std::string &name) const;
+		int								getHeaderValue(const std::string &header,std::string &buffer);// this function will return 1 if it get the value 0 if there is no header with that name in the request
 		void							AddToRawRequest(char *buff,  ssize_t bytes_read);
 		std::string	const				&getMethod( void ) const;
 		std::string	const				&getMethod_uri( void ) const;

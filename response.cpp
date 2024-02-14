@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/14 18:48:36 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/14 21:17:39 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,20 @@
 response::response(request &req, Worker &wk): http_request(&req), worker(&wk), body_index(0), body_size(-1), header_index(0), header_size(-1), body_sent(0), header_sent(0), FileOpened(false), fd(-1) ,FileSeeked(false) , Seeker(0), readyToResponed(false), StoringFile(false)
 {
 
+}
+
+std::string 	ConnectionType(request &req)
+{
+	std::string buff;
+	int result = req.getHeaderValue("Connection", buff);
+	if (result == 1)
+	{
+		if (buff.find("keep-alive") != std::string::npos)
+			return("keep-alive");
+		else if (buff.find("close") != std::string::npos)
+			return("close");
+	}
+	return ("keep-alive");
 }
 
 std::string TimeToString(timespec time)
@@ -48,7 +62,8 @@ void    autoIndexing(request &req, Worker &wk,std::string &response_head, std::s
 	DIR     *dir = opendir(Path.c_str());
 	struct  dirent *dirent;
 
-	response_head = "HTTP/1.1 200 OK\r\nContent-Type: text/html;charset=UTF-8\r\nConnection: keep-alive\r\nServer: " + ((std::string)SERVERNAME) + "\r\n";
+	std::string Hconnection = "Connection: " + ConnectionType(req);
+	response_head = "HTTP/1.1 200 OK\r\nContent-Type: text/html;charset=UTF-8\r\n" + Hconnection + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n";
 	body = "<table>\n<thead>\n    <tr>\n        <th>File Name</th>\n        <th>Last modification</th>\n        <th>Size</th>\n    </tr>\n</thead>\n<tbody>";
 	if (dir)
 	{
@@ -158,7 +173,8 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 			// this must be deleted
 			body_string = "<html>\r\n<head>\r\n	<title>Valide File</title>\r\n</head>\r\n<body>\r\n	<h1>The response must be here!.</h1>\r\n</body>\r\n</html>\r\n";
 			body_size = body_string.size();
-			http_response = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Type: text/html\r\nServer: " + ((std::string)SERVERNAME) + "Content-Length: " + ToString(body_size) + "\r\n\r\n";
+			std::string Hconnection = "Connection: " + ConnectionType(req);
+			http_response = "HTTP/1.1 200 OK\r\n" + Hconnection + "\r\nContent-Type: text/html\r\nServer: " + ((std::string)SERVERNAME) + "Content-Length: " + ToString(body_size) + "\r\n\r\n";
 			header_size = http_response.size();
 			readyToResponed = true;
 		}
@@ -341,6 +357,13 @@ int	fillFile(int fd, std::string &stream, size_t &index, std::string &boundary, 
 	return (free(buff), finished);
 }
 
+void	Post_no_body(request &req, std::string &http_response, long long &header_size, long long &body_size)
+{
+	std::string Hconnection = "Connection: " + ConnectionType(req);
+	http_response = "HTTP/1.1 200 OK\r\n" + Hconnection + "\r\nContent-Type: text/html\r\nServer: " + ((std::string)SERVERNAME) + "Content-Length: " + ToString(body_size) + "\r\n\r\n";
+	header_size = http_response.size();
+	body_size = 0;
+}
 void	response::Post(std::map<unsigned int, std::string> &status_codes)
 {
 	request	&req = *http_request;
@@ -378,6 +401,11 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 				readyToResponed = true;
 				return ;
 			}
+		}
+		if (body.size() == 0)
+		{
+			Post_no_body(req, http_response, header_size, body_size);
+			readyToResponed = true;
 		}
 		if (MFD_index == -1)
 		{
@@ -487,10 +515,12 @@ void	response::Get(std::map<unsigned int, std::string> &status_codes)
 		Code =  Status(200, status_codes);
 	else
 		Code =  Status(206, status_codes);
-	http_response = "HTTP/1.1 "+ Code +"\r\nConnection: keep-alive\r\nContent-Type: " + FileType + "\r\n";
+	std::string Hconnection = "Connection: " + ConnectionType(req);
+	http_response = "HTTP/1.1 "+ Code +"\r\n" + Hconnection + "\r\nContent-Type: " + FileType + "\r\n";
 	file = wk.getRoot() + req.getUri().path;
 	header_size = http_response.size();
 }
+
 
 void    response::RedirectionResponse(std::map<unsigned int, std::string> &status_codes, std::string &path)
 {
@@ -506,8 +536,8 @@ void    response::RedirectionResponse(std::map<unsigned int, std::string> &statu
 	ss >> statusCode;
 	if (iter != status_codes.end())
 		HumanRead = iter->second;
-	// int index = 
-	http_response = "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\nConnection: keep-alive\r\nContent-Type: text/html\r\n" + "Location: "+ path + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n\r\n";
+	std::string Hconnection = "Connection: " + ConnectionType(req);
+	http_response = "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n" + Hconnection + "\r\nContent-Type: text/html\r\n" + "Location: "+ path + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n\r\n";
 	header_size = http_response.size();
 	body_size = 0;
 	printf("%s\n",http_response.c_str());

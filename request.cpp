@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/13 22:30:46 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/14 20:35:17 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -701,6 +701,18 @@ void	request::RequestDisplay( void )
 	// std::cout << body;
 	std::cout << "Parsed URI : \n";
 	std::cout << "Uri scheme : " << uri.scheme  << ",URI authority " << uri.authority  << ",URI path " << uri.path << ",URI query " << uri.query << ",URI fragment " << uri.fragment << std::endl;
+}
+
+int	request::getHeaderValue(const std::string &header,std::string &buffer)
+{
+	int index = getHeaderIndex(header);
+
+	if (index != -1)
+	{
+		buffer = headers[index].values;
+		return (1);
+	}
+	return (0);
 }
 
 request::~request()

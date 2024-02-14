@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:04 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/12 20:42:51 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/14 17:00:15 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ class Client {
 		Worker		worker;
 		request		http_request;
 		response	http_response;
+		
 		bool		requestReceived;
 		bool		responseSent;
 		int			socket;
@@ -37,6 +38,7 @@ class Client {
 		// this function will int http_request and worker plus parse the request
 		void	ParseRequest(std::vector<ServerBlocks> &serverBlocks);
 		void	CreateResponse(std::map<unsigned int, std::string> &status_codes);
+		void	BufferingRequest(std::vector<ServerBlocks> &serverBlocks, char *buff, size_t bytes);
 		response const	&getHttp_response( void ) const;
 		request const	&getHttp_request( void ) const;
 		Worker const	&getWorker( void ) const;

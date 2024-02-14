@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/12 19:36:59 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/13 21:56:17 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,8 @@ class request {
 		int						status;
 		int						is_dir;
 		int 					is_regular;
+		size_t					max_body_size;
+		bool					maxBodySizeExist;
 		//
 		// tmp
 		size_t					BIndex;
@@ -129,7 +131,7 @@ class request {
 		~request();
 		request(const request& copy);
 		// void							ParseRequest(char *request);
-		void							ParseRequest(char *buff, ssize_t bytes);
+		void							ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker,char *buff, ssize_t bytes);
 		void							CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker);// THIS WILL CHECK THE REQUEST VALIDITY
 		request&						operator=(const request& obj);
 

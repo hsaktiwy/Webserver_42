@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/12 18:03:38 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/13 22:09:10 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,11 @@ void	Client::ParseRequest(std::vector<ServerBlocks> &serverBlocks)
 void	Client::CreateResponse(std::map<unsigned int, std::string> &status_codes)
 {
 	http_response.responed(status_codes);
+}
+
+void	Client::BufferingRequest(std::vector<ServerBlocks> &serverBlocks, char *buff, size_t bytes)
+{
+    http_request.ParseRequest(serverBlocks, worker, buff, bytes);
 }
 
 response const	&Client::getHttp_response( void ) const

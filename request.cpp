@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/13 21:26:54 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/13 22:30:46 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,9 @@ request::request(): RequestRead(false), Parsed_StartLine(false), Parsed_Header(f
 	ChunkedRead = false;
 	ChunkedSizeRead = false;
 	ChunkedSize = 0;
+	is_dir = 0;
+	is_regular = 0;
+	maxBodySizeExist = false;
 }
 
 static bool CharacterUri(char c)
@@ -143,7 +146,56 @@ std::string		EscapedEncoding(std::string &uri, bool &error, int &status)
 	return (result);
 }
 
-void	request::ParseRequest(char *buff, ssize_t bytes_size)
+static bool absoluteURI(std::string &uri)
+{
+	if (uri.size() > 4)
+	{
+		bool http = (uri.find("http:://") == 0) ? true : false, https = (uri.find("http:://") == 0) ? true : false;
+		if (http || https)
+			return (true);
+	}
+	return (false);
+}
+
+static void	FillUriStructor(t_uri& uri, std::string &full_uri, bool authority)// authority boolean will confirme if there is a authority in the uri or note
+{
+	size_t size = 0;
+	size += uri.scheme.size(); 
+	// extract the authority
+	if (authority)
+	{
+		for (size_t i = size; full_uri[i] && full_uri[i] != '/' && full_uri[i] != '?' && full_uri[i] != '#'; i++)
+			uri.authority += full_uri[i];
+		size += uri.authority.size();
+	}
+	if (full_uri[size] && full_uri[size] == '/')
+		size++;
+	// extract the path
+	for (size_t i = size; full_uri[i] && full_uri[i] != '?' && full_uri[i] != '#'; i++)
+		uri.path += full_uri[i];
+	size += uri.path.size();
+	if (full_uri[size] && full_uri[size] == '?')
+		size++;
+	// extract the query
+	for(size_t i = size; full_uri[i] && full_uri[i] != '#'; i++)
+		uri.query += full_uri[i];
+	size += uri.query.size();
+	if (full_uri[size] && full_uri[size] == '#')
+		size++;
+	// extract the fragment  i think we will remove this line and it logic in the future
+	for (size_t i = size; full_uri[i]; i++)
+		uri.fragment += full_uri[i];
+}
+
+static void UriFormat(t_uri &uri, std::string &full_uri, std::string &host)// 1 for absolute 2 for relative 3 for autority 
+{
+	// check it the uri start with http or https
+	//[scheme]://[authority]/[path]?[query]#[fragment]
+	bool	absoluteUri = absoluteURI(full_uri);
+	FillUriStructor(uri, full_uri, false), uri.type = RELATIVE;
+}
+
+void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker, char *buff, ssize_t bytes_size)
 {
 	// std::string allowedMethod[] = {"POST", "GET", "DELETE"};
 	size_t index = 0;
@@ -384,6 +436,22 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 				if (pos != std::string::npos)
 					BodyLimiterType = 2;
 			}
+			method_uri = EscapedEncoding(method_uri, error, status);
+			UriFormat(uri, method_uri, host);
+			std::string path = "/"  + uri.path;
+			if (http != "HTTP/1.1")
+				error = true, status = 505;
+			init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
+			if (worker.get_max_body_size() != "")
+			{
+				maxBodySizeExist = true;
+				max_body_size = std::atoi(worker.get_max_body_size().c_str());
+				if (body.size() > max_body_size)
+				{
+					error = true, status = 413;
+				}
+			}
+			worker.setHost(host);
 			Parsed_Header = true;
 			FillingBuffer = false;
 			left_CR = false;
@@ -500,6 +568,14 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 				return ;
 			}
 		}
+		if	(maxBodySizeExist)
+		{
+			if (body.size() > max_body_size)
+			{
+				error = true, RequestRead = true,status = 413;
+				return ;
+			}
+		}
 	}
 	else if (Parsed_StartLine && Parsed_Header)
 	{
@@ -507,54 +583,7 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 	}
 }
 
-static bool absoluteURI(std::string &uri)
-{
-	if (uri.size() > 4)
-	{
-		bool http = (uri.find("http:://") == 0) ? true : false, https = (uri.find("http:://") == 0) ? true : false;
-		if (http || https)
-			return (true);
-	}
-	return (false);
-}
 
-static void	FillUriStructor(t_uri& uri, std::string &full_uri, bool authority)// authority boolean will confirme if there is a authority in the uri or note
-{
-	size_t size = 0;
-	size += uri.scheme.size(); 
-	// extract the authority
-	if (authority)
-	{
-		for (size_t i = size; full_uri[i] && full_uri[i] != '/' && full_uri[i] != '?' && full_uri[i] != '#'; i++)
-			uri.authority += full_uri[i];
-		size += uri.authority.size();
-	}
-	if (full_uri[size] && full_uri[size] == '/')
-		size++;
-	// extract the path
-	for (size_t i = size; full_uri[i] && full_uri[i] != '?' && full_uri[i] != '#'; i++)
-		uri.path += full_uri[i];
-	size += uri.path.size();
-	if (full_uri[size] && full_uri[size] == '?')
-		size++;
-	// extract the query
-	for(size_t i = size; full_uri[i] && full_uri[i] != '#'; i++)
-		uri.query += full_uri[i];
-	size += uri.query.size();
-	if (full_uri[size] && full_uri[size] == '#')
-		size++;
-	// extract the fragment  i think we will remove this line and it logic in the future
-	for (size_t i = size; full_uri[i]; i++)
-		uri.fragment += full_uri[i];
-}
-
-static void UriFormat(t_uri &uri, std::string &full_uri, std::string &host)// 1 for absolute 2 for relative 3 for autority 
-{
-	// check it the uri start with http or https
-	//[scheme]://[authority]/[path]?[query]#[fragment]
-	bool	absoluteUri = absoluteURI(full_uri);
-	FillUriStructor(uri, full_uri, false), uri.type = RELATIVE;
-}
 
 bool	ft_strcmp(const char *s1, const char *s2)
 {
@@ -568,8 +597,6 @@ bool	ft_strcmp(const char *s1, const char *s2)
 
 void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker)
 {
-	is_dir = 0;
-	is_regular = 0;
 	// ServerBlocks block = get_server_block(host, serverBlocks);
 	std::string allowedMethode[] = {"POST", "DELETE", "GET"};
 	// RequestDisplay();
@@ -577,7 +604,6 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 	{
 		// check if we have a valide Escaped Encoding
 		// printf("Before---------->%s\n", method_uri.c_str());
-		method_uri = EscapedEncoding(method_uri, error, status);
 		// printf("After---------->%s\n", method_uri.c_str());
 		// chekc if the method is supported bye the server
 		bool supported = false;
@@ -592,20 +618,21 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		if (supported == false)
 			error = true, status = 405;
 		// splite uri to scheme, authority, path, query
-		UriFormat(uri, method_uri, host);
-		std::string path = "/"  + uri.path;
-		if (http != "HTTP/1.1")
-			error = true, status = 505;
-		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
-		if (worker.get_max_body_size() != "")
-		{
-			size_t max_body_size = std::atoi(worker.get_max_body_size().c_str());
-			if (body.size() > max_body_size)
-			{
-				error = true, status = 413;
-			}
-		}
-		worker.setHost(host);
+		// method_uri = EscapedEncoding(method_uri, error, status);
+		// UriFormat(uri, method_uri, host);
+		// std::string path = "/"  + uri.path;
+		// if (http != "HTTP/1.1")
+		// 	error = true, status = 505;
+		// init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
+		// if (worker.get_max_body_size() != "")
+		// {
+		// 	size_t max_body_size = std::atoi(worker.get_max_body_size().c_str());
+		// 	if (body.size() > max_body_size)
+		// 	{
+		// 		error = true, status = 413;
+		// 	}
+		// }
+		// worker.setHost(host);
 		// ServerBlocks block = worker.getBlockWorker();
 		std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
 		std::string index = worker.getIndex();
@@ -731,6 +758,10 @@ request& request::operator=(const request& obj)
 		ChunkedSize = obj.ChunkedSize;
 		ChunkSizeString = obj.ChunkSizeString;
 		boundary = obj.boundary;
+		is_dir = obj.is_dir;
+		is_regular = obj.is_regular;
+		maxBodySizeExist = obj.maxBodySizeExist;
+		max_body_size = obj.max_body_size;
 	}
 	return (*this);
 }

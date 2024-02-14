@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/13 20:05:31 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/14 15:48:56 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,8 +187,8 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to
 		char buffer[CHUNK_SIZE];
 		bytes_read = read(poll_fds[i].fd,buffer, CHUNK_SIZE);
 		if (bytes_read > 0)
-			((request &)client.getHttp_request()).ParseRequest(buffer, bytes_read);
-		std::cout << RED << "BYTES Read From the request " << bytes_read << RESET<< std::endl;
+			client.BufferingRequest(serverBlocks, buffer, bytes_read);
+		// std::cout << RED << "BYTES Read From the request " << bytes_read << RESET<< std::endl;
 	}
 	// this part where we will handle some additional request parsing, at the time where the request was fully read
 	if (client.getHttp_request().getRequestRead())
@@ -288,7 +288,6 @@ std::string	HandleHeaderFileStatus(Client& client, long long size, long long LMT
 	long long e = resp.getFileEnd();
 	long long rest = (e - s);
 	ResponseHeader += "Content-Length: " + ToString(rest) + "\r\n";
-	ResponseHeader += "Connection: keep-alive\r\n";
 	if (index == -1)
 	{
 		std::string FileType = resp.getFileType();
@@ -314,20 +313,23 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 	{
 		if (resp.getFile() == "")
 		{
+			printf("wtf\n");
 			// BODY STRING CASE : where i our code creat the body and it don't need a file at all, this scope will handle it
 			// SEND Headers
 			if (resp.getHeader_sent() == false)
 			{
 				long long Hsize = resp.getHeader_size();
 				long long Hindex = resp.getHeader_index();
-
+				printf("hmmm!\n");
 				if (Hindex < Hsize)
 				{
+					printf("what?\n");
 					size_t bytes = writeBytes;
 					long long rest = Hsize - Hindex;
 					if (rest <  CHUNK_SIZE)
 						bytes = rest;
 					buffer = resp.getHttp_response().substr(Hindex, bytes);
+					printf("in the buffer %s\n", buffer.c_str());
 					resp.setHeader_index(Hindex + bytes);
 					if (resp.getHeader_size() == resp.getHeader_index())
 						resp.setHeader_sent(true);
@@ -405,6 +407,7 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 					// INITIALIZE FILE DISCRIPTOR
 					if (fd == -1)
 					{
+						printf("opening  %s\n", file.c_str());
 						fd = open(file.c_str(), O_RDWR);
 						if (fd == -1)
 							perror("Open :");
@@ -473,11 +476,11 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 		{
 			ssize_t bytes_written = send(poll_fds[i].fd, buffer.c_str(), buffer.size(), MSG_DONTWAIT);
 			// here we need to chekc if we have 0 or -1 as result
+			// printf("bytes rigth %lu\n",bytes_written);
 		}
 	}
 }
 // here we will write our response in all cases in our client socket
-
 int    new_connection(int client_socket,std::vector<int> new_connections)
 {
 	for (size_t i = 0; i < new_connections.size(); i++)
@@ -689,7 +692,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 					// std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;
 					if (ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent())
 					{
-						if(!isAlive(ClientsVector[client_it]))
+						if(!isAlive(ClientsVector[client_it]))// || ClientsVector[client_it].getHttp_request().getError())
 						{
 							std::cout<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;
 							std::cout<<YELLOW<<"Connection to Client "<<poll_fds[i].fd<<" closed"<<RESET<<std::endl;
@@ -700,7 +703,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 						}
 						else
 						{
-							// printf("REInitialized\n");
+							printf("socket %d REInitialized\n", ClientsVector[client_it].getClientSocket());
 							Client client;
 							client.setClientSocket(ClientsVector[client_it].getClientSocket());
 							ClientsVector[client_it] = client;

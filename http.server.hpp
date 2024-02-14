@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/13 18:43:25 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/14 17:01:17 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 #define FULL_PATH_PHP "/usr/bin/php"
 
-
+#include <ctime>
 #include <string.h>
 #include <iostream>
 #include <string>
@@ -55,6 +55,7 @@
 #define WHITE   "\033[37m"
 #define SERVERNAME "Jhin"
 #define TIME_OUT 60000
+#define C_TIMEOUT 10
 #define UPLOADCHUNK_SIZE 1000000
 #define CHUNK_SIZE 1024
 

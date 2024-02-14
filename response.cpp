@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/13 14:25:45 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/14 15:31:46 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ void    autoIndexing(request &req, Worker &wk,std::string &response_head, std::s
 	DIR     *dir = opendir(Path.c_str());
 	struct  dirent *dirent;
 
-	response_head = "HTTP/1.1 200 OK\r\nContent-Type: text/html;charset=UTF-8\r\nServer: " + ((std::string)SERVERNAME) + "\r\n";
+	response_head = "HTTP/1.1 200 OK\r\nContent-Type: text/html;charset=UTF-8\r\nConnection: keep-alive\r\nServer: " + ((std::string)SERVERNAME) + "\r\n";
 	body = "<table>\n<thead>\n    <tr>\n        <th>File Name</th>\n        <th>Last modification</th>\n        <th>Size</th>\n    </tr>\n</thead>\n<tbody>";
 	if (dir)
 	{
@@ -110,7 +110,7 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 		readyToResponed = true;
 		return ;
 	}
-
+	// printf("ola %d, %p %s %s\n", req.getError(), &req, req.getMethod().c_str(), req.getMethod_uri().c_str());
 	if (req.getError() == false)
 	{
 		if (req.getIs_dir() == 1 || req.getIs_regular() == 1)
@@ -138,6 +138,7 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 	if (req.getError() == true)
 	{
 		// response for Error handling
+		printf("solo\n");
 		errorresponse(status_codes);
 		readyToResponed = true;
 	}
@@ -157,7 +158,7 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 			// this must be deleted
 			body_string = "<html>\r\n<head>\r\n	<title>Valide File</title>\r\n</head>\r\n<body>\r\n	<h1>The response must be here!.</h1>\r\n</body>\r\n</html>\r\n";
 			body_size = body_string.size();
-			http_response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nServer: " + ((std::string)SERVERNAME) + "Content-Length: " + ToString(body_size) + "\r\n\r\n";
+			http_response = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Type: text/html\r\nServer: " + ((std::string)SERVERNAME) + "Content-Length: " + ToString(body_size) + "\r\n\r\n";
 			header_size = http_response.size();
 			readyToResponed = true;
 		}
@@ -348,6 +349,7 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 	std::string &UploadPath = wk.getPathUpload();
 	bool	stop = false;
 
+	printf("Post handling\n");
 	if (POST_Init == false)
 	{
 		// printf("%s _  %s\n", wk.getRoot().c_str(), UploadPath.c_str());
@@ -379,8 +381,10 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 		}
 		if (MFD_index == -1)
 		{
+			printf("----->here\n");
 			req.setStatus(400); req.setError(true);
 			errorresponse(status_codes);
+			readyToResponed = true;
 			return ;
 		}
 	}
@@ -424,6 +428,7 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 						// handle error 500 in the server;
 						req.setStatus(500); req.setError(true);
 						errorresponse(status_codes);
+						readyToResponed = true;
 						return ;
 					}
 					if (result == 1)
@@ -432,6 +437,7 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 						{
 							req.setStatus(500); req.setError(true);
 							errorresponse(status_codes);
+							readyToResponed = true;
 							return ;
 						}
 						fd = -1;
@@ -481,7 +487,7 @@ void	response::Get(std::map<unsigned int, std::string> &status_codes)
 		Code =  Status(200, status_codes);
 	else
 		Code =  Status(206, status_codes);
-	http_response = "HTTP/1.1 "+ Code +"\r\nContent-Type: " + FileType + "\r\n";
+	http_response = "HTTP/1.1 "+ Code +"\r\nConnection: keep-alive\r\nContent-Type: " + FileType + "\r\n";
 	file = wk.getRoot() + req.getUri().path;
 	header_size = http_response.size();
 }
@@ -500,9 +506,10 @@ void    response::RedirectionResponse(std::map<unsigned int, std::string> &statu
 	ss >> statusCode;
 	if (iter != status_codes.end())
 		HumanRead = iter->second;
-	http_response = "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n" + "Content-Type: text/html\r\n" + "Location: "+ path + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n";
+	http_response = "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\nConnection: keep-alive\r\nContent-Type: text/html\r\n" + "Location: "+ path + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n\r\n";
 	header_size = http_response.size();
 	body_size = 0;
+	printf("%s\n",http_response.c_str());
 }
 
 void    response::errorresponse(std::map<unsigned int, std::string> &status_codes)
@@ -514,9 +521,10 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 	std::string statusCode;
 
 	worker->setPathError(worker->getErrorPages(), req.getStatus(),worker->getRoot());
+	printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());
 	if (wk.get_track_status() == 0 || (wk.get_track_status() == 1 && wk.getPathError().empty()))
 	{
-		// printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());
+		printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());
 		if (wk.get_track_status() == 1 && wk.getPathError() == "")
 			req.setStatus(404);
 		std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
@@ -527,18 +535,18 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 		// this maybe need to be in a folder i mean like a error_page file but with out being define in the http configue file
 		body_string = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n<title>Error Page</title>\r\n<style>\r\nbody {\r\nfont-family: Arial, sans-serif;\r\ntext-align: center;\r\npadding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\nmargin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\nmargin-bottom: 50px;\r\n}\r\n</style>\r\n</head>\r\n<body>\r\n<h1>Error "+ statusCode + "("+ HumanRead +")"+"</h1>\r\n<p>Unhable to reserve a propore response.</p>\r\n</body>\r\n</html>";
 		http_response += "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n";
-		http_response += "Content-Type: text/html\r\n";
+		http_response += "Connection: keep-alive\r\nContent-Type: text/html\r\n";
 		size_t size = body_string.size();
 		http_response += "Content-Length: " + ToString(size) + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n\r\n";
 		body_size = 0;
 		http_response += body_string;
 		header_size = http_response.size();
-		// printf("Reponse : %s\n", http_response.c_str());
-		// printf("%s", body_string.c_str());
+		printf("Reponse : %s\n", http_response.c_str());
+		printf("%s", body_string.c_str());
 	}
 	else
 	{
-		// printf("error %d\n", req.getError());
+		printf("error %d\n", req.getError());
 		std::string path = wk.getLocationWorker().getPath() + "/" + worker->getPathError();
 		path = NormilisePath(path);
 		RedirectionResponse(status_codes, path);

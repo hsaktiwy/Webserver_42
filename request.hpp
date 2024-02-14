@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/13 16:30:10 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/13 16:33:41 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,8 @@ typedef struct t_HTTPHeader
 	std::string				Form_name;
 	std::string 			boundry;
 	size_t					length;
-	long long				begin;
-	long long				end;
+	long long				begin;// this can be delete
+	long long				end;// this can be delete
 } HTTPHeader;
 
 // enum that will have the type of method used
@@ -110,7 +110,7 @@ class request {
 		bool					R_HEADER;
 		bool					R_VALUE;
 		//	Body Reading
-		int						BodyLimiterType; // 1 for Content-length 2 for chunked 3 for boundary
+		int						BodyLimiterType; // 1 for Content-length, 2 for chunked, 3 for boundary
 		bool					R_FULL_BODY;
 		bool					Body_Exist;
 		bool					Parsed_Body;
@@ -156,7 +156,6 @@ class request {
 		bool							getHandleRequest( void ) const;
 		size_t							getRequestLength( void ) const;
 		bool							getCgiStatus( void ) const;
-		bool
 		// void							setRequestLength(bool value);
 		void							setRequestRead(bool value);
 		void							setHandleRequest(bool value);

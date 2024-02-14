@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:04 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/10 23:39:09 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/13 16:39:59 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,17 @@
 #define CLIENT_HPP
 #include "request.hpp"
 // #include "WorkerInit.hpp"
+#include "cgi/cgi.hpp"
 #include "response.hpp"
 class Client {
 	private:
-		Worker worker;
-		request http_request;
-		response http_response;
-		
-		bool requestReceived;
-		bool responseSent;
-		int socket;
+		Worker		worker;
+		request		http_request;
+		response	http_response;
+		bool		requestReceived;
+		bool		responseSent;
+		int			socket;
+		CgiEnv      cgiRequest;
 		
 	public:
 		Client();
@@ -37,7 +38,7 @@ class Client {
 		bool getClientResponseSate() const;
 		bool getClientRequestSate() const;
 		// this function will int http_request and worker plus parse the request
-		void	ParseRequest(char *buffer, std::vector<ServerBlocks> &serverBlocks);
+		void	ParseRequest(std::vector<ServerBlocks> &serverBlocks);
 		void	CreateResponse(std::map<unsigned int, std::string> &status_codes);
 		response const	&getHttp_response( void ) const;
 		request const	&getHttp_request( void ) const;

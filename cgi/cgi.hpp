@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/13 16:15:54 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/14 01:18:40 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,11 +36,14 @@ private:
     int extraPathIndex;
     
 public:
+    CgiEnv();
     CgiEnv(const Worker &workerObj);
+    void setCgiWorker(const Worker &obj);
     void setPathUriVector();
     void setCgiRoot();
     void setCgiServerName();
     void setCgiServePort();
+    void setRequest(const std::string &req);
     // void setCgiScriptName();
     void setCgiPATHINFO();
     void setCgiQueryString();

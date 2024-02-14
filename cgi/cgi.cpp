@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/13 16:17:14 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/14 01:39:44 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,17 +23,33 @@ CgiEnv::CgiEnv(const Worker &workerObj) : worker(workerObj), cgiMetaData(NULL)
     isFile = false;
     status = 0;
     extraPathIndex = -1;
-    setPathUriVector();
-    setCgiRoot();
-    findScript();
-    setCgiPATHINFO();
-    setCgiQueryString();
-    setCgiServerName();
-    setCgiServePort();
-    setRequestMethod();
-    constructScriptEnv();
-    std::cout<<RED<<envMap["SCRIPT_NAME"]<<" "<<status <<RESET<<std::endl;
-    std::cout<<RED<<envMap["PATH_INFO"]<<" "<<status <<RESET<<std::endl;
+    // setPathUriVector();
+    // setCgiRoot();
+    // findScript();
+    // setCgiPATHINFO();
+    // setCgiQueryString();
+    // setCgiServerName();
+    // setCgiServePort();
+    // setRequestMethod();
+    // constructScriptEnv();
+    // std::cout<<RED<<envMap["SCRIPT_NAME"]<<" "<<status <<RESET<<std::endl;
+    // std::cout<<RED<<envMap["PATH_INFO"]<<" "<<status <<RESET<<std::endl;
+}
+CgiEnv::CgiEnv() : cgiMetaData(NULL)
+{
+    validRoot = true;
+    cgiDir = false;
+    cgiScript = false;
+    extrapath = false;
+    autoIndex =  false;
+    isDir = false;
+    isFile = false;
+    status = 0;
+    extraPathIndex = -1;
+}
+void CgiEnv::setCgiWorker(const Worker &obj)
+{
+    worker = obj;
 }
 void CgiEnv::setRequestMethod()
 {
@@ -63,8 +79,6 @@ void CgiEnv::setPathUriVector()
             break;
         delimIndex = path.find('/', i);
     }
-    for (size_t i = 0; pathUri.size() > i; i++)
-        printf("%s\n", pathUri[i].c_str());
     
 }
 void CgiEnv::setCgiRoot() //this function check if the root directive set for the appropriate cgi request have a "cgi-bin" subdirectory 
@@ -103,7 +117,6 @@ void CgiEnv::setCgiRoot() //this function check if the root directive set for th
                 else
                     status = 404;
             }
-            std::cout<<GREEN<<isValidDir<< " sss =>>"<<cgiRoot<<RESET<<std::endl;
             break;
         }
         entry = readdir(rootPath);
@@ -185,7 +198,6 @@ void CgiEnv::findScript()
                 std::string entryString;
                 while (entry)
                 {
-                        printf("%s %s\n", entry->d_name,pathUri[i + 1].c_str());
                     entryString = entry->d_name;
                     if (!entryString.compare(pathUri[i + 1]))
                     {
@@ -296,6 +308,7 @@ void CgiEnv::constructScriptEnv()
 }
 void CgiEnv::setEnvironementData()
 {
+    std::cout<<"dd "<<worker.getHost()<<std::endl;
     setPathUriVector();
     setCgiRoot();
     findScript();
@@ -303,8 +316,11 @@ void CgiEnv::setEnvironementData()
     setCgiQueryString();
     setCgiServerName();
     setCgiServePort();
-    setRequestMethod();
     constructScriptEnv();
+}
+void CgiEnv::setRequest(const std::string &req)
+{
+    envMap["REQUEST_METHOD"] = req;
 }
 // bool CgiEnv::isDirectoryRequest()
 // {

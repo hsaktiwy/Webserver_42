@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/09 19:53:18 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/14 01:37:29 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 
 
-Client::Client() : http_response(http_request, worker)
+Client::Client() : http_response(http_request, worker) , cgiRequest(worker)
 {
 	requestReceived = false;
 	responseSent = false;
@@ -41,13 +41,23 @@ Client& Client::operator=(const Client& obj)
 		responseSent = obj.responseSent;
 		http_response.setHttp_request(http_request);
 		http_response.setWorker(worker);
+		cgiRequest = obj.cgiRequest;
+		cgiRequest.setCgiWorker(obj.worker);
 	}
 	return (*this);
 }
 
-void	Client::ParseRequest(char *buffer, std::vector<ServerBlocks> &serverBlocks)
+void	Client::ParseRequest(std::vector<ServerBlocks> &serverBlocks)
 {
-    http_request.CheckRequest(serverBlocks, worker);;
+    http_request.CheckRequest(serverBlocks, worker);
+	if (http_request.getCgiStatus())
+	{	std::cout<<"ss : "<< this->getHttp_request().getMethod()<<std::endl;
+		cgiRequest.setCgiWorker(worker);
+		cgiRequest.setRequest(this->getHttp_request().getMethod());
+		cgiRequest.setEnvironementData();
+		exit(1);
+	}
+		
 }
 
 void	Client::CreateResponse(std::map<unsigned int, std::string> &status_codes)
@@ -70,33 +80,34 @@ const Worker &Client::getWorker( void ) const
 	return worker;
 }
 
-void Client::setClientSocket(int fd)
+void	Client::setClientSocket(int fd)
 {
 	this->socket = fd;
 }
 
-void Client::setClientRequestState(bool state)
+void	Client::setClientRequestState(bool state)
 {
 	this->requestReceived = state;
 }
 
-void Client::setClientResponseState(bool state)
+void	Client::setClientResponseState(bool state)
 {
 	this->responseSent = state;
 }
 
-int Client::getClientSocket() const
+int	Client::getClientSocket() const
 {
 	return this->socket;
 }
 
-bool Client::getClientResponseSate() const
+bool	Client::getClientResponseSate() const
 {
 	return this->responseSent;
 }
 
-bool Client::getClientRequestSate() const
+bool	Client::getClientRequestSate() const
 {
 	return this->requestReceived;
 
 }
+

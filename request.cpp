@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/10 23:35:13 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/14 01:44:18 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,7 @@ bool	ishexa(char c)
 	return (false);
 }
 
-size_t	hexaToDecimal(std::string &str)
+size_t	hexaToDecimal(const std::string &str)
 {
 	std::stringstream ss(str);
     size_t s;
@@ -112,9 +112,42 @@ void	AddEmptyNode(std::vector<HTTPHeader> &vec)
 	vec.push_back(empty);
 }
 
+std::string		EscapedEncoding(std::string &uri, bool &error, int &status)
+{
+	std::string result;
+
+	for (size_t i = 0; i < uri.size(); i++)
+	{
+		if (uri[i] == '%' && i + 1 < uri.size() && ishexa(uri[i + 1]))
+		{
+			if (i + 2 < uri.size() && ishexa(uri[i + 2]))
+			{
+				std::string  tmp = uri.substr(i + 1, 2);
+
+				size_t hexa = hexaToDecimal(tmp);
+				if (hexa > 31)
+				{
+					result += (char)hexa;
+					i +=2;
+				}
+				else
+				{
+					error = true, status = 400;
+					return (uri);
+				}
+			}
+			else
+				result += uri[i];
+		}
+		else
+			result += uri[i];
+	}
+	return (result);
+}
+
 void	request::ParseRequest(char *buff, ssize_t bytes_size)
 {
-	std::string allowedMethod[] = {"POST", "GET", "DELETE"};
+	// std::string allowedMethod[] = {"POST", "GET", "DELETE"};
 	size_t index = 0;
 
 	if (!Parsed_StartLine)
@@ -184,18 +217,9 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 		}
 		if (!SLValidity && R_Method && R_URI && R_PROTOCOL)
 		{
-			bool MethodeExist = false;
-			for (int i = 0; i < 3; i++)
-			{
-				if (method == allowedMethod[i])
-				{
-					MethodeExist = true;
-					if (allowedMethod[i] == "POST")
-						Body_Exist = true;
-					break;
-				}
-			}
-			if (http != "HTTP/1.1" || !MethodeExist || !CheckUriFormat(method_uri))
+			if (method == "POST")
+				Body_Exist = true;
+			if (!CheckUriFormat(method_uri))
 			{
 				error = true, RequestRead = true, status = 400;
 				return ;
@@ -297,11 +321,11 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 		if (R_FUll_HEADERS)
 		{
 			// parse the headers
-			printf("method %s && uri %s && %s\n", method.c_str(), method_uri.c_str(), http.c_str());
-			for(int i = 0; i < headers.size(); i++)
-			{
-				printf("%s : %s\n", headers[i].name.c_str(), headers[i].values.c_str());
-			}
+			// printf("method %s && uri %s && %s\n", method.c_str(), method_uri.c_str(), http.c_str());
+			// for(int i = 0; i < headers.size(); i++)
+			// {
+			// 	printf("%s : %s\n", headers[i].name.c_str(), headers[i].values.c_str());
+			// }
 
 			// define the body limiter 
 			// call them in this orther will made sure the priority so be carefull
@@ -363,7 +387,7 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 			Parsed_Header = true;
 			FillingBuffer = false;
 			left_CR = false;
-			printf("Does the bodyExist %d, and what delimiter whe need %d\n", Body_Exist, BodyLimiterType);
+			// printf("Does the bodyExist %d, and what delimiter whe need %d\n", Body_Exist, BodyLimiterType);
 			// exit(0);
 		}
 	}
@@ -429,7 +453,7 @@ void	request::ParseRequest(char *buff, ssize_t bytes_size)
 					if ((buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n')
 						||	(left_CR && buff[index] == '\n'))
 					{
-						index +=(left_CR) ? 1 : 2, ChunkedSizeRead = false, FillingBuffer = false, left_CR = false;
+						index += (left_CR) ? 1 : 2, ChunkedSizeRead = false, FillingBuffer = false, left_CR = false;
 						continue;
 					}
 					if (buff[index] == '\r' && index + 1 == bytes_size)
@@ -544,76 +568,105 @@ bool	ft_strcmp(const char *s1, const char *s2)
 
 void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker)
 {
+	std::cerr<<"zazaza"<<std::endl;
 	is_dir = 0;
 	is_regular = 0;
-	std::string KnownHeaders[] = {"Host", "Accept", "Accept-Language", "Accept-Encoding", "Connection", "Referer"};
-	std::string mimeType[] = {"image/avif", "image/avif", "image/jpeg", "image/gif", "image/png", "text/csv",  "text/html",   "text/javascript", "text/plain", "text/xml", "text/plain", "audio/mpeg", "video/mp4", "video/mpeg", "application/xml"};
 	// ServerBlocks block = get_server_block(host, serverBlocks);
-
+	std::string allowedMethode[] = {"POST", "DELETE", "GET"};
 	// RequestDisplay();
 	if (error == false)
 	{
+		// check if we have a valide Escaped Encoding
+		// printf("Before---------->%s\n", method_uri.c_str());
+		method_uri = EscapedEncoding(method_uri, error, status);
+		// printf("After---------->%s\n", method_uri.c_str());
+		// chekc if the method is supported bye the server
+		bool supported = false;
+		for(size_t i = 0; i < 3; i++)
+		{
+			if (method == allowedMethode[i])
+			{
+				supported = true;
+				break;
+			}
+		}
+		if (supported == false)
+			error = true, status = 405;
 		// splite uri to scheme, authority, path, query
 		UriFormat(uri, method_uri, host);
 		std::string path = "/"  + uri.path;
-		printf("==>%s\n", path.c_str());
+		if (http != "HTTP/1.1")
+			error = true, status = 505;
 		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
 		worker.setHost(host);
 		// ServerBlocks block = worker.getBlockWorker();
 		std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
 		std::string index = worker.getIndex();
 		worker.setQuery(uri.query);
-		// std::cout << "host " << host << " root " << root  << " index " << index << " path " << worker.getPath() << " query " << uri.query << std::endl;
+		std::cout << "host " << host << " root " << root  << " index " << index << " path " << path << " query " << uri.query << std::endl;
 		bool indexed = false;
-		if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/"))
+		if (!isCgiRequest)
 		{
-			isCgiRequest = true;
-			// CgiEnv obj(worker);
-			// // obj.setPathUriVector();
-			// exit (1);
-			// std::string fullpath;
-			// std::string rootTmp = worker.getRoot();
-			// std::string pathTmp = worker.getPath();
-			// if (rootTmp[rootTmp.size() - 1] == '/')
-			// 	rootTmp.pop_back();
-			// fullpath = rootTmp+pathTmp;
-			// std::cout<< "location : "<<worker.getLocationWorker().getPath()<< " fullpath: "<< fullpath<< " index: " << worker.getIndex()<<" autoindex:"<< worker.getAutoIndex()<<std::endl;
-			// worker.setCgiStatus(true);
-			// exit (1);
-			// return;
-		}
-		else
-		{
+			if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/"))
+			{
+				isCgiRequest = true;
+				return;
+				
+				// CgiEnv obj(worker);
+				// // obj.setPathUriVector();
+				// exit (1);
+				// std::string fullpath;
+				// std::string rootTmp = worker.getRoot();
+				// std::string pathTmp = worker.getPath();
+				// if (rootTmp[rootTmp.size() - 1] == '/')
+				// 	rootTmp.pop_back();
+				// fullpath = rootTmp+pathTmp;
+				// std::cout<< "location : "<<worker.getLocationWorker().getPath()<< " fullpath: "<< fullpath<< " index: " << worker.getIndex()<<" autoindex:"<< worker.getAutoIndex()<<std::endl;
+				// worker.setCgiStatus(true);
+				// exit (1);
+				// return;
+			}
+
+			// static level
 			if (is_dir == 1 && index.size() != 0)
 			{
-				std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
-				if (access(check.c_str(), F_OK) == 0)
+				if (is_dir == 1 && index.size() != 0)
 				{
-					uri.path += index;
-					indexed = true;
-					is_dir = 0; is_regular = 1;
+					std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
+					if (access(check.c_str(), F_OK) == 0)
+					{
+						uri.path += index;
+						indexed = true;
+						is_dir = 0; is_regular = 1;
+					}
 				}
-			}
 
 			// check for allowed method
 			if (is_regular == 1)
 			{
 				int exist = F_OK;
-				int rigths =(method == "POST") ? (F_OK | R_OK | W_OK):(F_OK | R_OK); 
+				int rigths =(method == "POST") ? (F_OK | R_OK):(F_OK | R_OK); 
 				std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
-				if (access(check.c_str(), exist) != 0)
-					error = true, status = 404;
-				if (error == false && access(check.c_str(), rigths) != 0)
-					error = true, status = 403;
+				if (access(check.c_str(), rigths) != 0)
+				{
+					(errno == EACCES) ? (error = true, status = 403) : (error = true, status = 404);
+					// if (errno == EACCES)
+					// 	;
+					// else
+					// 	;
+				}
 			}
 
-			std::vector<std::string> allowedMethod = worker.getAllowMethods();
-			if (allowedMethod.size() != 0)
-			{
-				if (find(allowedMethod.begin(), allowedMethod.end(), method) == allowedMethod.end())
-					error = true, status = 405;
+				std::vector<std::string> allowedMethod = worker.getAllowMethods();
+				if (allowedMethod.size() != 0)
+				{
+					if (find(allowedMethod.begin(), allowedMethod.end(), method) == allowedMethod.end())
+						error = true, status = 405;
+				}
+				printf("ddd hhhhh\n");
 			}
 		}
+		// printf("error %d, status %d\n", error, status);
 	}
 }
 
@@ -801,7 +854,7 @@ void							request::setHandleRequest(bool value)
 {
 	HandleRequest = value;
 }
-bool ::request::getCgiStatus()
+bool ::request::getCgiStatus() const
 {
 	return isCgiRequest;
 }

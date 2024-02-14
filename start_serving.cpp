@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 14:43:51 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/03 16:56:53 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/13 14:26:13 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ void start_serving(const Worker &worker,std::string &response,std::string &human
 	}
 	else
 	{
-		printf("not found\n");   
+		// printf("not found\n");   
 		*status = 404;
 		human_status = "Not Found";
 		response += "<h1>Not found</h1>";

@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/14 21:49:10 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/16 22:23:46 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -247,22 +247,13 @@ bool	RangeFormat(const HTTPHeader &header, response  &response, long long FileSi
 // LMTime mean the last 'file modification time'
 std::string	HandleHeaderFileStatus(Client& client, long long size, long long LMTime)
 {
-	const request   &request = client.getHttp_request();
-	std::string ResponseHeader;
-	const response  &resp = client.getHttp_response();
-	const std::vector<HTTPHeader> &headers = request.getHeaders();
-	int             index;
-	std::string FileSize = ToString(size);
-	// cach ttag this can be deleteed in later
-	// std::stringstream ss;
-	// ss << std::hex << size;
-	// std::string hexaTag, lmtime;
-	// ss >> hexaTag;
-	// ss.str(""), ss.clear();
-	// ss << std::hex << LMTime;
-	// ss >> lmtime;
-	// std::string Etag = "ETag: "+ lmtime + "-" + hexaTag + "\r\n";   
-	// search for the Range header
+	const request   				&request = client.getHttp_request();
+	std::string 					ResponseHeader;
+	const response  				&resp = client.getHttp_response();
+	const std::vector<HTTPHeader>	&headers = request.getHeaders();
+	int             				index;
+	std::string 					FileSize = ToString(size);
+
 	index  = request.getHeaderIndex("Range");
 	if (index != -1)
 	{
@@ -271,13 +262,11 @@ std::string	HandleHeaderFileStatus(Client& client, long long size, long long LMT
 		if (!RangeFormat(header, (response  &)resp, size))
 		{
 			// default form start  = 0 to end  == file size
-			((response  &)resp).setFileIndex(0);
-			((response  &)resp).setFileEnd(size);
+			((response  &)resp).setFileIndex(0),((response  &)resp).setFileEnd(size);
 		}
 		size_t s = resp.getFileIndex();
 		long long e = resp.getFileEnd() - 1;
-		std::string start = ToString(s);
-		std::string end = ToString(e);
+		std::string start = ToString(s), end = ToString(e);
 		ResponseHeader += "Content-Range: bytes "+ start +"-"+ end +"/"+ FileSize + "\r\n";// + Etag;
 	}
 	// Define if possible to add Accept-Range
@@ -285,8 +274,7 @@ std::string	HandleHeaderFileStatus(Client& client, long long size, long long LMT
 		((response  &)resp).setFileIndex(0), ((response  &)resp).setFileEnd(size);
 	// Define the Content-Lenght
 	size_t s = resp.getFileIndex();
-	long long e = resp.getFileEnd();
-	long long rest = (e - s);
+	long long e = resp.getFileEnd(), rest = (e - s);
 	ResponseHeader += "Content-Length: " + ToString(rest) + "\r\n";
 	if (index == -1)
 	{
@@ -295,66 +283,165 @@ std::string	HandleHeaderFileStatus(Client& client, long long size, long long LMT
 			|| FileType.find("audio") != std::string::npos)
 			ResponseHeader += "Accept-Ranges: bytes\r\n"; 
 	}
-	ResponseHeader += "Server: " + ((std::string)SERVERNAME) + "\r\n"; 
-	ResponseHeader += "\r\n";
+	ResponseHeader += "Server: " + ((std::string)SERVERNAME) + "\r\n\r\n"; 
 	((response  &)resp).setBody_size(rest + ResponseHeader.size());
 	return (ResponseHeader);
 }
 
-void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &string_response,int *flag,int *status,std::string &human_status,std::string &mime_type, Client & client, std::map<unsigned int, std::string> &status_codes)
+void	HeadersTransfert(response &resp, size_t &writeBytes, std::string &buffer)
+{
+	long long Hsize = resp.getHeader_size();
+	long long Hindex = resp.getHeader_index();
+	if (Hindex < Hsize)
+	{
+		size_t bytes = writeBytes;
+		long long rest = Hsize - Hindex;
+		if (rest <  CHUNK_SIZE)
+			bytes = rest;
+		buffer = resp.getHttp_response().substr(Hindex, bytes);
+		resp.setHeader_index(Hindex + bytes);
+		if (resp.getHeader_size() == resp.getHeader_index())
+			resp.setHeader_sent(true);
+		writeBytes -= bytes;
+	}
+}
+
+void	BodyStringBodyTransfert(response &resp, size_t &writeBytes, std::string &buffer)
+{
+	if (resp.getBody_sent() == false && writeBytes > 0)
+	{
+		long long Bsize = resp.getBody_size();
+		long long Bindex = resp.getBody_index();
+
+		if (Bindex < Bsize)
+		{
+			size_t bytes = writeBytes;
+			long long rest = Bsize - Bindex;
+			if (rest <  CHUNK_SIZE)
+				bytes = rest;
+			buffer += resp.getBody_string().substr(Bindex, bytes);
+			resp.setBody_index(Bindex + bytes);
+			if (resp.getBody_size() == resp.getBody_index())
+				resp.setBody_sent(true);
+			writeBytes -= bytes; 
+		}
+	}
+}
+
+void	AdditionnalHeaders(Client &client, response &resp, std::string &file, std::string &buffer)
+{
+	struct stat stat_buff;
+	int error = stat(file.c_str(), &stat_buff);
+	if (error == 0)
+	{
+		long long size = stat_buff.st_size;
+		long LMTime = stat_buff.st_mtimespec.tv_sec;
+		std::string ExtratHeader = HandleHeaderFileStatus(client, size, LMTime);
+		buffer += ExtratHeader;
+		if (resp.getBody_size() == resp.getBody_index())
+			resp.setBody_sent(true);
+	}
+}
+
+void	FileSeeking(response &resp, int fd)
+{
+	size_t 	size_buff = 1000000;
+	char	*buff = (char *)malloc(sizeof(char) * 1000000);
+	if (!buff)
+		size_buff = 0; 
+	ssize_t bytes_read;
+	size_t fileIndex = resp.getFileIndex();
+	if (size_buff != 0 && resp.getSeeker() != fileIndex)
+	{
+		if (fileIndex - resp.getSeeker() >= size_buff)
+			size_buff = size_buff;
+		else
+			size_buff = fileIndex - resp.getSeeker();
+		bytes_read = read(fd, buff, size_buff);
+		if (bytes_read > 0)
+			resp.setSeeker(resp.getSeeker() + bytes_read);
+	}
+	if (resp.getSeeker() == fileIndex)
+		resp.setFileSeeked(true);
+	free(buff), buff = NULL;
+}
+
+void	getFilePartionBuffer(response &resp, int fd, std::string &buffer, size_t &writeBytes)
+{
+	char buff[writeBytes];
+	if (resp.getFileEnd() - resp.getFileIndex() < writeBytes)
+		writeBytes = (resp.getFileEnd() - resp.getFileIndex());
+	// printf("rest Off the File %lu(File Index = %lu, File End = %lu) writeBytes Reading Size %lu", (resp.getFileEnd() - resp.getFileIndex()) , resp.getFileIndex(), resp.getFileEnd(), writeBytes);
+	// printf("	%lu\n", writeBytes);
+	ssize_t bytes = read(fd, buff, writeBytes);
+	if (bytes > 0)
+	{
+		for (size_t i = 0; i < bytes; i++)
+			buffer += buff[i];
+		size_t Bindex = resp.getBody_index();
+		size_t Findex = resp.getFileIndex();
+
+		resp.setBody_index(Bindex + bytes);
+		resp.setFileIndex(Findex + bytes);
+	}
+	else if (bytes == -1)
+		write(2, "Something Went Wrong!\n", 22), exit(0);
+}
+
+void	BodyFileResponse(response &resp, Client& client, std::string &file, std::string &buffer, size_t &writeBytes)
+{
+	if (resp.getFileOpened() == false)
+		AdditionnalHeaders(client, resp, file, buffer);
+	// static int NOpen;
+	// SEND BODY FILE
+	if (resp.getBody_sent() == false && resp.getFileEnd() > 0 && writeBytes > 0)
+	{
+		int fd = resp.getFd();
+		// INITIALIZE FILE DISCRIPTOR
+		if (fd == -1)
+		{
+			printf("opening  %s\n", file.c_str());
+			fd = open(file.c_str(), O_RDWR);
+			if (fd == -1)
+				perror("Open :");
+			resp.setFd(fd), resp.setFileOpened(true);
+		}
+		// SEND BODY FILE: IN THE FORM OFF CHUNKS MAX SIZE == CHUNK_SIZE
+		// IN RANGE CASE GO TO FILEINDEX POSITION
+		if (fd > 0)
+		{
+			if (!resp.getFileSeeked())
+				FileSeeking(resp, fd);
+			if (resp.getFileSeeked())
+				getFilePartionBuffer(resp, fd, buffer, writeBytes);
+		}
+	}
+	// the case where thw file has no size i mean 0
+	if (resp.getFileEnd() == resp.getFileIndex() || resp.getFileEnd() <= 0 || resp.getFileEnd() < resp.getFileIndex())
+	{
+		resp.setBody_sent(true);
+		if (resp.getFd() != -1)
+			close(resp.getFd()), resp.setFd(-1);
+	}
+}
+
+void	handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_write, nfds_t *size_fd,std::string &string_response,int *flag,int *status,std::string &human_status,std::string &mime_type, Client & client, std::map<unsigned int, std::string> &status_codes)
 {
 	std::string buffer;// this will hold our chunked response
 	response &resp = (response &)client.getHttp_response();
 	Worker &wk = (Worker&)client.getWorker();
-	// printf("wk.root : %s\n", wk.getRoot().c_str());
-	client.CreateResponse(status_codes);
 	size_t writeBytes = CHUNK_SIZE;
+
+	client.CreateResponse(status_codes);
 	if (resp.getReadyToResponed())
 	{
 		if (resp.getFile() == "")
 		{
-			printf("wtf\n");
 			// BODY STRING CASE : where i our code creat the body and it don't need a file at all, this scope will handle it
 			// SEND Headers
-			if (resp.getHeader_sent() == false)
-			{
-				long long Hsize = resp.getHeader_size();
-				long long Hindex = resp.getHeader_index();
-				printf("hmmm!\n");
-				if (Hindex < Hsize)
-				{
-					printf("what?\n");
-					size_t bytes = writeBytes;
-					long long rest = Hsize - Hindex;
-					if (rest <  CHUNK_SIZE)
-						bytes = rest;
-					buffer = resp.getHttp_response().substr(Hindex, bytes);
-					printf("in the buffer %s\n", buffer.c_str());
-					resp.setHeader_index(Hindex + bytes);
-					if (resp.getHeader_size() == resp.getHeader_index())
-						resp.setHeader_sent(true);
-					writeBytes -= bytes;
-				}
-			}
+			HeadersTransfert(resp, writeBytes, buffer);
 			// SEND Body
-			if (resp.getBody_sent() == false && writeBytes > 0)
-			{
-				long long Bsize = resp.getBody_size();
-				long long Bindex = resp.getBody_index();
-
-				if (Bindex < Bsize)
-				{
-					size_t bytes = writeBytes;
-					long long rest = Bsize - Bindex;
-					if (rest <  CHUNK_SIZE)
-						bytes = rest;
-					buffer += resp.getBody_string().substr(Bindex, bytes);
-					resp.setBody_index(Bindex + bytes);
-					if (resp.getBody_size() == resp.getBody_index())
-						resp.setBody_sent(true);
-					writeBytes -= bytes; 
-				}
-			}
+			BodyStringBodyTransfert(resp, writeBytes, buffer);
 			if (resp.getBody_sent() == false && resp.getBody_size() <= 0)
 				resp.setBody_sent(true);
 		}
@@ -363,113 +450,13 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 			// BODY FILE : when our body is in file format
 			// SEND Headers
 			if (resp.getHeader_sent() == false)
-			{
-				long long Hsize = resp.getHeader_size();
-				long long Hindex = resp.getHeader_index();
-
-				if (Hindex < Hsize)
-				{
-					size_t bytes = writeBytes;
-					long long rest = Hsize - Hindex;
-					if (rest <  CHUNK_SIZE)
-						bytes = rest;
-					buffer = resp.getHttp_response().substr(Hindex, bytes);
-					resp.setHeader_index(Hindex + bytes);
-					if (resp.getHeader_size() == resp.getHeader_index())
-						resp.setHeader_sent(true);
-					writeBytes -= bytes;
-				}
-			}
+				HeadersTransfert(resp, writeBytes, buffer);
 			// SEND BODY Plus SOME HEADERS
 			if (resp.getBody_sent() == false && writeBytes > 0)
 			{
 				std::string file = resp.getFile();
-				if (resp.getFileOpened() == false)
-				{
-					// this part of code will try to send a additional headers at once, this wont effect our preformance
-					struct stat stat_buff;
-					int error = stat(file.c_str(), &stat_buff);
-					if (error == 0)
-					{
-						long long size = stat_buff.st_size;
-						long LMTime = stat_buff.st_mtimespec.tv_sec;
-						std::string ExtratHeader = HandleHeaderFileStatus(client, size, LMTime);
-						buffer += ExtratHeader;
-						if (resp.getBody_size() == resp.getBody_index())
-							resp.setBody_sent(true);
-					}
-				}
-				// static int NOpen;
-				// SEND BODY FILE
-				if (resp.getBody_sent() == false && resp.getFileEnd() > 0 && writeBytes > 0)
-				{
-					int fd = resp.getFd();
-					// INITIALIZE FILE DISCRIPTOR
-					if (fd == -1)
-					{
-						printf("opening  %s\n", file.c_str());
-						fd = open(file.c_str(), O_RDWR);
-						if (fd == -1)
-							perror("Open :");
-						resp.setFd(fd), resp.setFileOpened(true);
-					}
-					// SEND BODY FILE: IN THE FORM OFF CHUNKS MAX SIZE == CHUNK_SIZE
-					// IN RANGE CASE GO TO FILEINDEX POSITION
-					if (fd > 0)
-					{
-						if (!resp.getFileSeeked())
-						{
-							size_t 	size_buff = 1000000;
-							char	*buff = (char *)malloc(sizeof(char) * 1000000);
-							if (!buff)
-								size_buff = 0; 
-							ssize_t bytes_read;
-							size_t fileIndex = resp.getFileIndex();
-							if (size_buff != 0 && resp.getSeeker() != fileIndex)
-							{
-								if (fileIndex - resp.getSeeker() >= size_buff)
-									size_buff = size_buff;
-								else
-									size_buff = fileIndex - resp.getSeeker();
-								bytes_read = read(fd, buff, size_buff);
-								if (bytes_read > 0)
-									resp.setSeeker(resp.getSeeker() + bytes_read);
-							}
-							if (resp.getSeeker() == fileIndex)
-								resp.setFileSeeked(true);
-							free(buff), buff = NULL;
-							// printf("Seeker New Position %lu file Index %lu ", resp.getSeeker(), fileIndex);
-						}
-						if (resp.getFileSeeked())
-						{
-							char buff[writeBytes];
-							if (resp.getFileEnd() - resp.getFileIndex() < writeBytes)
-								writeBytes = (resp.getFileEnd() - resp.getFileIndex());
-							// printf("rest Off the File %lu(File Index = %lu, File End = %lu) writeBytes Reading Size %lu", (resp.getFileEnd() - resp.getFileIndex()) , resp.getFileIndex(), resp.getFileEnd(), writeBytes);
-							// printf("	%lu\n", writeBytes);
-							ssize_t bytes = read(fd, buff, writeBytes);
-							if (bytes > 0)
-							{
-								for (size_t i = 0; i < bytes; i++)
-									buffer += buff[i];
-								size_t Bindex = resp.getBody_index();
-								size_t Findex = resp.getFileIndex();
-
-								resp.setBody_index(Bindex + bytes);
-								resp.setFileIndex(Findex + bytes);
-							}
-							else if (bytes == -1)
-								write(2, "Something Went Wrong!\n", 22), exit(0);
-						}
-					}
-				}
-				// the case where thw file has no size i mean 0
-				if (resp.getFileEnd() == resp.getFileIndex() || resp.getFileEnd() <= 0 || resp.getFileEnd() < resp.getFileIndex())
-				{
-					resp.setBody_sent(true);
-					if (resp.getFd() != -1)
-						close(resp.getFd()), resp.setFd(-1);
-				}
+				// this part of code will try to send a additional headers at once, this wont effect our preformance
+				BodyFileResponse(resp, client, file, buffer, writeBytes);
 			}
 		}
 		if (buffer.size() > 0)

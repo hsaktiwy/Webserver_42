@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/14 22:02:32 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/16 02:25:36 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 CgiResponse::CgiResponse() : scriptData(NULL)
 {
     responseSent = false;
+    isDataset = false;
+    isEnvObjectSet = false;
     socket_fd = -1;
 }
 CgiResponse::~CgiResponse()
@@ -49,32 +51,45 @@ CgiResponse &CgiResponse::operator=(const CgiResponse &obj)
             scriptData = NULL;
         }
         Env = obj.Env;
-        constructScriptEnv();
+        // printf("from cgi resp copy\n");
+        // constructScriptEnv();
     }
     return (*this);
 }
-// void cgiResponse::creatCgiResponse()
-// {
-//     if (!Env.getStatus())
-//     {
-//         char **
-//         std::string path_bin = "/usr/local/bin/python3";
-//         char **args;
-//         args = new char *[3];
-//         args[0] = (char *)path_bin.c_str();
-//         args[1] = (char *)Env.getCgiScriptName().c_str();
-//         args[2] = NULL;
-//         int pid = fork();
-//         if (pid == 0)
-//         {
-//             execve(Env.getCgiScriptName().c_str(), args, Env.getenvArray());
-//         }
-//     }
-// }
+
+void CgiResponse::setSocket(int fd)
+{
+    socket_fd = fd;
+}
+void CgiResponse::creatCgiResponse()
+{
+    if (!Env.getStatus())
+    {
+        std::string path_bin = "/usr/local/bin/python3";
+        char **args;
+        int status;
+        args = new char *[3];
+        args[0] = (char *)path_bin.c_str();
+        args[1] = (char *)Env.getCgiScriptName().c_str();
+        args[2] = NULL;
+        int pid = fork();
+        if (pid == 0)
+        {
+            dup2(socket_fd, 1); 
+            execve(Env.getCgiScriptName().c_str(), args, scriptData);
+            close (STDIN_FILENO);
+            close (STDOUT_FILENO);
+        }
+        else 
+       {     waitpid(pid, &status, 0);
+            exit (1);}
+    }
+}
 void CgiResponse::setCgiEnvObject(CgiEnv &obj)
 {
     Env = obj;
-    constructScriptEnv();
+    isEnvObjectSet = true;
+    // constructScriptEnv();
 }
 void CgiResponse::constructScriptEnv()
 {
@@ -93,14 +108,31 @@ void CgiResponse::constructScriptEnv()
             count++;
         }
         scriptData[count] = NULL;
+        isDataset = true;
     }
+    
     for (size_t i = 0; scriptData[i] != NULL; i++)
     {
         printf("%s\n", scriptData[i]);
     }
     
 }
+void CgiResponse::handleError()
+{
+    if (Env.isAutoIndexReq())
+    {
+        if ()
+    }
+}
 bool CgiResponse::isResponseSent()
 {
     return responseSent;
+}
+bool CgiResponse::isEnvset()
+{
+    return isDataset;
+}
+bool CgiResponse::isReqObjectset()
+{
+    return isEnvObjectSet;
 }

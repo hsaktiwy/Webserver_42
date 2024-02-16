@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/14 15:45:53 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/16 16:30:31 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -662,10 +662,8 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 					if (find(allowedMethod.begin(), allowedMethod.end(), method) == allowedMethod.end())
 						error = true, status = 405;
 				}
-				printf("ddd hhhhh\n");
 			}
 		}
-		// printf("error %d, status %d\n", error, status);
 	}
 }
 

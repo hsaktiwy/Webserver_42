@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/14 22:49:40 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/16 16:17:11 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -330,6 +330,22 @@ void CgiEnv::findScript()
 //     }
     
 // }
+void CgiEnv::setErrorpage()
+{
+    unsigned int error_status = 0;
+    if (autoIndex || status == 403)
+        error_status = 403;
+    else if (status != 0)
+        error_status = status;
+    else
+        errorPage = "valid request";
+    if (error_status != 0)
+    {
+        worker.setPathError(worker.getErrorPages(), error_status, worker.getRoot());
+        if (worker.get_track_status() && worker.getPathError().size())
+            errorPage = worker.getPathError();
+    }
+}
 void CgiEnv::setEnvironementData()
 {
     setPathUriVector();
@@ -339,6 +355,7 @@ void CgiEnv::setEnvironementData()
     setCgiQueryString();
     setCgiServerName();
     setCgiServePort();
+    setErrorpage();
     
 }
 void CgiEnv::setRequest(const std::string &req)
@@ -445,7 +462,10 @@ bool CgiEnv::isScriptFound()
 // {
 //     return cgiMetaData;
 // }
-
+bool CgiEnv::isAutoIndexReq()
+{
+    return autoIndex;
+}
 const std::map<std::string, std::string> &CgiEnv::getEnvMap() const
 {
     return (envMap);

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/14 22:39:00 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/15 21:56:33 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ Client::Client() : http_response(http_request, worker) , cgiRequest(worker)
 {
 	requestReceived = false;
 	responseSent = false;
-	cgiResponse.setCgiEnvObject(cgiRequest);
+	// cgiResponse.setCgiEnvObject(cgiRequest);
 }
 
 Client::~Client()
@@ -58,7 +58,7 @@ void	Client::ParseRequest(std::vector<ServerBlocks> &serverBlocks)
 		cgiRequest.setCgiWorker(worker);
 		cgiRequest.setRequest(this->getHttp_request().getMethod());
 		cgiRequest.setEnvironementData();
-		exit(1);
+		// exit(1);
 	}
 		
 }

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/14 22:37:52 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/15 22:30:23 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -578,7 +578,14 @@ void handleCgiResponse(std::vector<struct pollfd> &poll_fds, size_t i, Client & 
 	CgiResponse resp = client.getcgiResponse();
 	if (!resp.isResponseSent())
 	{
-		printf("hello from cgi response\n");
+		if (!resp.isReqObjectset())
+		{	resp.setCgiEnvObject(client.getcgiRequest());
+			resp.setSocket(client.getClientSocket());}
+		if(!resp.isEnvset())
+		{
+			resp.constructScriptEnv();
+		}
+		resp.creatCgiResponse();
 		exit(1);
 	}
 }

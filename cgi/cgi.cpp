@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/16 18:00:21 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/18 21:01:13 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ CgiEnv &CgiEnv::operator=(const CgiEnv &obj)
         isFile = obj.isFile;
         status = obj.status;
         extraPathIndex = obj.extraPathIndex;
+        errorPage = obj.errorPage;
     }
     return (*this);
 }
@@ -200,7 +201,7 @@ void CgiEnv::setCgiPATHINFO()
 
 void CgiEnv::findScript()
 {
-    DIR *cgiDir;
+    DIR *Dir;
     std::string currentDir = cgiRoot;
     int is_file = 0;
     bool next = false;
@@ -210,15 +211,16 @@ void CgiEnv::findScript()
         for (size_t i = 0; i < pathUri.size() - 1; i++)
         {
             is_file = Is_Directory(currentDir);
+
             if(!is_file)
             {
-                cgiDir = opendir(currentDir.c_str());
-                if (cgiDir == NULL)
+                Dir = opendir(currentDir.c_str());
+                if (Dir == NULL)
                 {
                     errno == EACCES ? status = 403 : status = 404;
                     return;
                 }
-                struct dirent *entry = readdir(cgiDir);
+                struct dirent *entry = readdir(Dir);
                 std::string entryString;
                 while (entry)
                 {
@@ -238,16 +240,24 @@ void CgiEnv::findScript()
                             }
                             else
                                 errno == EACCES ? status = 403 : status = 404;
-                            closedir(cgiDir);
+                            closedir(Dir);
                             return;
                         }
                         else if (!is_file)
                             currentDir = currentDir  + "/" + pathUri[i + 1];
+                        else
+                           { status = 404;
+                            return;}
                         break;
                     }
-                    entry = readdir(cgiDir);
+                    entry = readdir(Dir);
                 }
-                closedir(cgiDir);
+                closedir(Dir);
+                if (!next)
+                {   
+                    status = 404;
+                    return ;
+                }
             }
             else if (is_file == 1)
             {
@@ -271,15 +281,15 @@ void CgiEnv::findScript()
     }
     if (!cgiScript && !Is_Directory(currentDir))
     {
-        cgiDir = opendir(currentDir.c_str());
-        if (cgiDir == NULL)
+        Dir = opendir(currentDir.c_str());
+        if (Dir == NULL)
         {
             errno == EACCES ? status = 403 : status = 404;
             return;
         }
         if (worker.getIndex().size())
         {
-            struct dirent *entry = readdir(cgiDir);
+            struct dirent *entry = readdir(Dir);
             std::string entryString;
             while(entry)
             {
@@ -293,15 +303,18 @@ void CgiEnv::findScript()
                     }
                     else
                         errno == EACCES ? status = 403 : status = 404;
-                    closedir(cgiDir);
+                    closedir(Dir);
                     return;
                 }
-                entry = readdir(cgiDir);
+                entry = readdir(Dir);
             }
-            closedir(cgiDir);
+            closedir(Dir);
         }
         if (!cgiScript && worker.getAutoIndex().size() && !worker.getAutoIndex().compare("on"))
+        {
             autoIndex = true;
+            status = 403;
+        }
         else
             status = 404;
     }
@@ -330,6 +343,10 @@ void CgiEnv::findScript()
 //     }
     
 // }
+void CgiEnv::setStatusCode(int code)
+{
+    status = code;
+}
 void CgiEnv::setErrorpage()
 {
     unsigned int error_status = 0;
@@ -343,7 +360,7 @@ void CgiEnv::setErrorpage()
     {
         worker.setPathError(worker.getErrorPages(), error_status, worker.getRoot());
         if (worker.get_track_status() && worker.getPathError().size())
-            errorPage = worker.getPathError();
+           errorPage = worker.getPathError();
     }
 }
 void CgiEnv::setEnvironementData()
@@ -446,7 +463,7 @@ std::string &CgiEnv::getCgiRoot()
 {
     return(cgiRoot);
 }
-bool CgiEnv::getStatus()
+int CgiEnv::getStatus()
 {
     return status;
 }

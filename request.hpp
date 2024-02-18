@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/16 16:41:37 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/18 11:57:47 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,8 +127,22 @@ class request {
 		std::string				ChunkSizeString;
 		// boundary case
 		std::string				boundary;
-
 		bool					isCgiRequest;
+
+		// private function in major cases they are supporting the public one
+		bool	StartlineParsing(char *buff, ssize_t &bytes_size, size_t &index);
+		bool	MethodParsing(char *buff, ssize_t &bytes_size, size_t &index);
+		bool	UriParsing(char *buff, ssize_t &bytes_size, size_t &index);
+		bool	ProtocolParsing(char *buff, ssize_t &bytes_size, size_t &index);
+		bool	HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& worker, char *buff, ssize_t &bytes_size, size_t &index);
+		bool	BaseHeadersParsing(char *buff, ssize_t &bytes_size, size_t &index);
+		bool	IdentifieHost(char *buff, ssize_t &bytes_size, size_t &index);
+		void	BodyDelimiterIdentification( void );
+		bool	BodyParsing(char *buff, ssize_t &bytes_size, size_t &index);
+		bool	BodyIdentifiedByContentLength(char *buff, ssize_t &bytes_size, size_t &index);
+		void	BodyIdentifiedByTransfertEncoding(char *buff, ssize_t &bytes_size, size_t &index);
+		void	BodyIdentifiedByMultFormData(char *buff, ssize_t &bytes_size, size_t &index);
+
     public:
 		request();
 		~request();

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/16 17:46:29 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/18 20:59:59 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ public:
     void setCgiQueryString();
     void findScript();
     void setErrorpage();
+    void setStatusCode(int code);
     // void setRequestMethod();
     // void constructScriptEnv();
     void setEnvironementData();
@@ -63,7 +64,7 @@ public:
     std::string &getCgiPATHINFO();
     std::string &getCgiQueryString();
     std::string &getCgiRoot();
-    bool getStatus();
+    int getStatus();
     bool isAutoIndexReq();
     bool getCgiDirStatus();
     bool isScriptFound();

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 14:12:57 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/16 18:27:42 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/18 20:55:23 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define CGI_RESPONSE
 #include "cgi.hpp"
 #include "../http.server.hpp"
+#include <sstream>
 
 class CgiResponse
 {
@@ -25,8 +26,9 @@ private:
     bool isDataset;
     bool isEnvObjectSet;
     bool isErrorResponse;
-    // int errorpipe[2];
-    // int trackerPipe[2];
+    std::map<unsigned int, std::string> status_codes;
+    int errorpipe[2];
+    int trackerPipe[2];
     std::string errorResponse;
 public:
     CgiResponse();
@@ -37,11 +39,13 @@ public:
     void setErrorResponseState();
     void setCgiEnvObject(CgiEnv &obj);
     void setSocket(int fd);
+    void setErrorMap(std::map<unsigned int, std::string> &ss_c);
     void creatCgiResponse();
     void handleError();
     bool isResponseSent();
     bool isEnvset();
     bool isReqObjectset();
+    bool isError();
 };
 
 

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/16 17:41:29 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/18 12:29:17 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,12 +55,11 @@ Client& Client::operator=(const Client& obj)
 void	Client::ParseRequest(std::vector<ServerBlocks> &serverBlocks)
 {
     http_request.CheckRequest(serverBlocks, worker);
-	if (http_request.getCgiStatus())
+	if (http_request.getCgiStatus()) // check if the request is a cgi request
 	{
-		cgiRequest.setCgiWorker(worker);
-		cgiRequest.setRequest(this->getHttp_request().getMethod());
-		cgiRequest.setEnvironementData();
-		// exit(1);
+		cgiRequest.setCgiWorker(worker); //set the worker of the cgi request
+		cgiRequest.setRequest(this->getHttp_request().getMethod()); //init the method 
+		cgiRequest.setEnvironementData(); // fill the map of the env needed by the script process and check errors
 	}
 		
 }

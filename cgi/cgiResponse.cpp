@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/16 18:28:15 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/18 21:09:13 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,10 @@ CgiResponse &CgiResponse::operator=(const CgiResponse &obj)
         isErrorResponse = obj.isErrorResponse;
         responseSent = obj.responseSent;
         socket_fd = obj.socket_fd;
+        errorResponse = obj.errorResponse;
+        isDataset = obj.isDataset;
+        isEnvObjectSet = obj.isEnvObjectSet;
+        status_codes = obj.status_codes;
         if (scriptData != NULL)
         {
             size_t size = Env.getEnvMap().size();
@@ -58,15 +62,20 @@ CgiResponse &CgiResponse::operator=(const CgiResponse &obj)
     }
     return (*this);
 }
-
+void CgiResponse::setErrorMap(std::map<unsigned int, std::string> &ss_c)
+{
+    status_codes = ss_c;
+}
 void CgiResponse::setSocket(int fd)
 {
     socket_fd = fd;
 }
 void CgiResponse::creatCgiResponse()
 {
-    if (!Env.getStatus() && is)
+    if (!Env.getStatus() && !isErrorResponse)
     {
+        int trackerPipeReturn = pipe(trackerPipe);
+        int errorPipeReturn = pipe(errorpipe);
         std::string path_bin = "/usr/local/bin/python3";
         char **args;
         int status;
@@ -75,22 +84,37 @@ void CgiResponse::creatCgiResponse()
         args[1] = (char *)Env.getCgiScriptName().c_str();
         args[2] = NULL;
         int pid = fork();
+        if (trackerPipeReturn == -1 || errorPipeReturn == -1 || pid == -1)
+        {
+            Env.setStatusCode(500);
+            isErrorResponse = true;
+        }
         if (pid == 0)
         {
+            close (STDOUT_FILENO);
+            close (STDERR_FILENO);
+            close (errorpipe[0]);
+            close (trackerPipe[0]);
+            dup2 ()
             dup2(socket_fd, 1); 
             execve(Env.getCgiScriptName().c_str(), args, scriptData);
             close (STDIN_FILENO);
-            close (STDOUT_FILENO);
         }
         else 
-       {     waitpid(pid, &status, 0);
-            exit (1);}
+        {
+            waitpid(pid, &status, 0);
+        }
+    }
+    else
+    {
+        handleError();
     }
 }
 void CgiResponse::setCgiEnvObject(CgiEnv &obj)
 {
     Env = obj;
     isEnvObjectSet = true;
+    setErrorResponseState();
     // constructScriptEnv();
 }
 void CgiResponse::setErrorResponseState()
@@ -118,16 +142,17 @@ void CgiResponse::constructScriptEnv()
         isDataset = true;
     }
     
-    for (size_t i = 0; scriptData[i] != NULL; i++)
-    {
-        printf("%s\n", scriptData[i]);
-    }
+    // for (size_t i = 0; scriptData[i] != NULL; i++)
+    // {
+    //     printf("%s\n", scriptData[i]);
+    // }
     
 }
 void CgiResponse::handleError()
 {
-    if (Env.isAutoIndexReq())
+    if (Env.isAutoIndexReq() || Env.getStatus())
     {
+        printf("Autoindex : %d, status : %d\n", Env.isAutoIndexReq() ,Env.getStatus());
         if (Env.getErrorPage().size())
         {
             errorResponse += "HTTP/1.1 302 Found\r\n";
@@ -137,20 +162,24 @@ void CgiResponse::handleError()
         }
         else
         {
-            errorResponse += "HTTP/1.1 403 Forbidden\r\n";
+            std::stringstream stream;
+            stream << Env.getStatus() << " "<< status_codes[Env.getStatus()];
+            errorResponse += "HTTP/1.1"+ stream.str() + "\r\n";
             errorResponse += "Content-Type: text/html\r\n\r\n";
             errorResponse += "<!DOCTYPE html>\r\n";
             errorResponse += "<html lang=\"en\">\r\n";
             errorResponse += "<head>\r\n";
             errorResponse += "    <meta charset=\"UTF-8\">\r\n";
-            errorResponse += "    <title>403 Forbidden</title>\r\n";
+            errorResponse += "    <title>" + stream.str() + "</title>\r\n";
             errorResponse += "</head>\r\n";
             errorResponse += "<body>\r\n";
-            errorResponse += "    <h1>403 Forbidden</h1>\r\n";
+            errorResponse += "    <h1>" + stream.str() + "</h1>\r\n";
             errorResponse += "    <p>You don't have permission to access this resource.</p>\r\n";
             errorResponse += "</body>\r\n";
             errorResponse += "</html>";
         }
+        send(socket_fd, errorResponse.c_str(), errorResponse.size(), 0);
+        responseSent=true;
     }
 }
 bool CgiResponse::isResponseSent()
@@ -164,4 +193,8 @@ bool CgiResponse::isEnvset()
 bool CgiResponse::isReqObjectset()
 {
     return isEnvObjectSet;
+}
+bool CgiResponse::isError()
+{
+    return isErrorResponse;
 }

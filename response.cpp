@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/16 17:09:36 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/18 11:54:56 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -364,6 +364,110 @@ void	Post_no_body(request &req, std::string &http_response, long long &header_si
 	header_size = http_response.size();
 	body_size = 0;
 }
+
+bool	response::PostInit(std::map<unsigned int, std::string> &status_codes, request &req, std::string &body)
+{
+	int		MFD_index = req.getHeaderIndex("Content-Type");
+	if (MFD_index != -1)
+	{
+		std::vector<HTTPHeader> const & headers = req.getHeaders();
+		HTTPHeader &header = (HTTPHeader&)headers[MFD_index];
+		size_t valide = header.values.find("multipart/form-data");
+		if (valide != std::string::npos)
+		{
+			body_index = 0;
+			boundary = header.boundry;
+			std::string buff;
+			if (boundary.size() > 0)
+				ft_getline(body, body_index, buff,'\n');
+			POST_Init = true;
+		}
+		else
+		{
+			// Not impemented
+			req.setStatus(501); req.setError(true);
+			errorresponse(status_codes);
+			readyToResponed = true;
+			return (false);
+		}
+	}
+	if (body.size() == 0)
+	{
+		Post_no_body(req, http_response, header_size, body_size);
+		readyToResponed = true;
+	}
+	if (MFD_index == -1)
+	{
+		printf("----->here\n");
+		req.setStatus(400); req.setError(true);
+		errorresponse(status_codes);
+		readyToResponed = true;
+		return (false);
+	}
+	return (true);
+}
+
+void	response::PostResponse(std::map<unsigned int, std::string> &status_codes)
+{
+	int code;
+	if (files.size() == 0)
+		code = 200;
+	else	
+		code = 201;
+	std::string human_read = Status(code, status_codes);
+	http_response = "HTTP/1.1 " + human_read + "\r\nContent-Type: text/plain\r\n";
+	for(size_t i = 0; i < files.size(); i++)
+		body_string += "Resource is Created : " + files[i] + "\r\n"; 
+	body_size = body_string.size();
+	http_response += "Content-Length: " + ToString(body_size) + "\r\n\r\n";
+	header_size = http_response.size();
+}
+
+bool	response::PostFilesOpen(std::map<unsigned int, std::string> &status_codes, request &req, std::string &UploadPath)
+{
+	std::string path = UploadPath + "/" + CurrentFilename;
+	// printf("Path %s\n", path.c_str());
+	fd = open(path.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
+	if (fd == -1)
+	{
+		perror("open ");
+		// printf("ola2\n");
+		req.setStatus(501); req.setError(true);
+		errorresponse(status_codes);
+		readyToResponed = true;
+		return (false);
+	}
+	if (fd > 0)
+		files.push_back(CurrentFilename);
+	return (true);
+}
+
+bool	response::PostFileFilling(std::map<unsigned int, std::string> &status_codes, request &req, std::string &body)
+{
+	int result = fillFile(fd, body, body_index, boundary, UPLOADCHUNK_SIZE);
+	if (result == -1)
+	{
+		// handle error 500 in the server;
+		req.setStatus(500); req.setError(true);
+		errorresponse(status_codes);
+		readyToResponed = true;
+		return (false);
+	}
+	if (result == 1)
+	{
+		if (close(fd) == - 1)
+		{
+			req.setStatus(500); req.setError(true);
+			errorresponse(status_codes);
+			readyToResponed = true;
+			return (false);
+		}
+		fd = -1;
+		StoringFile = false;
+	}
+	return (true);
+}
+
 void	response::Post(std::map<unsigned int, std::string> &status_codes)
 {
 	request	&req = *http_request;
@@ -377,44 +481,8 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 	{
 		// printf("%s _  %s\n", wk.getRoot().c_str(), UploadPath.c_str());
 		// check first for the Content-Type  == multipart/form-data then define the boundary value
-		int		MFD_index = req.getHeaderIndex("Content-Type");
-		if (MFD_index != -1)
-		{
-			std::vector<HTTPHeader> const & headers = req.getHeaders();
-			HTTPHeader &header = (HTTPHeader&)headers[MFD_index];
-			size_t valide = header.values.find("multipart/form-data");
-			if (valide != std::string::npos)
-			{
-				body_index = 0;
-				boundary = header.boundry;
-				std::string buff;
-				if (boundary.size() > 0)
-					ft_getline(body, body_index, buff,'\n');
-				POST_Init = true;
-			}
-			else
-			{
-				// Not impemented
-				// printf("ola\n");
-				req.setStatus(501); req.setError(true);
-				errorresponse(status_codes);
-				readyToResponed = true;
-				return ;
-			}
-		}
-		if (body.size() == 0)
-		{
-			Post_no_body(req, http_response, header_size, body_size);
-			readyToResponed = true;
-		}
-		if (MFD_index == -1)
-		{
-			printf("----->here\n");
-			req.setStatus(400); req.setError(true);
-			errorresponse(status_codes);
-			readyToResponed = true;
+		if (!PostInit(status_codes, req, body))
 			return ;
-		}
 	}
 	if (POST_Init == true)
 	{
@@ -432,46 +500,15 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 				// open the file and start writing in the file
 				if (fd == -1)
 				{
-					std::string path = UploadPath + "/" + CurrentFilename;
-					// printf("Path %s\n", path.c_str());
-					fd = open(path.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
-					if (fd == -1)
-					{
-						perror("open ");
-						// printf("ola2\n");
-						req.setStatus(501); req.setError(true);
-						errorresponse(status_codes);
-						readyToResponed = true;
+					if (!PostFilesOpen(status_codes, req, UploadPath))
 						return ;
-					}
-					if (fd > 0)
-						files.push_back(CurrentFilename);
 				}
 				if (fd > 0)
 				{
 					// if (!OpenFile(path, stream, boundary, stop))
-					int result = fillFile(fd, body, body_index, boundary, UPLOADCHUNK_SIZE);
-					if (result == -1)
-					{
-						// handle error 500 in the server;
-						req.setStatus(500); req.setError(true);
-						errorresponse(status_codes);
-						readyToResponed = true;
+					if (!PostFileFilling(status_codes, req, body))
 						return ;
-					}
-					if (result == 1)
-					{
-						if (close(fd) == - 1)
-						{
-							req.setStatus(500); req.setError(true);
-							errorresponse(status_codes);
-							readyToResponed = true;
-							return ;
-						}
-						fd = -1;
-						StoringFile = false;
-					}
-					printf("index_body %lu, stop %d result %d\n", body_index, stop, result);
+					// printf("index_body %lu, stop %d result %d\n", body_index, stop);
 				}
 			}
 		}
@@ -484,20 +521,7 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 	}
 	if (readyToResponed)
 	{
-		// printf("responding\n");
-		int code;
-		if (files.size() == 0)
-			code = 200;
-		else	
-			code = 201;
-		std::string human_read = Status(code, status_codes);
-		http_response = "HTTP/1.1 " + human_read + "\r\nContent-Type: text/plain\r\n";
-		for(size_t i = 0; i < files.size(); i++)
-			body_string += "Resource is Created : " + files[i] + "\r\n"; 
-		body_size = body_string.size();
-		http_response += "Content-Length: " + ToString(body_size) + "\r\n\r\n";
-		header_size = http_response.size();
-		// printf("%s\n%s\n", http_response.c_str(), body_string.c_str());
+		PostResponse(status_codes);
 	}
 	// where is should put the file  for new let put them in
 	// std::vector<HTTPHeader> &header = req.getHeaders();

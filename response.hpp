@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   reponse.hpp                                        :+:      :+:    :+:   */
+/*   response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:50 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/14 17:37:41 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/16 21:44:02 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,10 @@ class response {
 		bool						StoringFile;
 		std::string					CurrentFilename;
 		std::vector<std::string>	files;
+		bool	PostInit(std::map<unsigned int, std::string> &status_codes, request &req, std::string &body);
+		bool	PostFilesOpen(std::map<unsigned int, std::string> &status_codes, request &req, std::string &UploadPath);
+		bool	PostFileFilling(std::map<unsigned int, std::string> &status_codes, request &req, std::string &body);
+		void	PostResponse(std::map<unsigned int, std::string> &status_codes);
 	public:
 		response();
 		response(request &http_request, Worker& worker);

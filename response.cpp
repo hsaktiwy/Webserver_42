@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/16 21:46:33 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/18 12:54:29 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,7 +153,7 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 	if (req.getError() == true)
 	{
 		// response for Error handling
-		printf("solo\n");
+		// printf("solo\n");
 		errorresponse(status_codes);
 		readyToResponed = true;
 	}
@@ -398,7 +398,7 @@ bool	response::PostInit(std::map<unsigned int, std::string> &status_codes, reque
 	}
 	if (MFD_index == -1)
 	{
-		printf("----->here\n");
+		// printf("----->here\n");
 		req.setStatus(400); req.setError(true);
 		errorresponse(status_codes);
 		readyToResponed = true;
@@ -476,7 +476,7 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 	std::string &UploadPath = wk.getPathUpload();
 	bool	stop = false;
 
-	printf("Post handling\n");
+	// printf("Post handling\n");
 	if (POST_Init == false)
 	{
 		// printf("%s _  %s\n", wk.getRoot().c_str(), UploadPath.c_str());
@@ -520,9 +520,7 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 		// create the response
 	}
 	if (readyToResponed)
-	{
 		PostResponse(status_codes);
-	}
 	// where is should put the file  for new let put them in
 	// std::vector<HTTPHeader> &header = req.getHeaders();
 }
@@ -564,7 +562,7 @@ void    response::RedirectionResponse(std::map<unsigned int, std::string> &statu
 	http_response = "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n" + Hconnection + "\r\nContent-Type: text/html\r\n" + "Location: "+ path + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n\r\n";
 	header_size = http_response.size();
 	body_size = 0;
-	printf("%s\n",http_response.c_str());
+	// printf("%s\n",http_response.c_str());
 }
 
 void    response::errorresponse(std::map<unsigned int, std::string> &status_codes)
@@ -576,10 +574,10 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 	std::string statusCode;
 
 	worker->setPathError(worker->getErrorPages(), req.getStatus(),worker->getRoot());
-	printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());
+	// printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());
 	if (wk.get_track_status() == 0 || (wk.get_track_status() == 1 && wk.getPathError().empty()))
 	{
-		printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());
+		// printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());
 		if (wk.get_track_status() == 1 && wk.getPathError() == "")
 			req.setStatus(404);
 		std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
@@ -596,12 +594,12 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 		body_size = 0;
 		http_response += body_string;
 		header_size = http_response.size();
-		printf("Reponse : %s\n", http_response.c_str());
-		printf("%s", body_string.c_str());
+		// printf("Reponse : %s\n", http_response.c_str());
+		// printf("%s", body_string.c_str());
 	}
 	else
 	{
-		printf("error %d\n", req.getError());
+		// printf("error %d\n", req.getError());
 		std::string path = wk.getLocationWorker().getPath() + "/" + worker->getPathError();
 		path = NormilisePath(path);
 		RedirectionResponse(status_codes, path);

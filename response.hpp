@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:50 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/16 21:44:02 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/18 11:03:26 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,9 @@ class response {
 		bool						FileOpened;
 		bool						FileSeeked;// this in case where our file need to be seeked first to a special position then send data to our user
 		size_t						Seeker;
-		int							fd;// this also will be reused for file in 
+		int							fd;// this also will be reused for file in
 		bool						readyToResponed;
-		// to handle post		
+		// to handle post
 		bool						POST_Init;
 		std::stringstream			stream;
 		size_t 						index;

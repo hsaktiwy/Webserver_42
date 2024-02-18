@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/15 22:30:23 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/16 17:26:09 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,7 +153,7 @@ int create_socket_client(std::vector<int> &sockets,std::vector<struct pollfd> &p
 	return (client_socket);
 }
 
-// void handle_read(std::vector<struct pollfd> &poll_fds, int i, int *ready_to_write, \
+// void handle_read(std::vector<struct pollfd> &poll_fds, int i, int *ready_to_write, 
 //                   nfds_t *size_fd, std::vector<ServerBlocks> &serverBlocks, std::string &response, int *flag,int *status,std::string &human_status,std::string &mime_type)
 // {
 //     char buffer[1024];
@@ -188,12 +188,13 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to
 		char buffer[CHUNK_SIZE];
 		bytes_read = read(poll_fds[i].fd,buffer, CHUNK_SIZE);
 		if (bytes_read > 0)
-			((request &)client.getHttp_request()).ParseRequest(buffer, bytes_read);
-		std::cout << RED << "BYTES Read From the request " << bytes_read << RESET<< std::endl;
+			client.BufferingRequest(serverBlocks, buffer, bytes_read);
+		// std::cout << RED << "BYTES Read From the request " << bytes_read << RESET<< std::endl;
 	}
 	// this part where we will handle some additional request parsing, at the time where the request was fully read
 	if (client.getHttp_request().getRequestRead())
 	{
+			printf("Start line  : %d %s %s \n", poll_fds[i].fd, client.getHttp_request().getMethod().c_str(), client.getHttp_request().getMethod_uri().c_str());
 		client.ParseRequest(serverBlocks);
 		((request &)client.getHttp_request()).setHandleRequest(true);
 	}
@@ -288,7 +289,6 @@ std::string	HandleHeaderFileStatus(Client& client, long long size, long long LMT
 	long long e = resp.getFileEnd();
 	long long rest = (e - s);
 	ResponseHeader += "Content-Length: " + ToString(rest) + "\r\n";
-	ResponseHeader += "Connection: keep-alive\r\n";
 	if (index == -1)
 	{
 		std::string FileType = resp.getFileType();
@@ -314,20 +314,23 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 	{
 		if (resp.getFile() == "")
 		{
+			printf("wtf\n");
 			// BODY STRING CASE : where i our code creat the body and it don't need a file at all, this scope will handle it
 			// SEND Headers
 			if (resp.getHeader_sent() == false)
 			{
 				long long Hsize = resp.getHeader_size();
 				long long Hindex = resp.getHeader_index();
-
+				printf("hmmm!\n");
 				if (Hindex < Hsize)
 				{
+					printf("what?\n");
 					size_t bytes = writeBytes;
 					long long rest = Hsize - Hindex;
 					if (rest <  CHUNK_SIZE)
 						bytes = rest;
 					buffer = resp.getHttp_response().substr(Hindex, bytes);
+					printf("in the buffer %s\n", buffer.c_str());
 					resp.setHeader_index(Hindex + bytes);
 					if (resp.getHeader_size() == resp.getHeader_index())
 						resp.setHeader_sent(true);
@@ -405,6 +408,7 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 					// INITIALIZE FILE DISCRIPTOR
 					if (fd == -1)
 					{
+						printf("opening  %s\n", file.c_str());
 						fd = open(file.c_str(), O_RDWR);
 						if (fd == -1)
 							perror("Open :");
@@ -473,11 +477,11 @@ void handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 		{
 			ssize_t bytes_written = send(poll_fds[i].fd, buffer.c_str(), buffer.size(), MSG_DONTWAIT);
 			// here we need to chekc if we have 0 or -1 as result
+			// printf("bytes rigth %lu\n",bytes_written);
 		}
 	}
 }
 // here we will write our response in all cases in our client socket
-
 int    new_connection(int client_socket,std::vector<int> new_connections)
 {
 	for (size_t i = 0; i < new_connections.size(); i++)
@@ -589,6 +593,23 @@ void handleCgiResponse(std::vector<struct pollfd> &poll_fds, size_t i, Client & 
 		exit(1);
 	}
 }
+
+bool	isAlive(Client & client)
+{
+	const request &req = client.getHttp_request();
+	int index = req.getHeaderIndex("Connection");
+	if (index  == -1)
+		return true;
+	if (index != -1)
+	{
+		std::vector<HTTPHeader> &headers = (std::vector<HTTPHeader> &)req.getHeaders();
+		size_t pos = headers[index].values.find("keep-alive");
+		if (pos != std::string::npos)
+			return (true);
+	}
+	return (false);
+}
+
 void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,std::map<unsigned int, std::string> &status_codes)
 {
 	std::string response;
@@ -667,18 +688,31 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				client_it = findClientBySocketFd(ClientsVector, poll_fds[i].fd);
 				if (client_it == ClientsVector.size())
 				{
+					printf("%lu, %lu, %d, %lu\n", client_it, ClientsVector.size(), poll_fds[i].fd, i);
 					printf("OUT\n");
 					exit(0);
 					continue ;
 				}
 				if (poll_fds[i].revents & POLLIN)
 				{
-					std::cout<<YELLOW<<"Read Partion Of CLient Request  "<< poll_fds[i].fd <<RESET<<std::endl;
+					// printf("%sClient info [%lu][%d] client time here from %ld%s\n", YELLOW, client_it, ClientsVector[client_it].getClientSocket(),  ClientsVector[client_it].getTime(), RESET);
+					// std::cout<<YELLOW<<"Read Partion Of CLient Request  "<< poll_fds[i].fd <<RESET<<std::endl;
 					handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, ClientsVector[client_it], status_codes);
 					if (ClientsVector[client_it].getHttp_request().getHandleRequest())
 					{
 						std::cerr <<GREEN<< "Request Fully Read\n" << RESET <<std::endl;
 						poll_fds[i].events = POLLOUT;
+					}
+					if ( ClientsVector[client_it].getInProcess() == false 
+						&& CurrentTime() - ClientsVector[client_it].getTime() > C_TIMEOUT)
+					{
+						std::cout<<RED<<"Too long time waiting for data  Client "<<poll_fds[i].fd<<" closed the connection"<<RESET<<std::endl;
+						if (ClientsVector[client_it].getHttp_response().getFd() != -1)
+							close(ClientsVector[client_it].getHttp_response().getFd());
+						ClientsVector.erase(ClientsVector.begin() + client_it);
+						close(poll_fds[i].fd);
+						poll_fds.erase(poll_fds.begin() + i);
+						i--;
 					}
 				}
 				else if (poll_fds[i].revents & POLLOUT)
@@ -690,12 +724,25 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 						std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;}
 					if (ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent())
 					{
-						std::cout<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;
-						std::cout<<YELLOW<<"Connection to Client "<<poll_fds[i].fd<<" closed"<<RESET<<std::endl;
-						ClientsVector.erase(ClientsVector.begin() + client_it);
-						close(poll_fds[i].fd);
-						poll_fds.erase(poll_fds.begin() + i);
-						i--;
+						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError())
+						{
+							std::cout<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;
+							std::cout<<YELLOW<<"Connection to Client "<<poll_fds[i].fd<<" closed"<<RESET<<std::endl;
+							ClientsVector.erase(ClientsVector.begin() + client_it);
+							close(poll_fds[i].fd);
+							poll_fds.erase(poll_fds.begin() + i);
+							i--;
+						}
+						else
+						{
+							printf("Client info [%lu][%d] client time here from %ld\n", client_it, ClientsVector[client_it].getClientSocket(),  ClientsVector[client_it].getTime());
+							printf("socket %d REInitialized\n", ClientsVector[client_it].getClientSocket());
+							Client client;
+							client.setClientSocket(ClientsVector[client_it].getClientSocket());
+							ClientsVector[client_it] = client;
+							poll_fds[i].events = POLLIN;
+							// initialize all request and response values
+						}
 					}
 				}
 				else if (poll_fds[i].revents & POLLHUP)
@@ -706,8 +753,20 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 					ClientsVector.erase(ClientsVector.begin() + client_it);
 					close(poll_fds[i].fd);
 					poll_fds.erase(poll_fds.begin() + i);
-					// printf("Segfault here\n");
 					i--;
+				}
+				else
+				{
+					if (ClientsVector[client_it].getInProcess() == false && CurrentTime() - ClientsVector[client_it].getTime() > C_TIMEOUT)
+					{
+						std::cout<<RED<<"Unknown Client "<<poll_fds[i].fd<<" closed the connection"<<RESET<<std::endl;
+						if (ClientsVector[client_it].getHttp_response().getFd() != -1)
+							close(ClientsVector[client_it].getHttp_response().getFd());
+						ClientsVector.erase(ClientsVector.begin() + client_it);
+						close(poll_fds[i].fd);
+						poll_fds.erase(poll_fds.begin() + i);
+						i--;
+					}
 				}
 			}
 		}

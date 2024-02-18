@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/15 21:56:33 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/16 17:41:29 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,8 @@ Client::Client() : http_response(http_request, worker) , cgiRequest(worker)
 {
 	requestReceived = false;
 	responseSent = false;
-	// cgiResponse.setCgiEnvObject(cgiRequest);
+	inProcess = false;
+	time = CurrentTime();
 }
 
 Client::~Client()
@@ -45,7 +46,8 @@ Client& Client::operator=(const Client& obj)
 		cgiRequest = obj.cgiRequest;
 		cgiRequest.setCgiWorker(obj.worker);
 		cgiResponse = obj.cgiResponse;
-		
+		inProcess = obj.inProcess;
+		time = obj.time;
 	}
 	return (*this);
 }
@@ -66,6 +68,13 @@ void	Client::ParseRequest(std::vector<ServerBlocks> &serverBlocks)
 void	Client::CreateResponse(std::map<unsigned int, std::string> &status_codes)
 {
 	http_response.responed(status_codes);
+}
+
+void	Client::BufferingRequest(std::vector<ServerBlocks> &serverBlocks, char *buff, size_t bytes)
+{
+	if (inProcess == false)
+		inProcess = true;
+    http_request.ParseRequest(serverBlocks, worker, buff, bytes);
 }
 
 response const	&Client::getHttp_response( void ) const
@@ -123,3 +132,22 @@ CgiEnv &Client::getcgiRequest()
 	return cgiRequest;
 }
 
+long			Client::getTime( void ) const
+{
+	return (time);
+}
+
+bool			Client::getInProcess( void ) const
+{
+	return (inProcess);
+}
+
+void			Client::setTime( long value)
+{
+	time = value;
+}
+
+void			Client::setInProcess( bool value)
+{
+	inProcess = value;
+}

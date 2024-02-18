@@ -6,9 +6,10 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/13 16:33:41 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/16 16:41:37 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
@@ -90,6 +91,8 @@ class request {
 		int						status;
 		int						is_dir;
 		int 					is_regular;
+		size_t					max_body_size;
+		bool					maxBodySizeExist;
 		//
 		// tmp
 		size_t					BIndex;
@@ -131,7 +134,7 @@ class request {
 		~request();
 		request(const request& copy);
 		// void							ParseRequest(char *request);
-		void							ParseRequest(char *buff, ssize_t bytes);
+		void							ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker,char *buff, ssize_t bytes);
 		void							CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker);// THIS WILL CHECK THE REQUEST VALIDITY
 		request&						operator=(const request& obj);
 
@@ -139,6 +142,7 @@ class request {
 		// const std::vector<std::string>&	getHeaders( void ) const;// get the headers after being prased
 		void							RequestDisplay( void );
 		int 							getHeaderIndex(const std::string &name) const;
+		int								getHeaderValue(const std::string &header,std::string &buffer);// this function will return 1 if it get the value 0 if there is no header with that name in the request
 		void							AddToRawRequest(char *buff,  ssize_t bytes_read);
 		std::string	const				&getMethod( void ) const;
 		std::string	const				&getMethod_uri( void ) const;

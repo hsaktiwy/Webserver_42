@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/16 16:17:11 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/16 18:00:21 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -333,7 +333,7 @@ void CgiEnv::findScript()
 void CgiEnv::setErrorpage()
 {
     unsigned int error_status = 0;
-    if (autoIndex || status == 403)
+    if (autoIndex)
         error_status = 403;
     else if (status != 0)
         error_status = status;
@@ -469,4 +469,8 @@ bool CgiEnv::isAutoIndexReq()
 const std::map<std::string, std::string> &CgiEnv::getEnvMap() const
 {
     return (envMap);
+}
+std::string &CgiEnv::getErrorPage()
+{
+    return errorPage;
 }

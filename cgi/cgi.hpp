@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/16 04:18:06 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/16 17:46:29 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ public:
     bool isAutoIndexReq();
     bool getCgiDirStatus();
     bool isScriptFound();
+    std::string &getErrorPage();
     // char **getenvArray();
     const std::map<std::string, std::string> &getEnvMap() const;
 };

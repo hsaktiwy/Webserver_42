@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 14:12:57 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/15 22:23:40 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/16 18:27:42 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,14 +24,17 @@ private:
     bool responseSent;
     bool isDataset;
     bool isEnvObjectSet;
-    int errorpipe[2];
-    int trackerPipe[2];
+    bool isErrorResponse;
+    // int errorpipe[2];
+    // int trackerPipe[2];
+    std::string errorResponse;
 public:
     CgiResponse();
     ~CgiResponse();
     CgiResponse(const CgiResponse &obj);
     CgiResponse &operator=(const CgiResponse &obj);
     void constructScriptEnv();
+    void setErrorResponseState();
     void setCgiEnvObject(CgiEnv &obj);
     void setSocket(int fd);
     void creatCgiResponse();

@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/12 20:53:14 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/14 21:49:40 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 #define FULL_PATH_PHP "/usr/bin/php"
 
-
+#include <ctime>
 #include <string.h>
 #include <iostream>
 #include <string>
@@ -55,6 +55,7 @@
 #define WHITE   "\033[37m"
 #define SERVERNAME "Jhin"
 #define TIME_OUT 60000
+#define C_TIMEOUT 10
 #define UPLOADCHUNK_SIZE 1000000
 #define CHUNK_SIZE 1024
 
@@ -243,6 +244,7 @@ std::string     NormilisePath(std::string &Path);
 long long       ft_atoll(const char* str);
 void	        *ft_memset(void *b, int c, size_t len);
 void	        ExtractValues(std::string &str, std::string  &holder, size_t &index);
+long	        CurrentTime( void );
 
 // Template Function
 template <typename T> std::string ToString(T &data)

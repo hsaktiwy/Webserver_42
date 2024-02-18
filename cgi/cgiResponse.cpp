@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/16 02:25:36 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/16 18:28:15 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ CgiResponse::CgiResponse() : scriptData(NULL)
     responseSent = false;
     isDataset = false;
     isEnvObjectSet = false;
+    isErrorResponse = false;
     socket_fd = -1;
 }
 CgiResponse::~CgiResponse()
@@ -39,6 +40,7 @@ CgiResponse &CgiResponse::operator=(const CgiResponse &obj)
 {
     if (this != &obj)
     {
+        isErrorResponse = obj.isErrorResponse;
         responseSent = obj.responseSent;
         socket_fd = obj.socket_fd;
         if (scriptData != NULL)
@@ -63,7 +65,7 @@ void CgiResponse::setSocket(int fd)
 }
 void CgiResponse::creatCgiResponse()
 {
-    if (!Env.getStatus())
+    if (!Env.getStatus() && is)
     {
         std::string path_bin = "/usr/local/bin/python3";
         char **args;
@@ -90,6 +92,11 @@ void CgiResponse::setCgiEnvObject(CgiEnv &obj)
     Env = obj;
     isEnvObjectSet = true;
     // constructScriptEnv();
+}
+void CgiResponse::setErrorResponseState()
+{
+    if (Env.getErrorPage().size() && Env.getErrorPage().compare("valid request") || Env.getErrorPage().empty())
+        isErrorResponse = true;
 }
 void CgiResponse::constructScriptEnv()
 {
@@ -121,7 +128,29 @@ void CgiResponse::handleError()
 {
     if (Env.isAutoIndexReq())
     {
-        if ()
+        if (Env.getErrorPage().size())
+        {
+            errorResponse += "HTTP/1.1 302 Found\r\n";
+            errorResponse += "Location: ";
+            errorResponse += Env.getErrorPage() + "\r\n";
+            errorResponse += "Content-Type: text/html\r\n\r\n";
+        }
+        else
+        {
+            errorResponse += "HTTP/1.1 403 Forbidden\r\n";
+            errorResponse += "Content-Type: text/html\r\n\r\n";
+            errorResponse += "<!DOCTYPE html>\r\n";
+            errorResponse += "<html lang=\"en\">\r\n";
+            errorResponse += "<head>\r\n";
+            errorResponse += "    <meta charset=\"UTF-8\">\r\n";
+            errorResponse += "    <title>403 Forbidden</title>\r\n";
+            errorResponse += "</head>\r\n";
+            errorResponse += "<body>\r\n";
+            errorResponse += "    <h1>403 Forbidden</h1>\r\n";
+            errorResponse += "    <p>You don't have permission to access this resource.</p>\r\n";
+            errorResponse += "</body>\r\n";
+            errorResponse += "</html>";
+        }
     }
 }
 bool CgiResponse::isResponseSent()

@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/18 11:26:13 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/19 20:35:26 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <map>
 #include <unistd.h>
 #include "cgi/cgi.hpp"
+#include <netinet/tcp.h>
 
 bool valid_port(const std::string &port)
 {
@@ -94,6 +95,15 @@ void    create_sockets(std::vector<ServerBlocks> &serverBlocks,std::vector<int> 
 				exit(1);
 									
 			}
+
+			// added bye me : hamza
+			if (setsockopt(socket_fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt)) == -1)
+			{
+				perror("setsockopt TCP_NODELAY");
+				exit(EXIT_FAILURE);
+			}
+			// added bye me : hamza
+
 			if(bind(socket_fd,p->ai_addr,p->ai_addrlen) < 0)
 			{
 				perror("bind socket ");
@@ -401,7 +411,7 @@ void	BodyFileResponse(response &resp, Client& client, std::string &file, std::st
 		if (fd == -1)
 		{
 			printf("opening  %s\n", file.c_str());
-			fd = open(file.c_str(), O_RDWR);
+			fd = open(file.c_str(), O_RDONLY);
 			if (fd == -1)
 				perror("Open :");
 			resp.setFd(fd), resp.setFileOpened(true);

@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/18 18:38:48 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/19 16:11:23 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -200,14 +200,12 @@ bool	request::MethodParsing(char *buff, ssize_t &bytes_size, size_t &index)
 	// check if the buff start with sapce this case is not valide at all
 	if (FillingBuffer == false && index < bytes_size && buff[index] == ' ')
 	{
-		printf("MethodParsing1\n");
 		error = true, RequestRead = true, status = 400;
 		return (false);
 	}
 	// new let us get our method if it possible
 	if (!getToken(buff, index, bytes_size, method, R_Method, FillingBuffer))
 	{
-		printf("MethodParsing2\n");
 		error = true, RequestRead = true, status = 400;
 		return (false);
 	}
@@ -222,7 +220,6 @@ bool	request::UriParsing(char *buff, ssize_t &bytes_size, size_t &index)
 	// now let try to get the Fully URI
 	if (!getToken(buff, index, bytes_size, method_uri, R_URI, FillingBuffer))
 	{
-		printf("UriParsing\n");
 		error = true, RequestRead = true, status = 400;
 		return (false);
 	}
@@ -245,7 +242,6 @@ bool	request::ProtocolParsing(char *buff, ssize_t &bytes_size, size_t &index)
 	//imagine someone sente a request with a space after the protocol 
 	if (index < bytes_size && buff[index] != '\r')
 	{
-		printf("ProtocolParsing1\n");
 		error = true, RequestRead = true, status = 400;
 		return (false);
 	}
@@ -262,7 +258,6 @@ bool	request::ProtocolParsing(char *buff, ssize_t &bytes_size, size_t &index)
 	}
 	else if (index < bytes_size && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] != '\n')
 	{
-		printf("ProtocolParsing2\n");
 		error = true, RequestRead = true, status = 400;
 		return (false);
 	}
@@ -293,18 +288,16 @@ bool	request::StartlineParsing(char *buff, ssize_t &bytes_size, size_t &index)
 			Body_Exist = true;
 		if (!CheckUriFormat(method_uri))
 		{
-			printf("StartlineParsing1\n");
 			error = true, RequestRead = true, status = 400;
 			return (false);
 		}
 		SLValidity = true;
 	}
-	// ????????????? why this ????? mark it for researsh
 	if (left_CR == true && index < bytes_size && buff[index] == '\n')
 		Parsed_StartLine = true, left_CR = false, index++,NewLine = true;
 	else if (left_CR == true && index < bytes_size && buff[index] != '\n')
 	{
-		printf("StartlineParsing2\n");
+		printf("Supper_be\n");
 		error = true, RequestRead = true, status = 400;
 		return (false);
 	}
@@ -313,13 +306,12 @@ bool	request::StartlineParsing(char *buff, ssize_t &bytes_size, size_t &index)
 
 bool	request::BaseHeadersParsing(char *buff, ssize_t &bytes_size, size_t &index)
 {
-	printf("before entering : %d, %d\n", R_HEADER, R_VALUE);
 	while (index < bytes_size)
 	{
 		// when i should create a header ? when i have flag saying that i passed new line
 		// when i need to stop this shite when i get new line the annalyse a new line after
 		// added
-		if ((left_CR == false && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n' && NewLine)/*In normale case where \r\n are are not splited*/
+		if ((left_CR == false && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n' && NewLine)
 			|| (buff[index] == '\n' && left_CR && NewLine))
 		{
 			NewLine = false, R_VALUE = false, R_HEADER = false, index +=((left_CR) ? 1:2), R_FUll_HEADERS = true, left_CR = false;
@@ -332,58 +324,9 @@ bool	request::BaseHeadersParsing(char *buff, ssize_t &bytes_size, size_t &index)
 		}
 		else if (NewLine && !left_CR)
 		{
-			// if (index < bytes_size)
 			AddEmptyNode(headers), NewLine = false, R_HEADER = false, R_VALUE = false;
 			continue;
 		}
-		// ended
-		if (headers.size() > 0)
-		{
-			printf("header size %lu, name %s, value %s, buffer : ", headers.size(), headers[headers.size() - 1].name.c_str(), headers[headers.size() - 1].values.c_str());
-			for(size_t  i = index; i < bytes_size; i++)
-				printf("%d_", buff[i]);
-			printf("\n");
-		}
-		// else
-		// 	printf("Empty\n");
-		// if ((left_CR == false && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n' && NewLine)/*In normale case where \r\n are are not splited*/
-		// 	|| (buff[index] == '\n' && left_CR && NewLine && index + 1 < bytes_size))
-		// {
-		// 	printf("new node\n");
-		// 	NewLine = false, R_VALUE = false, R_HEADER = false, index +=((left_CR) ? 1:2), R_FUll_HEADERS = true, left_CR = false;
-		// 	break;
-		// }
-		// if (left_CR && buff[index] == '\n' && !NewLine)
-		// {
-		// 	index += 1;
-		// 	if (FillingBuffer && !R_HEADER)
-		// 	{
-		// 		printf("BaseHeadersParsing1\n");
-		// 		error = true, RequestRead = true, status = 400;
-		// 		return (false);
-		// 	}
-		// 	else if (R_HEADER)
-		// 	{
-		// 		NewLine = true, R_VALUE = true, R_HEADER = true, left_CR = false, FillingBuffer = false;
-		// 		if (index == bytes_size)
-		// 			break;
-		// 	}
-		// 	left_CR = false, NewLine = true, FillingBuffer = false;
-		// 	continue;
-		// }
-		// if (buff[index] == '\r' && index + 1 == bytes_size)
-		// {
-		// 	index +=1, left_CR = true;
-		// 	break;
-		// }
-		// if (NewLine)
-		// {
-		// 	NewLine = false, R_VALUE = false, R_HEADER = false, FillingBuffer = false;
-		// 	if (index < bytes_size)
-		// 		AddEmptyNode(headers);
-		// 	continue;
-		// }
-		printf("R_header %d, buff[index] = %d, left_CR %d, bytes_read_size %lu\n", R_HEADER, buff[index], left_CR, bytes_size);
 		if (!R_HEADER && !is_seperator(buff[index]) && !is_ctl(buff[index]))
 			headers[headers.size() - 1].name += buff[index], FillingBuffer = true;
 		else if (!R_HEADER && buff[index] == ':')
@@ -391,62 +334,32 @@ bool	request::BaseHeadersParsing(char *buff, ssize_t &bytes_size, size_t &index)
 			R_HEADER = true, index++, FillingBuffer = false;
 			continue;
 		}
-		/// added
 		if (!R_HEADER && (is_seperator(buff[index]) || is_ctl(buff[index])))
 		{
-			printf("wtf ? ");
 			error = true, RequestRead = true, status = 400;
 			return (false);
 		}
-		/// ended
-		// else if (!R_HEADER && (is_seperator(buff[index]) || is_ctl(buff[index])))
-		// {
-		// 	printf("BaseheaersParsing3 %d, %d, name  %s\n", R_HEADER,buff[index], headers[headers.size() - 1].name.c_str());
-		// 	// printf("BaseHeadersParsing2, RHEADER %d\n, buff[index] :\n%c, &buff[index] \n%s, buff \n%s\n", R_HEADER, buff[index], &buff[index], buff);
-		// 	error = true, RequestRead = true, status = 400;
-		// 	return (false);
-		// }
 		if (R_HEADER && !R_VALUE && buff[index] != '\r' && !left_CR)
 			headers[headers.size() - 1].values += buff[index], FillingBuffer = true;
-		// if (R_HEADER && !R_VALUE && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n')
-		// {
-		// 	index += 2, NewLine = true, R_VALUE = true, FillingBuffer = false;
-		// 	continue;
-		// }
-		// if (R_HEADER && !R_VALUE && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] != '\n')
-		// {
-		// 	printf("BaseHeadersParsing3\n");
-		// 	error = true, RequestRead = true, status = 400;
-		// 	return (false);
-		// }
-		// added
 		if (R_HEADER && !R_VALUE && (buff[index] == '\r' || left_CR))
 		{
-			printf("buff[index] = %d, left_CR %d\n", buff[index], left_CR);
 			if ((index + 1 < bytes_size && buff[index + 1] == '\n') || (left_CR && buff[index] == '\n'))
 			{
-				printf("1\n");
 				index += (left_CR) ? 1 : 2, NewLine = true, R_VALUE = true, FillingBuffer = false;
 				if (left_CR)
 					left_CR = !left_CR;
 			}
 			else if((index + 1 < bytes_size && buff[index + 1] != '\n') || (left_CR && buff[index] != '\n'))
 			{
-				printf("2\n");
 				error = true, RequestRead = true, status = 400;
 				return (false);
 			}
 			else if (index + 1 == bytes_size && !left_CR)
-			{
-				printf("2\n");
 				index += 1, left_CR = true;
-			}
 			continue;
 		}
-		// ended
 		index++;
 	}
-	printf("bro\n");
 	return (true);
 }
 
@@ -467,7 +380,7 @@ bool	request::IdentifieHost(char *buff, ssize_t &bytes_size, size_t &index)
 	}
 	else
 	{
-		printf("IdentifieHost\n");
+		// printf("IdentifieHost\n");
 		error = true, RequestRead = true, status = 400;
 		return (false);
 	}
@@ -537,7 +450,6 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 		std::string path = "/"  + uri.path;
 		if (http != "HTTP/1.1")
 		{
-			printf("Bro\n");
 			error = true, status = 505, RequestRead = true;
 			return (false);
 		}
@@ -553,7 +465,6 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 		Parsed_Header = true;
 		FillingBuffer = false;
 		left_CR = false;
-		printf("Error %d, %d\n", error, status);
 		// printf("Does the bodyExist %d, and what delimiter whe need %d\n", Body_Exist, BodyLimiterType);
 	}
 	return (true);
@@ -703,7 +614,7 @@ void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 
 	if (!Parsed_StartLine)
 	{
-		printf("Test1\n");
+		// printf("Test1\n");
 		if (!StartlineParsing(buff, bytes_size, index))
 			return ;
 		// if (R_Method && R_URI && R_PROTOCOL)
@@ -712,7 +623,7 @@ void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 	// check if the header is parsed
 	if (Parsed_StartLine && !Parsed_Header && index < bytes_size)
 	{
-		printf("Test2\n");
+		// printf("Test2\n");
 		// printf("Test2, %d\n", FillingBuffer);
 		// header parsing
 		if (!HeadersParsing(serverBlocks, worker, buff, bytes_size, index))
@@ -721,7 +632,7 @@ void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 	// check the body existance the read and define the end of it
 	if (Parsed_StartLine && Parsed_Header && Body_Exist)
 	{
-		printf("Test3\n");
+		// printf("Test3\n");
 		if (!BodyParsing(buff, bytes_size, index))
 			return ;
 	}
@@ -788,7 +699,7 @@ bool	IndexingtoIndex(Worker& worker, int &is_dir, int &is_regular, t_uri& uri, b
 
 void	FileAccessingRigth(Worker& worker, t_uri& uri, bool &error, int &status, int &is_regular, std::string &method)
 {
-	if (error && is_regular == 1)
+	if (error == false && is_regular == 1)
 	{
 		int rigths = (method == "POST") ? F_OK : F_OK | R_OK;
 		std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
@@ -801,7 +712,7 @@ void	FileAccessingRigth(Worker& worker, t_uri& uri, bool &error, int &status, in
 
 void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker)
 {
-	RequestDisplay();
+	// RequestDisplay();
 	if (error == false)
 	{
 		// chekc if the method is supported bye the server

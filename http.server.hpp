@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/19 15:34:42 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/21 19:44:21 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@
 #define CYAN    "\033[36m"
 #define WHITE   "\033[37m"
 #define SERVERNAME "Jhin"
-#define TIME_OUT 60000
+#define TIME_OUT 3000
 #define C_TIMEOUT 10
 #define UPLOADCHUNK_SIZE 1000000
 #define CHUNK_SIZE 1024

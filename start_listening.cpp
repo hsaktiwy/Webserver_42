@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/19 20:35:26 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/21 19:43:25 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,15 +95,6 @@ void    create_sockets(std::vector<ServerBlocks> &serverBlocks,std::vector<int> 
 				exit(1);
 									
 			}
-
-			// added bye me : hamza
-			if (setsockopt(socket_fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt)) == -1)
-			{
-				perror("setsockopt TCP_NODELAY");
-				exit(EXIT_FAILURE);
-			}
-			// added bye me : hamza
-
 			if(bind(socket_fd,p->ai_addr,p->ai_addrlen) < 0)
 			{
 				perror("bind socket ");
@@ -198,6 +189,12 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to
 		bytes_read = read(poll_fds[i].fd,buffer, CHUNK_SIZE);
 		if (bytes_read > 0)
 			client.BufferingRequest(serverBlocks, buffer, bytes_read);
+		if (bytes_read < 0)
+		{
+			((request &)client.getHttp_request()).setError(true);
+			((request &)client.getHttp_request()).setStatus(500);
+			((request &)client.getHttp_request()).setRequestRead(true);
+		}
 		// std::cout << RED << "BYTES Read From the request " << bytes_read << RESET<< std::endl;
 	}
 	// this part where we will handle some additional request parsing, at the time where the request was fully read
@@ -206,10 +203,6 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to
 			printf("Start line  : %d %s %s \n", poll_fds[i].fd, client.getHttp_request().getMethod().c_str(), client.getHttp_request().getMethod_uri().c_str());
 		client.ParseRequest(serverBlocks);
 		((request &)client.getHttp_request()).setHandleRequest(true);
-	}
-	else if (bytes_read < 0)
-	{
-		perror("read ");
 	}
 }
 
@@ -472,6 +465,13 @@ void	handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 		if (buffer.size() > 0)
 		{
 			ssize_t bytes_written = send(poll_fds[i].fd, buffer.c_str(), buffer.size(), MSG_DONTWAIT);
+			if (bytes_written < 0)
+			{
+				printf("nailed it\n");
+				resp.setBody_sent(true);
+				resp.setHeader_sent(true);
+				((request &)client.getHttp_request()).setError(true);
+			}
 			// here we need to chekc if we have 0 or -1 as result
 			// printf("bytes rigth %lu\n",bytes_written);
 		}
@@ -625,11 +625,11 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 			perror("poll ");
 			exit(0);
 		}
-		if (pollRet == 0)
-		{
-			std::cout<<RED<<"Connection timeout...."<<RESET<<std::endl;
-			continue;
-		}
+		// if (pollRet == 0)
+		// {
+		// 	std::cout<<RED<<"Connection timeout...."<<RESET<<std::endl;
+		// 	continue;
+		// }
 			
 		for (size_t i = 0; i < poll_fds.size(); i++)
 		{
@@ -676,7 +676,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				if (poll_fds[i].revents & POLLIN)
 				{
 					// printf("%sClient info [%lu][%d] client time here from %ld%s\n", YELLOW, client_it, ClientsVector[client_it].getClientSocket(),  ClientsVector[client_it].getTime(), RESET);
-					// std::cout<<YELLOW<<"Read Partion Of CLient Request  "<< poll_fds[i].fd <<RESET<<std::endl;
+					std::cout<<YELLOW<<"Read Partion Of CLient Request  "<< poll_fds[i].fd <<RESET<<std::endl;
 					handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, ClientsVector[client_it], status_codes);
 					if (ClientsVector[client_it].getHttp_request().getHandleRequest())
 					{
@@ -717,6 +717,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 							Client client;
 							client.setClientSocket(ClientsVector[client_it].getClientSocket());
 							ClientsVector[client_it] = client;
+							printf("-->%d\n",ClientsVector[client_it].getInProcess());
 							poll_fds[i].events = POLLIN;
 							// initialize all request and response values
 						}

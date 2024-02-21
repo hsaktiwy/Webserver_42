@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/19 16:11:23 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/21 20:53:29 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -611,7 +611,7 @@ void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 {
 	// std::string allowedMethod[] = {"POST", "GET", "DELETE"};
 	size_t index = 0;
-
+	std::cout << body.size() << std::endl;
 	if (!Parsed_StartLine)
 	{
 		// printf("Test1\n");
@@ -788,6 +788,7 @@ request& request::operator=(const request& obj)
 		http = obj.http;
 		host = obj.host;
 		headers = obj.headers;
+		body.clear();
 		body = obj.body;
 		req = obj.req;
 		error = obj.error;

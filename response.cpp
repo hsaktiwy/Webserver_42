@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/18 12:54:29 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/21 10:19:14 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -432,7 +432,7 @@ bool	response::PostFilesOpen(std::map<unsigned int, std::string> &status_codes, 
 	{
 		perror("open ");
 		// printf("ola2\n");
-		req.setStatus(501); req.setError(true);
+		req.setStatus(500); req.setError(true);
 		errorresponse(status_codes);
 		readyToResponed = true;
 		return (false);

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 14:12:57 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/18 20:55:23 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/20 20:53:42 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,17 +15,25 @@
 #include "cgi.hpp"
 #include "../http.server.hpp"
 #include <sstream>
+#include<ctime>
+#define RESP_TIMEOUT 10
 
 class CgiResponse
 {
 private:
     CgiEnv Env;
+    std::string responseStr;
     int socket_fd;
+    int tmp_socket;
+    int processId;
+    clock_t processTime;
     char **scriptData;
     bool responseSent;
     bool isDataset;
     bool isEnvObjectSet;
     bool isErrorResponse;
+    bool processSpawned;
+    bool responseOnProcess;
     std::map<unsigned int, std::string> status_codes;
     int errorpipe[2];
     int trackerPipe[2];
@@ -46,6 +54,8 @@ public:
     bool isEnvset();
     bool isReqObjectset();
     bool isError();
+    bool isProcessSpawned();
+    void processResponse();
 };
 
 

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/18 21:01:13 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/20 14:30:35 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -318,6 +318,7 @@ void CgiEnv::findScript()
         else
             status = 404;
     }
+
 }
 
 // void CgiEnv::constructScriptEnv()
@@ -368,6 +369,7 @@ void CgiEnv::setEnvironementData()
     setPathUriVector();
     setCgiRoot();
     findScript();
+    std::cout<<cgiRoot<<" "<< envMap["SCRIPT_NAME"]<<std::endl;
     setCgiPATHINFO();
     setCgiQueryString();
     setCgiServerName();

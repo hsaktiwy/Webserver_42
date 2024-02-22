@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/20 19:48:41 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/21 20:08:06 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -710,12 +710,13 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 						handleCgiResponse(poll_fds, i, ClientsVector[client_it], status_codes);
 					else
 						{handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status,mime_type, ClientsVector[client_it], status_codes);
-						std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;}
+						// std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;
+						}
 					if (ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent()
 							|| ClientsVector[client_it].getcgiResponse().isResponseSent())
 					{
 						
-						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError() || ClientsVector[client_it].getcgiResponse().isError() || ClientsVector[client_it].getcgiResponse().isResponseSent())
+						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError() || ClientsVector[client_it].getcgiResponse().isError())
 						{
 							std::cout<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;
 							std::cout<<YELLOW<<"Connection to Client "<<poll_fds[i].fd<<" closed"<<RESET<<std::endl;
@@ -730,8 +731,11 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 							printf("socket %d REInitialized\n", ClientsVector[client_it].getClientSocket());
 							Client client;
 							client.setClientSocket(ClientsVector[client_it].getClientSocket());
-							ClientsVector[client_it] = client;
+							// ClientsVector[client_it] = client;
+							ClientsVector.erase(ClientsVector.begin() + client_it);
+							ClientsVector.insert(ClientsVector.begin() + client_it, client);
 							poll_fds[i].events = POLLIN;
+							// exit(1);
 							// initialize all request and response values
 						}
 					}

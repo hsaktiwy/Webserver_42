@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/20 22:25:33 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/21 20:13:00 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,6 +174,7 @@ void CgiResponse::creatCgiResponse()
                 }
                 else
                 {
+                    printf("harawkan\n");
                     clock_t current = clock();
                     double timeSpent = static_cast<double>(current - processTime) / CLOCKS_PER_SEC;
                     if (timeSpent >= RESP_TIMEOUT)
@@ -201,17 +202,21 @@ void CgiResponse::processResponse()
     char buff_resp[CHUNK_SIZE];
     int bytesRead  = read(trackerPipe[0], buff_resp, CHUNK_SIZE);
     printf("==> %d %s\n", bytesRead, buff_resp);
-    perror("read : ");
     // exit(1);
     if (bytesRead != -1)
     {
         if (bytesRead == 0)
-       {     send(socket_fd, responseStr.c_str(), responseStr.size(), 0);
+       {
+            
+            send(socket_fd, responseStr.c_str(), responseStr.size(), 0);
             responseSent = true;
             close(trackerPipe[0]);
        }
         else
+        {
+            buff_resp[bytesRead] = 0;
             responseStr += buff_resp;
+        }
         
     }
 }
@@ -282,7 +287,7 @@ void CgiResponse::handleError()
             body += "    <h1>" + stream.str() + "</h1>\r\n";
             body += "</body>\r\n";
             body += "</html>";
-            stream.clear();
+            stream.str("");
             stream << body.size();
             errorResponse += "Content-Length: " + stream.str() +"\r\n\r\n";
             errorResponse += body;

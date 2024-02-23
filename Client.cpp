@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/18 12:29:17 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/23 00:35:31 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,14 @@ void	Client::ParseRequest(std::vector<ServerBlocks> &serverBlocks)
 	{
 		cgiRequest.setCgiWorker(worker); //set the worker of the cgi request
 		cgiRequest.setRequest(this->getHttp_request().getMethod()); //init the method 
+		if (!this->getHttp_request().getMethod().compare("POST"))
+		{
+			cgiRequest.setRequestBody(this->getHttp_request().getBody());
+			std::string boundary = this->getHttp_request().getBoundary();
+			if (boundary.size())
+				cgiRequest.setBoundry(this->getHttp_request().getBoundary());
+		}
+			
 		cgiRequest.setEnvironementData(); // fill the map of the env needed by the script process and check errors
 	}
 		

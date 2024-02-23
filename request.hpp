@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/18 11:57:47 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/23 00:20:45 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,6 +166,7 @@ class request {
 		std::vector<HTTPHeader>	const	&getHeaders( void ) const;
 		std::string	const				&getBody( void ) const;
 		std::string	const				&getReq( void ) const;
+		std::string const				&getBoundary( void ) const;
 		bool							getError( void ) const;
 		int								getStatus( void ) const;
 		int								getIs_dir( void ) const;

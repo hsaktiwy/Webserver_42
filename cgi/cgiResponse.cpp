@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/21 20:13:00 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/23 04:35:37 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,21 +199,21 @@ void CgiResponse::creatCgiResponse()
 }
 void CgiResponse::processResponse()
 {
+    static int i;
     char buff_resp[CHUNK_SIZE];
     int bytesRead  = read(trackerPipe[0], buff_resp, CHUNK_SIZE);
-    printf("==> %d %s\n", bytesRead, buff_resp);
     // exit(1);
     if (bytesRead != -1)
     {
         if (bytesRead == 0)
        {
-            
             send(socket_fd, responseStr.c_str(), responseStr.size(), 0);
             responseSent = true;
             close(trackerPipe[0]);
        }
         else
         {
+             printf("==> %d %s\n", bytesRead, buff_resp);
             buff_resp[bytesRead] = 0;
             responseStr += buff_resp;
         }

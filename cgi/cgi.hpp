@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/18 20:59:59 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/23 00:56:36 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define CGI_HPP
 #include "../http.server.hpp"
 #include "../request.hpp"
+#include <sstream>
 
 
 //script-URI = <scheme> "://" <server-name> ":" <server-port><script-path> <extra-path> "?" <query-string>
@@ -25,6 +26,8 @@ private:
     Worker worker;
     std::string errorPage;
     std::string cgiRoot; //full path to the Root dir of cgi "cgi-bin"
+    std::string reqBody;
+    std::string boundary;
     bool validRoot; //check if the root of the request is present and could be opened
     bool cgiDir; //is the Dir of cgi ("cgi-bin") is present
     bool cgiScript; //is the cgi script found
@@ -51,6 +54,8 @@ public:
     // void setCgiScriptName();
     void setCgiPATHINFO();
     void setCgiQueryString();
+    void setRequestBody(const std::string &body);
+    void setBoundry(const std::string &bodyBoundary);
     void findScript();
     void setErrorpage();
     void setStatusCode(int code);
@@ -64,6 +69,7 @@ public:
     std::string &getCgiPATHINFO();
     std::string &getCgiQueryString();
     std::string &getCgiRoot();
+    std::string &getInputFromBody();
     int getStatus();
     bool isAutoIndexReq();
     bool getCgiDirStatus();

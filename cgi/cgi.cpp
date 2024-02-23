@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/20 14:30:35 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/23 04:01:36 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,9 +70,17 @@ CgiEnv &CgiEnv::operator=(const CgiEnv &obj)
         status = obj.status;
         extraPathIndex = obj.extraPathIndex;
         errorPage = obj.errorPage;
+        reqBody = obj.reqBody;
+        boundary = obj.boundary;
     }
     return (*this);
 }
+
+void CgiEnv::setRequestBody(const std::string &body)
+{
+    reqBody = body;
+}
+
 void CgiEnv::setCgiWorker(const Worker &obj)
 {
     worker = obj;
@@ -81,6 +89,10 @@ void CgiEnv::setCgiWorker(const Worker &obj)
 // {
 //     envMap["REQUEST_METHOD"]="GET";
 // }
+void CgiEnv::setBoundry(const std::string &bodyBoundary)
+{
+    boundary = bodyBoundary;
+}
 void CgiEnv::setPathUriVector()
 {
     std::string path = worker.getPath();
@@ -168,9 +180,67 @@ void CgiEnv::setCgiServePort()
 }
 void CgiEnv::setCgiQueryString()
 {
-    envMap["QUERY_STRING"] = worker.getQuery();
+    if (envMap["REQUEST_METHOD"].compare("POST"))
+        envMap["QUERY_STRING"] = worker.getQuery();
+    else
+        envMap["QUERY_STRING"] = getInputFromBody();
+        
 }
-
+std::string &CgiEnv::getInputFromBody()
+{
+    std::string body;
+    if (boundary.size())
+    {
+        std::string delimiter = boundary.substr(0, boundary.size() - 2);
+        std::stringstream stream(reqBody);
+        std::string line;
+        bool value = false;
+        while(getline(stream, line))
+        {
+            if (!line.compare(delimiter))
+                continue;
+            else if (line.size() && line[0] == '\r' && value == false)
+            {
+                value = true;
+                continue;
+            }
+            else if (value)
+            {
+                body.push_back('=');
+                for (size_t i = 0; i < line.size(); i++)
+                {
+                    if (line[i] != '\n' && line[i] != '\r')
+                        body.push_back(line[i]);
+                }
+                body.push_back('&');
+                value = false;
+            }
+            else if (line.find("Content-Disposition") != std::string::npos)
+            {
+                size_t index = line.find("name=");
+                if (index != std::string::npos)
+                {
+                    std::string tmp = line.substr(index);
+                    size_t i = tmp.find("\"");
+                    if (i != std::string::npos)
+                    {
+                        while (tmp[++i] != '\"')
+                        {
+                            body.push_back(tmp[i]);
+                            // i++;
+                        }
+                    }
+                    
+                }
+            }
+        }
+        body.pop_back();
+        std::cout<<YELLOW<<body<<RESET<<std::endl;
+        // exit(1);
+        reqBody = body;
+    }
+    return (reqBody);
+}
 void CgiEnv::setCgiPATHINFO()
 {
     std::string root;
@@ -375,7 +445,9 @@ void CgiEnv::setEnvironementData()
     setCgiServerName();
     setCgiServePort();
     setErrorpage();
-    
+    // std::cout << RED<<envMap["QUERY_STRING"]<< RESET<<std::endl;
+    // std::cout << YELLOW<<boundary<< RESET<<std::endl;
+    // exit(0);
 }
 void CgiEnv::setRequest(const std::string &req)
 {

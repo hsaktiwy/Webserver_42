@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/21 20:08:06 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/23 04:07:01 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,8 +185,10 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to
 	// and parse it at the same time to define if it ended or not
 	if (!client.getHttp_request().getRequestRead())
 	{
-		char buffer[CHUNK_SIZE];
+		char buffer[CHUNK_SIZE + 1];
 		bytes_read = read(poll_fds[i].fd,buffer, CHUNK_SIZE);
+		buffer[bytes_read] = 0;
+		std::cerr<<buffer<<std::endl;
 		if (bytes_read > 0)
 			client.BufferingRequest(serverBlocks, buffer, bytes_read);
 		// std::cout << RED << "BYTES Read From the request " << bytes_read << RESET<< std::endl;
@@ -194,7 +196,6 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to
 	// this part where we will handle some additional request parsing, at the time where the request was fully read
 	if (client.getHttp_request().getRequestRead())
 	{
-			printf("Start line  : %d %s %s \n", poll_fds[i].fd, client.getHttp_request().getMethod().c_str(), client.getHttp_request().getMethod_uri().c_str());
 		client.ParseRequest(serverBlocks);
 		((request &)client.getHttp_request()).setHandleRequest(true);
 	}
@@ -689,7 +690,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 					handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, ClientsVector[client_it], status_codes);
 					if (ClientsVector[client_it].getHttp_request().getHandleRequest())
 					{
-						std::cerr <<GREEN<< "Request Fully Read\n" << RESET <<std::endl;
 						poll_fds[i].events = POLLOUT;
 					}
 					if ( ClientsVector[client_it].getInProcess() == false 

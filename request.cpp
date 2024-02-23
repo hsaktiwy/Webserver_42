@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/18 11:55:23 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/23 00:22:18 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -850,7 +850,10 @@ int request::getHeaderIndex(const std::string &name) const
 	return (-1);
 }
 // Getter and Setter
-
+std::string const			&request::getBoundary( void ) const
+{
+	return boundary;
+}
 std::string	const			&request::getMethod( void ) const
 {
 	return (method);

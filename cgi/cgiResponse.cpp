@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/24 04:28:36 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/25 00:05:14 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,6 @@ void CgiResponse::creatCgiResponse()
             // exit(1);
             int trackerPipeReturn = pipe(trackerPipe);
             int errorPipeReturn = pipe(errorpipe);
-            int inputPipeReturn = pipe(inputPipe);
             fcntl(errorpipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             fcntl(errorpipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             fcntl(trackerPipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
@@ -112,7 +111,7 @@ void CgiResponse::creatCgiResponse()
             args[2] = NULL;
             // processSpawned = true;
             int pid = fork();
-            if (errorPipeReturn == -1 || inputPipeReturn == -1 || pid == -1)
+            if (errorPipeReturn == -1 || pid == -1)
             {
                 Env.setStatusCode(500);
                 isErrorResponse = true;
@@ -127,7 +126,18 @@ void CgiResponse::creatCgiResponse()
                     std::map<std::string, std::string> tmp = Env.getEnvMap();
                     if (!tmp["REQUEST_METHOD"].compare("POST"))
                     {
-                        write(inputPipe[1], Env.getInputFromBody().c_str(), Env.getInputFromBody().size());
+                        int inputPipeReturn = pipe(inputPipe);
+                        // fcntl(inputPipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+                        // fcntl(inputPipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+                        int i = 0;
+                        std::string str = Env.getInputFromBody();
+                        int bytes = write(inputPipe[1], &str[i], 1);
+                        while (bytes)
+                        {
+                            i++;
+                            bytes = write(inputPipe[1], &str[i], 1);
+                            printf("%d  %d\n",i, bytes);
+                        }
                         close(inputPipe[1]);
                         dup2(inputPipe[0], 0);
                         flag = true;
@@ -156,8 +166,8 @@ void CgiResponse::creatCgiResponse()
                     if (!processSpawned)
                     {
                         
-                        close(inputPipe[0]);
-                        close(inputPipe[1]);
+                        // close(inputPipe[0]);
+                        // close(inputPipe[1]);
                         close(errorpipe[1]);
                         close(trackerPipe[1]);
                         processSpawned = true;
@@ -291,7 +301,6 @@ void CgiResponse::handleError()
         }
         else
         {
-            exit(1);
             std::stringstream stream;
             std::string body;
             stream << Env.getStatus() << " "<< status_codes[Env.getStatus()];

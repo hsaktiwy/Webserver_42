@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/24 04:10:30 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/24 22:38:14 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -458,6 +458,7 @@ void CgiEnv::setEnvironementData()
     setCgiServerName();
     setCgiServePort();
     setErrorpage();
+    std::cerr<<reqBody<<std::endl;
     // std::cout << RED<<envMap["QUERY_STRING"]<< RESET<<std::endl;
     // std::cout << YELLOW<<boundary<< RESET<<std::endl;
     // exit(0);

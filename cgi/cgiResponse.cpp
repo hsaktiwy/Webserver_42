@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/23 04:35:37 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/24 04:28:36 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,8 @@ CgiResponse &CgiResponse::operator=(const CgiResponse &obj)
         errorpipe[0] = obj.errorpipe[0];
         trackerPipe[0] = obj.trackerPipe[0];
         trackerPipe[1] = obj.trackerPipe[1];
+        inputPipe[0] = obj.inputPipe[0];
+        inputPipe[1] = obj.inputPipe[1];
         if (scriptData != NULL)
         {
             size_t size = Env.getEnvMap().size();
@@ -95,6 +97,7 @@ void CgiResponse::creatCgiResponse()
             // exit(1);
             int trackerPipeReturn = pipe(trackerPipe);
             int errorPipeReturn = pipe(errorpipe);
+            int inputPipeReturn = pipe(inputPipe);
             fcntl(errorpipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             fcntl(errorpipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             fcntl(trackerPipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
@@ -109,7 +112,7 @@ void CgiResponse::creatCgiResponse()
             args[2] = NULL;
             // processSpawned = true;
             int pid = fork();
-            if (errorPipeReturn == -1 || pid == -1)
+            if (errorPipeReturn == -1 || inputPipeReturn == -1 || pid == -1)
             {
                 Env.setStatusCode(500);
                 isErrorResponse = true;
@@ -120,6 +123,15 @@ void CgiResponse::creatCgiResponse()
             {
                 if (pid == 0)
                 {
+                    bool flag = false;
+                    std::map<std::string, std::string> tmp = Env.getEnvMap();
+                    if (!tmp["REQUEST_METHOD"].compare("POST"))
+                    {
+                        write(inputPipe[1], Env.getInputFromBody().c_str(), Env.getInputFromBody().size());
+                        close(inputPipe[1]);
+                        dup2(inputPipe[0], 0);
+                        flag = true;
+                    }
                     close (STDOUT_FILENO);
                     close (STDERR_FILENO);
                     close (errorpipe[0]);
@@ -127,6 +139,11 @@ void CgiResponse::creatCgiResponse()
                     // close (trackerPipe[0]);
                     dup2 (errorpipe[1], 2);
                     dup2(trackerPipe[1], 1);
+                    if (!flag)
+                     {
+                        close(inputPipe[0]);
+                        close(inputPipe[1]);
+                     }
                     if (execve(Env.getCgiScriptName().c_str(), args, scriptData) == -1)
                         write(errorpipe[1], "server error", 12);
                     close(errorpipe[1]);
@@ -138,6 +155,9 @@ void CgiResponse::creatCgiResponse()
                     processId = pid;
                     if (!processSpawned)
                     {
+                        
+                        close(inputPipe[0]);
+                        close(inputPipe[1]);
                         close(errorpipe[1]);
                         close(trackerPipe[1]);
                         processSpawned = true;
@@ -174,7 +194,6 @@ void CgiResponse::creatCgiResponse()
                 }
                 else
                 {
-                    printf("harawkan\n");
                     clock_t current = clock();
                     double timeSpent = static_cast<double>(current - processTime) / CLOCKS_PER_SEC;
                     if (timeSpent >= RESP_TIMEOUT)
@@ -213,7 +232,6 @@ void CgiResponse::processResponse()
        }
         else
         {
-             printf("==> %d %s\n", bytesRead, buff_resp);
             buff_resp[bytesRead] = 0;
             responseStr += buff_resp;
         }
@@ -263,6 +281,7 @@ void CgiResponse::handleError()
     if (Env.isAutoIndexReq() || Env.getStatus())
     {
         printf("Autoindex : %d, status : %d\n", Env.isAutoIndexReq() ,Env.getStatus());
+            printf("%s\n", Env.getErrorPage().c_str());
         if (Env.getErrorPage().size() && Env.getErrorPage().compare("valid request"))
         {
             errorResponse += "HTTP/1.1 302 Found\r\n";
@@ -272,6 +291,7 @@ void CgiResponse::handleError()
         }
         else
         {
+            exit(1);
             std::stringstream stream;
             std::string body;
             stream << Env.getStatus() << " "<< status_codes[Env.getStatus()];

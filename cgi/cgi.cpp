@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/23 04:01:36 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/24 04:10:30 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,14 @@ CgiEnv &CgiEnv::operator=(const CgiEnv &obj)
 void CgiEnv::setRequestBody(const std::string &body)
 {
     reqBody = body;
+}
+void CgiEnv::setContentType(std::string &value)
+{
+    envMap["CONTENT_TYPE"] = value;
+}
+void CgiEnv::setContentLength(std::string &value)
+{
+    envMap["CONTENT_LENGTH"] = value;
 }
 
 void CgiEnv::setCgiWorker(const Worker &obj)
@@ -180,14 +188,14 @@ void CgiEnv::setCgiServePort()
 }
 void CgiEnv::setCgiQueryString()
 {
-    if (envMap["REQUEST_METHOD"].compare("POST"))
-        envMap["QUERY_STRING"] = worker.getQuery();
-    else
-        envMap["QUERY_STRING"] = getInputFromBody();
-        
+    // if (!envMap["REQUEST_METHOD"].compare("POST"))
+    //     setInputFromBody();
+    envMap["QUERY_STRING"] = worker.getQuery();
 }
-std::string &CgiEnv::getInputFromBody()
+void CgiEnv::setInputFromBody()
 {
+    std::cout<<RED<<reqBody<<RESET<<std::endl;
+    exit(1);
     std::string body;
     if (boundary.size())
     {
@@ -218,6 +226,10 @@ std::string &CgiEnv::getInputFromBody()
             else if (line.find("Content-Disposition") != std::string::npos)
             {
                 size_t index = line.find("name=");
+                if (index == std::string::npos)
+                {
+                    index = line.find("filename=");
+                }
                 if (index != std::string::npos)
                 {
                     std::string tmp = line.substr(index);
@@ -235,11 +247,10 @@ std::string &CgiEnv::getInputFromBody()
             }
         }
         body.pop_back();
-        std::cout<<YELLOW<<body<<RESET<<std::endl;
+        // std::cout<<YELLOW<<body<<RESET<<std::endl;
         // exit(1);
         reqBody = body;
     }
-    return (reqBody);
 }
 void CgiEnv::setCgiPATHINFO()
 {
@@ -432,6 +443,8 @@ void CgiEnv::setErrorpage()
         worker.setPathError(worker.getErrorPages(), error_status, worker.getRoot());
         if (worker.get_track_status() && worker.getPathError().size())
            errorPage = worker.getPathError();
+        std::cout<<error_status<<" "<<errorPage<<std::endl;
+        // exit(1);
     }
 }
 void CgiEnv::setEnvironementData()
@@ -516,6 +529,10 @@ void CgiEnv::setRequest(const std::string &req)
 std::string &CgiEnv::getCgiPATHINFO()
 {
     return envMap["PATH_INFO"];
+}
+std::string &CgiEnv::getInputFromBody()
+{
+    return reqBody;
 }
 std::string &CgiEnv::getCgiServerName() 
 {

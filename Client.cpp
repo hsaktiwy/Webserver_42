@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/23 00:35:31 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/24 03:06:41 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,11 @@ void	Client::ParseRequest(std::vector<ServerBlocks> &serverBlocks)
 			std::string boundary = this->getHttp_request().getBoundary();
 			if (boundary.size())
 				cgiRequest.setBoundry(this->getHttp_request().getBoundary());
+			std::string content_type, content_length;
+			http_request.getHeaderValue("Content-Type", content_type);
+			http_request.getHeaderValue("Content-Length", content_length);
+			cgiRequest.setContentType(content_type);
+			cgiRequest.setContentLength(content_length);
 		}
 			
 		cgiRequest.setEnvironementData(); // fill the map of the env needed by the script process and check errors

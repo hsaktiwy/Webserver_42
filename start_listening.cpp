@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/23 04:07:01 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/24 02:49:16 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,8 +187,6 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to
 	{
 		char buffer[CHUNK_SIZE + 1];
 		bytes_read = read(poll_fds[i].fd,buffer, CHUNK_SIZE);
-		buffer[bytes_read] = 0;
-		std::cerr<<buffer<<std::endl;
 		if (bytes_read > 0)
 			client.BufferingRequest(serverBlocks, buffer, bytes_read);
 		// std::cout << RED << "BYTES Read From the request " << bytes_read << RESET<< std::endl;

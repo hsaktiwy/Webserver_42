@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 14:12:57 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/20 20:53:42 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/24 03:19:59 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include "../http.server.hpp"
 #include <sstream>
 #include<ctime>
-#define RESP_TIMEOUT 10
+#define RESP_TIMEOUT 120
 
 class CgiResponse
 {
@@ -37,6 +37,7 @@ private:
     std::map<unsigned int, std::string> status_codes;
     int errorpipe[2];
     int trackerPipe[2];
+    int inputPipe[2];
     std::string errorResponse;
 public:
     CgiResponse();

@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/21 19:44:21 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/24 16:05:31 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@
 #define TIME_OUT 3000
 #define C_TIMEOUT 10
 #define UPLOADCHUNK_SIZE 1000000
-#define CHUNK_SIZE 1024
+#define CHUNK_SIZE 1500
 
 const std::string DEFAULT_CONFIG_PATH = "/Users/adardour/Desktop/www/configs/default.conf";
 

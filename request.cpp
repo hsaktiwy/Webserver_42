@@ -6,7 +6,7 @@
 /*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/21 20:53:29 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/24 16:17:32 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -460,6 +460,11 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 		{
 			maxBodySizeExist = true;
 			max_body_size = std::atoi(worker.get_max_body_size().c_str());
+		}
+		else
+		{
+			maxBodySizeExist = true;
+			max_body_size = 1000000;// by default we will allow 1MB == (1*10^6)B
 		}
 		worker.setHost(host);
 		Parsed_Header = true;

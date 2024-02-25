@@ -73,5 +73,10 @@
         "__functional_03": "cpp",
         "memory_resource": "cpp",
         "__memory": "cpp"
+    },
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#0F350B",
+        "titleBar.activeBackground": "#154A0F",
+        "titleBar.activeForeground": "#F5FDF4"
     }
 }

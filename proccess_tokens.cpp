@@ -3,44 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   proccess_tokens.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/07 10:23:31 by adardour          #+#    #+#             */
-/*   Updated: 2024/01/19 18:36:48 by adardour         ###   ########.fr       */
+/*   Updated: 2024/02/07 22:07:02 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
-
-int is_allowed(ServerBlocks &serverBlocks)
-{
-    for (size_t i = 0; i < serverBlocks.getDirectives().size(); i++)
-    {
-        if (!serverBlocks.getDirectives()[i].getDirective().compare("allow_methods") ||
-        !serverBlocks.getDirectives()[i].getDirective().compare("to") ||
-        !serverBlocks.getDirectives()[i].getDirective().compare("autoindex") ||
-        !serverBlocks.getDirectives()[i].getDirective().compare("index")
-        )
-        {
-            return (0);
-        }
-    }
-    
-    return (1);
-}
-
-int check_allowed_directive(std::vector<ServerBlocks> &serverBlocks)
-{
-
-    for (size_t i = 0; i < serverBlocks.size(); i++)
-    {
-        if (!is_allowed(serverBlocks[i]))
-        {
-            return (0);
-        }
-    }
-    return (1);
-}
 
 void proccess_tokens(tokens_map &tokens,std::vector<ServerBlocks> &serverBlocks)
 {

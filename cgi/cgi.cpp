@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/24 22:38:14 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/25 20:02:40 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -458,9 +458,9 @@ void CgiEnv::setEnvironementData()
     setCgiServerName();
     setCgiServePort();
     setErrorpage();
+    std::cerr <<envMap["CONTENT_TYPE"]<<std::endl;
+    std::cerr <<envMap["CONTENT_LENGTH"]<<std::endl;
     std::cerr<<reqBody<<std::endl;
-    // std::cout << RED<<envMap["QUERY_STRING"]<< RESET<<std::endl;
-    // std::cout << YELLOW<<boundary<< RESET<<std::endl;
     // exit(0);
 }
 void CgiEnv::setRequest(const std::string &req)
@@ -582,4 +582,8 @@ const std::map<std::string, std::string> &CgiEnv::getEnvMap() const
 std::string &CgiEnv::getErrorPage()
 {
     return errorPage;
+}
+std::string &CgiEnv::getBoundary()
+{
+    return boundary;
 }

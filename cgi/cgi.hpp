@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/24 02:55:05 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/25 18:54:44 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,7 @@ public:
     std::string &getCgiQueryString();
     std::string &getCgiRoot();
     std::string &getInputFromBody();
+    std::string &getBoundary();
     int getStatus();
     bool isAutoIndexReq();
     bool getCgiDirStatus();

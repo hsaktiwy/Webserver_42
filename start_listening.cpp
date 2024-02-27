@@ -469,6 +469,7 @@ void	handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 			if (bytes_written < 0)
 			{
 				printf("nailed it\n");
+				perror(" Pipe ");
 				resp.setBody_sent(true);
 				resp.setHeader_sent(true);
 				((request &)client.getHttp_request()).setError(true);
@@ -626,11 +627,11 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 			perror("poll ");
 			exit(0);
 		}
-		// if (pollRet == 0)
-		// {
-		// 	std::cout<<RED<<"Connection timeout...."<<RESET<<std::endl;
-		// 	continue;
-		// }
+		if (pollRet == 0)
+		{
+			std::cout<<RED<<"Connection timeout...."<<RESET<<std::endl;
+			continue;
+		}
 			
 		for (size_t i = 0; i < poll_fds.size(); i++)
 		{
@@ -704,6 +705,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 					{
 						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError())
 						{
+							printf("%d _ %d\n", isAlive(ClientsVector[client_it]), ClientsVector[client_it].getHttp_request().getError());
 							std::cout<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;
 							std::cout<<YELLOW<<"Connection to Client "<<poll_fds[i].fd<<" closed"<<RESET<<std::endl;
 							ClientsVector.erase(ClientsVector.begin() + client_it);

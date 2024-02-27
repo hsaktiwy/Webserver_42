@@ -57,7 +57,7 @@
 #define TIME_OUT 3000
 #define C_TIMEOUT 10
 #define UPLOADCHUNK_SIZE 1000000
-#define CHUNK_SIZE 1500
+#define CHUNK_SIZE 1024
 
 const std::string DEFAULT_CONFIG_PATH = "/Users/adardour/Desktop/www/configs/default.conf";
 

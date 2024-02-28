@@ -146,53 +146,55 @@ std::string		EscapedEncoding(std::string &uri, bool &error, int &status)
 	return (result);
 }
 
-static bool absoluteURI(std::string &uri)
-{
-	if (uri.size() > 4)
-	{
-		bool http = (uri.find("http:://") == 0) ? true : false, https = (uri.find("http:://") == 0) ? true : false;
-		if (http || https)
-			return (true);
-	}
-	return (false);
-}
+// static bool absoluteURI(std::string &uri)
+// {
+// 	if (uri.size() > 4)
+// 	{
+// 		bool http = (uri.find("http:://") == 0) ? true : false, https = (uri.find("http:://") == 0) ? true : false;
+// 		if (http || https)
+// 			return (true);
+// 	}
+// 	return (false);
+// }
 
-static void	FillUriStructor(t_uri& uri, std::string &full_uri, bool authority)// authority boolean will confirme if there is a authority in the uri or note
+// bool is_query(char c)
+// {
+// 	if (c == ';' ||  c == '/' ||  c == '?' ||  c == ':' ||  c == '@'
+// 		||  c == '&' ||  c == '=' ||  c == '+' || c == '$' || c == ','
+// 		|| std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == '!'
+// 		|| c == '~' || c == '*' || c == '\'' || c == '(' || c == ')')
+// 		return (true);
+// 	return (false);
+// }
+
+static void	FillUriStructor(t_uri& uri, std::string &full_uri)// authority boolean will confirme if there is a authority in the uri or note
 {
 	size_t size = 0;
-	size += uri.scheme.size(); 
+	// size += uri.scheme.size(); 
 	// extract the authority
-	if (authority)
-	{
-		for (size_t i = size; full_uri[i] && full_uri[i] != '/' && full_uri[i] != '?' && full_uri[i] != '#'; i++)
-			uri.authority += full_uri[i];
-		size += uri.authority.size();
-	}
 	if (full_uri[size] && full_uri[size] == '/')
 		size++;
+	printf("size %lu index[%lu] = %c\n", size, size, full_uri[size]);
 	// extract the path
-	for (size_t i = size; full_uri[i] && full_uri[i] != '?' && full_uri[i] != '#'; i++)
+	for (size_t i = size; full_uri[i] && full_uri[i] != '?'; i++)
+	{
 		uri.path += full_uri[i];
+	}
 	size += uri.path.size();
 	if (full_uri[size] && full_uri[size] == '?')
 		size++;
 	// extract the query
-	for(size_t i = size; full_uri[i] && full_uri[i] != '#'; i++)
+	for(size_t i = size; full_uri[i]; i++)
 		uri.query += full_uri[i];
 	size += uri.query.size();
-	if (full_uri[size] && full_uri[size] == '#')
-		size++;
-	// extract the fragment  i think we will remove this line and it logic in the future
-	for (size_t i = size; full_uri[i]; i++)
-		uri.fragment += full_uri[i];
 }
 
 static void UriFormat(t_uri &uri, std::string &full_uri, std::string &host)// 1 for absolute 2 for relative 3 for autority 
 {
 	// check it the uri start with http or https
 	//[scheme]://[authority]/[path]?[query]#[fragment]
-	bool	absoluteUri = absoluteURI(full_uri);
-	FillUriStructor(uri, full_uri, false), uri.type = RELATIVE;
+	// bool	absoluteUri = absoluteURI(full_uri);
+	FillUriStructor(uri, full_uri);
 }
 
 bool	request::MethodParsing(char *buff, ssize_t &bytes_size, size_t &index)
@@ -454,7 +456,10 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 			return (false);
 		}
 		// initialize our worker init base one our uri parsing result and host identifying
+		printf("%s _ %s\n", method_uri.c_str(), path.c_str());
 		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
+		printf("is_regular %d is_dir %d\n", is_regular, is_dir);
+		// exit(0);
 		// check for max body size existing and it value
 		if (worker.get_max_body_size() != "")
 		{
@@ -662,7 +667,7 @@ bool	ft_strcmp(const char *s1, const char *s2)
 void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status)
 {
 	std::string allowedMethod_s[] = {"POST", "DELETE", "GET"};
-	bool supported = false;
+	bool supported = false, supported2 = false;
 
 	// this will check for our static supported methods
 	for(size_t i = 0; i < 3; i++)
@@ -676,12 +681,16 @@ void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status
 
 	// this will check if our configue has another idea
 	std::vector<std::string> allowedMethods = worker.getAllowMethods();
-	if (error && allowedMethods.size() != 0)
+	printf("%lu size\n", allowedMethods.size());
+	if (error == false && allowedMethods.size() != 0)
 	{
-		if (find(allowedMethods.begin(), allowedMethods.end(), method) == allowedMethods.end())
-			supported = true;
+		printf("%d", find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end());
+		if (find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end())
+			supported2 = true;
 	}
-	if (supported == false)
+	else if (error == false && allowedMethods.size() == 0)
+		supported2 = true;
+	if (supported == false || supported2 == false)
 		error = true, status = 405;
 }
 
@@ -704,6 +713,7 @@ bool	IndexingtoIndex(Worker& worker, int &is_dir, int &is_regular, t_uri& uri, b
 
 void	FileAccessingRigth(Worker& worker, t_uri& uri, bool &error, int &status, int &is_regular, std::string &method)
 {
+	printf("error  %d status %d regular %d\n", error, status, is_regular);
 	if (error == false && is_regular == 1)
 	{
 		int rigths = (method == "POST") ? F_OK : F_OK | R_OK;
@@ -713,6 +723,7 @@ void	FileAccessingRigth(Worker& worker, t_uri& uri, bool &error, int &status, in
 		if (r_acceess != 0)
 			(errno == EACCES) ? (error = true, status = 403) : (error = true, status = 404);
 	}
+	// exit(0);
 }
 
 void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker)
@@ -756,7 +767,7 @@ void	request::RequestDisplay( void )
 	std::cout << "Body : \n";
 	// std::cout << body;
 	std::cout << "Parsed URI : \n";
-	std::cout << "Uri scheme : " << uri.scheme  << ",URI authority " << uri.authority  << ",URI path " << uri.path << ",URI query " << uri.query << ",URI fragment " << uri.fragment << std::endl;
+	std::cout << "Uri scheme : " << ",URI authority " << uri.authority  << ",URI path " << uri.path << ",URI query " << uri.query << std::endl;
 }
 
 int	request::getHeaderValue(const std::string &header,std::string &buffer)

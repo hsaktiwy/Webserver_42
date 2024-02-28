@@ -18,18 +18,14 @@
 #include <ctime>
 #include <string.h>
 #include <iostream>
-#include <string>
 #include <fstream>
 #include <stdio.h>
 #include <vector>
 #include <list>
 #include <sstream>
-#include <string>
 #include <iterator>
 #include <algorithm> 
 #include <map> 
-#include <vector>
-#include <string>
 #include <stack>
 #include <netinet/in.h>
 #include <arpa/inet.h> 
@@ -41,7 +37,6 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <netdb.h>
-#include <string>
 #include <set>
 #include <signal.h>
 
@@ -237,6 +232,8 @@ std::string     ft_trim(const std::string& str, const std::string& targets);
 int             Is_Directory(const std::string &root);
 void            init_worker_block(Worker &worker, std::string &host, std::string &path,std::vector<ServerBlocks> &serverBlocks, int &is_dir, int &is_regular);
 void            check_duplications(std::vector<ServerBlocks> serverBlocks);
+const std::string convertToString(long long line);
+
 
 // Tools
 void	        stringStreamRest(std::stringstream &ss);

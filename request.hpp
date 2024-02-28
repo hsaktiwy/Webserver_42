@@ -65,12 +65,9 @@ typedef  enum{
 // hier-part [ "?" query ] [ "#" fragment ]
 typedef struct Uri
 {
-	URI_Type	type;
-	std::string	scheme;//http:: 
 	std::string	authority;// this is the host
 	std::string	path; // our path
 	std::string	query; // query
-	std::string	fragment;
 } t_uri;
 
 class request {

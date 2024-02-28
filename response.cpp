@@ -12,6 +12,15 @@
 
 #include "response.hpp"
 
+const std::string convertToString(long long line)
+{
+    std::ostringstream convert;
+    convert << line;
+
+    return convert.str();
+}
+
+
 response::response(request &req, Worker &wk): http_request(&req), worker(&wk), body_index(0), body_size(-1), header_index(0), header_size(-1), body_sent(0), header_sent(0), FileOpened(false), fd(-1) ,FileSeeked(false) , Seeker(0), readyToResponed(false), StoringFile(false)
 {
 
@@ -53,50 +62,77 @@ std::string TimeToString(timespec time)
 	return (Year + "-" + Month + "-" + Day);
 }
 
+void    count_files(int *number_dir,int *number_file,const std::string & root)
+{
+    DIR *dir = opendir(root.c_str());
+    struct  dirent *dirent;
+
+    if (dir)
+    {
+        dirent = readdir(dir);
+        dirent = readdir(dir);
+        while ((dirent = readdir(dir)) != NULL)
+        {
+            std::string full_path = root + dirent->d_name;
+            DIR *subdir = opendir(full_path.c_str());
+            if (subdir)
+            {
+                (*number_dir)++;
+                closedir(subdir);
+            }
+            else
+                (*number_file)++;
+        }
+        closedir(dir);
+    }
+}
+
 void    autoIndexing(request &req, Worker &wk,std::string &response_head, std::string &body, std::map<unsigned int, std::string> &status_codes)
 {
-	Uri const &uri = req.getUri();
-	std::string path = uri.authority + "/" +uri.path;
-	std::string File_name, Last_modification, Size, Link, Path;
-	Path = wk.getRoot() + req.getUri().path;
-	DIR     *dir = opendir(Path.c_str());
-	struct  dirent *dirent;
+    Uri const &uri = req.getUri();
+    std::string path = uri.authority + "/" +uri.path;
+    std::string File_name, Last_modification, Size, Link, Path;
+    Path = wk.getRoot() + req.getUri().path;
+    DIR     *dir = opendir(Path.c_str());
+    struct  dirent *dirent;
+    int number_dir = 0;
+    int number_file = 0;
 
-	std::string Hconnection = "Connection: " + ConnectionType(req);
-	response_head = "HTTP/1.1 200 OK\r\nContent-Type: text/html;charset=UTF-8\r\n" + Hconnection + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n";
-	body = "<table>\n<thead>\n    <tr>\n        <th>File Name</th>\n        <th>Last modification</th>\n        <th>Size</th>\n    </tr>\n</thead>\n<tbody>";
-	if (dir)
-	{
-		while ((dirent = readdir(dir)) != NULL)
-		{
-			if (std::strcmp(dirent->d_name, ".") != 0)
-			{
-				Link = "/" + req.getUri().path + "/" + dirent->d_name;
-				
-				File_name = dirent->d_name,Size = "-", Last_modification = "-";
-				Link = NormilisePath(Link);
-				std::string tmpPath =  Path + "/" + dirent->d_name;
-				struct stat File_state;
-				if (stat(tmpPath.c_str(), &File_state) == 0)
-				{
-					std::stringstream ss;
-					ss << File_state.st_size;
-					ss >> Size;
-					Last_modification = TimeToString(File_state.st_mtimespec);
-				}
-				std::string line = "\n<tr>\n<td><a href=\"" +  Link +"\">"+ File_name +"</a></td>\n<td>" + Last_modification + " </td>\n<td>"+ Size +"</td>\n</tr>";
-				body += line;
-			}
-		}
-		closedir(dir);
-	}
-	body += "\n</tbody>\n</table>";
-	// printf("======================>AutoIndexing\n");
-	std::stringstream ss;
-	std::string body_size;
-	ss << body.size();
-	ss >> body_size;
-	response_head += "Content-Length: " + body_size + "\r\n\r\n";
+    count_files(&number_dir, &number_file,Path);
+    response_head = "HTTP/1.1 200 OK\r\nContent-Type: text/html;charset=UTF-8\r\n";
+    body = "<h1 style=\"padding: 20px;\">Directory listing of " + wk.getRoot() +  " </h1>"  + "\n <p style=\"margin-left:18px;\">directories " + convertToString(number_dir) + " files " + convertToString(number_file) + "<hr style=\"margin-bottom:30px;\">\n<table style=\"width: 100%;\">\n<thead>\n    <tr>\n        <th style=\"width: 40%; text-align: center;\">File Name</th>\n        <th style=\"width: 30%; text-align: center;\">Last modification</th>\n        <th style=\"width: 30%; text-align: center;\">Size</th>\n    </tr>\n</thead>\n<tbody>";
+    if (dir)
+    {
+    while ((dirent = readdir(dir)) != NULL)
+    {
+        if (std::strcmp(dirent->d_name, ".") != 0)
+        {
+            Link = "/" + req.getUri().path + "/" + dirent->d_name;
+            
+            File_name = dirent->d_name,Size = "-", Last_modification = "-";
+            Link = NormilisePath(Link);
+            std::string tmpPath =  Path + "/" + dirent->d_name;
+            struct stat File_state;
+            if (stat(tmpPath.c_str(), &File_state) == 0)
+            {
+                std::stringstream ss;
+                ss << File_state.st_size;
+                ss >> Size;
+                Last_modification = TimeToString(File_state.st_mtimespec);
+            }
+            std::string line = "\n    <tr>\n        <td style=\"padding: 5px; text-align: center;\"><a href=\"" +  Link +"\" style=\"text-decoration: none; color: blue;\">" + File_name + "</a></td>\n        <td style=\"padding: 5px; text-align: center;\">" + Last_modification + " </td>\n        <td style=\"padding: 5px; text-align: center;\">" + Size + "</td>\n    </tr>";
+            body += line;
+        }
+    }
+    closedir(dir);
+    }
+    body += "\n</tbody>\n</table>";
+    // printf("======================>AutoIndexing\n");
+    std::stringstream ss;
+    std::string body_size;
+    ss << body.size();
+    ss >> body_size;
+    response_head += "Content-Length: " + body_size + "\r\n\r\n";
 }
 
 

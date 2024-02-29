@@ -27,8 +27,8 @@ class response {
 		size_t						FileIndex;
 		size_t						FileEnd;
 		std::string					FileType;
-		long						long header_size;
-		long						long body_size;// this play the role of the range (even the size of the full file)
+		long long 					header_size;
+		long long 					body_size;// this play the role of the range (even the size of the full file)
 		bool						header_sent;
 		bool						body_sent;
 		bool						FileOpened;

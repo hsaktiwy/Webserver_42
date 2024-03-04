@@ -12,14 +12,6 @@
 
 #include "http.server.hpp"
 
-const std::string convertToString(long long line)
-{
-    std::ostringstream convert;
-    convert << line;
-
-    return convert.str();
-}
-
 void    proccess_error_page(std::vector<std::string> error_page_token, int line)
 {
     int size = error_page_token.size() - 1;

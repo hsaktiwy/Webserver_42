@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   http.server.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/14 21:49:40 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/02/29 19:56:02 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,18 +18,14 @@
 #include <ctime>
 #include <string.h>
 #include <iostream>
-#include <string>
 #include <fstream>
 #include <stdio.h>
 #include <vector>
 #include <list>
 #include <sstream>
-#include <string>
 #include <iterator>
 #include <algorithm> 
 #include <map> 
-#include <vector>
-#include <string>
 #include <stack>
 #include <netinet/in.h>
 #include <arpa/inet.h> 
@@ -41,7 +37,6 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <netdb.h>
-#include <string>
 #include <set>
 #include <signal.h>
 
@@ -54,7 +49,7 @@
 #define CYAN    "\033[36m"
 #define WHITE   "\033[37m"
 #define SERVERNAME "Jhin"
-#define TIME_OUT 60000
+#define TIME_OUT 30000
 #define C_TIMEOUT 10
 #define UPLOADCHUNK_SIZE 1000000
 #define CHUNK_SIZE 1024
@@ -237,6 +232,8 @@ std::string     ft_trim(const std::string& str, const std::string& targets);
 int             Is_Directory(const std::string &root);
 void            init_worker_block(Worker &worker, std::string &host, std::string &path,std::vector<ServerBlocks> &serverBlocks, int &is_dir, int &is_regular);
 void            check_duplications(std::vector<ServerBlocks> serverBlocks);
+const std::string convertToString(long long line);
+
 
 // Tools
 void	        stringStreamRest(std::stringstream &ss);

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/24 23:42:21 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/29 22:20:11 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,8 +57,12 @@ void	Client::ParseRequest(std::vector<ServerBlocks> &serverBlocks)
     http_request.CheckRequest(serverBlocks, worker);
 	if (http_request.getCgiStatus()) // check if the request is a cgi request
 	{
+			std::string http_cookie;
 		cgiRequest.setCgiWorker(worker); //set the worker of the cgi request
 		cgiRequest.setRequest(this->getHttp_request().getMethod()); //init the method 
+		http_request.getHeaderValue("Cookie", http_cookie);
+		std::cout<<RED<<"COOKIES: "<<http_cookie<<RESET<<std::endl;
+		cgiRequest.setHttpCookies(http_cookie);
 		if (!this->getHttp_request().getMethod().compare("POST"))
 		{
 			cgiRequest.setRequestBody(this->getHttp_request().getBody());

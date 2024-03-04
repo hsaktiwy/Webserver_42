@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/23 00:22:18 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/27 16:46:44 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,9 @@ request::request(): RequestRead(false), Parsed_StartLine(false), Parsed_Header(f
 	error = false;
 	status = 200;
 	left_CR = false;
-	NewLine = false;
-	R_HEADER = true;
-	R_VALUE = true;
+	NewLine = true;
+	R_HEADER = false;
+	R_VALUE = false;
 	BIndex = 0;
 	ChunkedRead = false;
 	ChunkedSizeRead = false;
@@ -149,53 +149,55 @@ std::string		EscapedEncoding(std::string &uri, bool &error, int &status)
 	return (result);
 }
 
-static bool absoluteURI(std::string &uri)
-{
-	if (uri.size() > 4)
-	{
-		bool http = (uri.find("http:://") == 0) ? true : false, https = (uri.find("http:://") == 0) ? true : false;
-		if (http || https)
-			return (true);
-	}
-	return (false);
-}
+// static bool absoluteURI(std::string &uri)
+// {
+// 	if (uri.size() > 4)
+// 	{
+// 		bool http = (uri.find("http:://") == 0) ? true : false, https = (uri.find("http:://") == 0) ? true : false;
+// 		if (http || https)
+// 			return (true);
+// 	}
+// 	return (false);
+// }
 
-static void	FillUriStructor(t_uri& uri, std::string &full_uri, bool authority)// authority boolean will confirme if there is a authority in the uri or note
+// bool is_query(char c)
+// {
+// 	if (c == ';' ||  c == '/' ||  c == '?' ||  c == ':' ||  c == '@'
+// 		||  c == '&' ||  c == '=' ||  c == '+' || c == '$' || c == ','
+// 		|| std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == '!'
+// 		|| c == '~' || c == '*' || c == '\'' || c == '(' || c == ')')
+// 		return (true);
+// 	return (false);
+// }
+
+static void	FillUriStructor(t_uri& uri, std::string &full_uri)// authority boolean will confirme if there is a authority in the uri or note
 {
 	size_t size = 0;
-	size += uri.scheme.size(); 
+	// size += uri.scheme.size(); 
 	// extract the authority
-	if (authority)
-	{
-		for (size_t i = size; full_uri[i] && full_uri[i] != '/' && full_uri[i] != '?' && full_uri[i] != '#'; i++)
-			uri.authority += full_uri[i];
-		size += uri.authority.size();
-	}
 	if (full_uri[size] && full_uri[size] == '/')
 		size++;
+	printf("size %lu index[%lu] = %c\n", size, size, full_uri[size]);
 	// extract the path
-	for (size_t i = size; full_uri[i] && full_uri[i] != '?' && full_uri[i] != '#'; i++)
+	for (size_t i = size; full_uri[i] && full_uri[i] != '?'; i++)
+	{
 		uri.path += full_uri[i];
+	}
 	size += uri.path.size();
 	if (full_uri[size] && full_uri[size] == '?')
 		size++;
 	// extract the query
-	for(size_t i = size; full_uri[i] && full_uri[i] != '#'; i++)
+	for(size_t i = size; full_uri[i]; i++)
 		uri.query += full_uri[i];
 	size += uri.query.size();
-	if (full_uri[size] && full_uri[size] == '#')
-		size++;
-	// extract the fragment  i think we will remove this line and it logic in the future
-	for (size_t i = size; full_uri[i]; i++)
-		uri.fragment += full_uri[i];
 }
 
 static void UriFormat(t_uri &uri, std::string &full_uri, std::string &host)// 1 for absolute 2 for relative 3 for autority 
 {
 	// check it the uri start with http or https
 	//[scheme]://[authority]/[path]?[query]#[fragment]
-	bool	absoluteUri = absoluteURI(full_uri);
-	FillUriStructor(uri, full_uri, false), uri.type = RELATIVE;
+	// bool	absoluteUri = absoluteURI(full_uri);
+	FillUriStructor(uri, full_uri);
 }
 
 bool	request::MethodParsing(char *buff, ssize_t &bytes_size, size_t &index)
@@ -296,13 +298,13 @@ bool	request::StartlineParsing(char *buff, ssize_t &bytes_size, size_t &index)
 		}
 		SLValidity = true;
 	}
-	// ????????????? why this ????? mark it for researsh
 	if (left_CR == true && index < bytes_size && buff[index] == '\n')
 		Parsed_StartLine = true, left_CR = false, index++,NewLine = true;
 	else if (left_CR == true && index < bytes_size && buff[index] != '\n')
 	{
+		printf("Supper_be\n");
 		error = true, RequestRead = true, status = 400;
-			return (false);
+		return (false);
 	}
 	return (true);
 }
@@ -313,67 +315,53 @@ bool	request::BaseHeadersParsing(char *buff, ssize_t &bytes_size, size_t &index)
 	{
 		// when i should create a header ? when i have flag saying that i passed new line
 		// when i need to stop this shite when i get new line the annalyse a new line after
-		if ((left_CR == false && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n' && NewLine)/*In normale case where \r\n are are not splited*/
-		|| (buff[index] == '\n' && left_CR && NewLine))
+		// added
+		if ((left_CR == false && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n' && NewLine)
+			|| (buff[index] == '\n' && left_CR && NewLine))
 		{
 			NewLine = false, R_VALUE = false, R_HEADER = false, index +=((left_CR) ? 1:2), R_FUll_HEADERS = true, left_CR = false;
 			break;
 		}
-		if (left_CR && buff[index] == '\n' && !NewLine)
+		if (NewLine && buff[index] == '\r')
 		{
-			index += 1;
-			if (FillingBuffer && !R_HEADER)
-			{
-				error = true, RequestRead = true, status = 400;
-				return (false);
-			}
-			else if (R_HEADER)
-			{
-				NewLine = true, R_VALUE = true, R_HEADER = true, left_CR = false, FillingBuffer = false;
-				if (index == bytes_size)
-					break;
-			}
-			left_CR = false, NewLine = true;
+			left_CR = true, index++;
+			continue;
 		}
-		if (buff[index] == '\r' && index + 1 == bytes_size)
+		else if (NewLine && !left_CR)
 		{
-			index +=1, left_CR = true;
-			break;
-		}
-		if (NewLine)
-		{
-			NewLine = false, R_VALUE = false, R_HEADER = false, FillingBuffer = false;
-			if (index < bytes_size)
-				AddEmptyNode(headers);
+			AddEmptyNode(headers), NewLine = false, R_HEADER = false, R_VALUE = false;
 			continue;
 		}
 		if (!R_HEADER && !is_seperator(buff[index]) && !is_ctl(buff[index]))
-		{
 			headers[headers.size() - 1].name += buff[index], FillingBuffer = true;
-		}
 		else if (!R_HEADER && buff[index] == ':')
 		{
 			R_HEADER = true, index++, FillingBuffer = false;
 			continue;
 		}
-		else if (!R_HEADER && (is_seperator(buff[index]) || is_ctl(buff[index])))
+		if (!R_HEADER && (is_seperator(buff[index]) || is_ctl(buff[index])))
 		{
 			error = true, RequestRead = true, status = 400;
 			return (false);
 		}
-		if (R_HEADER && !R_VALUE && buff[index] != '\r')
-		{
+		if (R_HEADER && !R_VALUE && buff[index] != '\r' && !left_CR)
 			headers[headers.size() - 1].values += buff[index], FillingBuffer = true;
-		}
-		if (R_HEADER && !R_VALUE && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n')
+		if (R_HEADER && !R_VALUE && (buff[index] == '\r' || left_CR))
 		{
-			index += 2, NewLine = true, R_VALUE = true, FillingBuffer = false;
+			if ((index + 1 < bytes_size && buff[index + 1] == '\n') || (left_CR && buff[index] == '\n'))
+			{
+				index += (left_CR) ? 1 : 2, NewLine = true, R_VALUE = true, FillingBuffer = false;
+				if (left_CR)
+					left_CR = !left_CR;
+			}
+			else if((index + 1 < bytes_size && buff[index + 1] != '\n') || (left_CR && buff[index] != '\n'))
+			{
+				error = true, RequestRead = true, status = 400;
+				return (false);
+			}
+			else if (index + 1 == bytes_size && !left_CR)
+				index += 1, left_CR = true;
 			continue;
-		}
-		if (R_HEADER && !R_VALUE && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] != '\n')
-		{
-			error = true, RequestRead = true, status = 400;
-			return (false);
 		}
 		index++;
 	}
@@ -397,6 +385,7 @@ bool	request::IdentifieHost(char *buff, ssize_t &bytes_size, size_t &index)
 	}
 	else
 	{
+		// printf("IdentifieHost\n");
 		error = true, RequestRead = true, status = 400;
 		return (false);
 	}
@@ -470,12 +459,20 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 			return (false);
 		}
 		// initialize our worker init base one our uri parsing result and host identifying
+		printf("%s _ %s\n", method_uri.c_str(), path.c_str());
 		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
+		printf("is_regular %d is_dir %d\n", is_regular, is_dir);
+		// exit(0);
 		// check for max body size existing and it value
 		if (worker.get_max_body_size() != "")
 		{
 			maxBodySizeExist = true;
 			max_body_size = std::atoi(worker.get_max_body_size().c_str());
+		}
+		else
+		{
+			maxBodySizeExist = true;
+			max_body_size = 1000000;// by default we will allow 1MB == (1*10^6)B
 		}
 		worker.setHost(host);
 		Parsed_Header = true;
@@ -627,9 +624,10 @@ void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 {
 	// std::string allowedMethod[] = {"POST", "GET", "DELETE"};
 	size_t index = 0;
-
+	// std::cout << body.size() << std::endl;
 	if (!Parsed_StartLine)
 	{
+		// printf("Test1\n");
 		if (!StartlineParsing(buff, bytes_size, index))
 			return ;
 		// if (R_Method && R_URI && R_PROTOCOL)
@@ -638,6 +636,8 @@ void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 	// check if the header is parsed
 	if (Parsed_StartLine && !Parsed_Header && index < bytes_size)
 	{
+		// printf("Test2\n");
+		// printf("Test2, %d\n", FillingBuffer);
 		// header parsing
 		if (!HeadersParsing(serverBlocks, worker, buff, bytes_size, index))
 			return ;
@@ -645,6 +645,7 @@ void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 	// check the body existance the read and define the end of it
 	if (Parsed_StartLine && Parsed_Header && Body_Exist)
 	{
+		// printf("Test3\n");
 		if (!BodyParsing(buff, bytes_size, index))
 			return ;
 	}
@@ -669,7 +670,7 @@ bool	ft_strcmp(const char *s1, const char *s2)
 void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status)
 {
 	std::string allowedMethod_s[] = {"POST", "DELETE", "GET"};
-	bool supported = false;
+	bool supported = false, supported2 = false;
 
 	// this will check for our static supported methods
 	for(size_t i = 0; i < 3; i++)
@@ -683,12 +684,16 @@ void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status
 
 	// this will check if our configue has another idea
 	std::vector<std::string> allowedMethods = worker.getAllowMethods();
-	if (error && allowedMethods.size() != 0)
+	printf("%lu size\n", allowedMethods.size());
+	if (error == false && allowedMethods.size() != 0)
 	{
-		if (find(allowedMethods.begin(), allowedMethods.end(), method) == allowedMethods.end())
-			supported = true;
+		printf("%d", find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end());
+		if (find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end())
+			supported2 = true;
 	}
-	if (supported == false)
+	else if (error == false && allowedMethods.size() == 0)
+		supported2 = true;
+	if (supported == false || supported2 == false)
 		error = true, status = 405;
 }
 
@@ -711,17 +716,22 @@ bool	IndexingtoIndex(Worker& worker, int &is_dir, int &is_regular, t_uri& uri, b
 
 void	FileAccessingRigth(Worker& worker, t_uri& uri, bool &error, int &status, int &is_regular, std::string &method)
 {
-	if (error && is_regular == 1)
+	printf("error  %d status %d regular %d\n", error, status, is_regular);
+	if (error == false && is_regular == 1)
 	{
-		int rigths =(method == "POST") ? (F_OK | F_OK | R_OK):(F_OK | F_OK | R_OK); 
+		int rigths = (method == "POST") ? F_OK : F_OK | R_OK;
 		std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
-		if (access(check.c_str(), rigths) != 0)
+		int r_acceess = access(check.c_str(), rigths);
+		// printf("access rigth (path : %s): %d\n", check.c_str(), r_acceess);
+		if (r_acceess != 0)
 			(errno == EACCES) ? (error = true, status = 403) : (error = true, status = 404);
 	}
+	// exit(0);
 }
 
 void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker)
 {
+	// RequestDisplay();
 	if (error == false)
 	{
 		// chekc if the method is supported bye the server
@@ -762,7 +772,7 @@ void	request::RequestDisplay( void )
 	std::cout << "Body : \n";
 	// std::cout << body;
 	std::cout << "Parsed URI : \n";
-	std::cout << "Uri scheme : " << uri.scheme  << ",URI authority " << uri.authority  << ",URI path " << uri.path << ",URI query " << uri.query << ",URI fragment " << uri.fragment << std::endl;
+	std::cout << "Uri scheme : " << ",URI authority " << uri.authority  << ",URI path " << uri.path << ",URI query " << uri.query << std::endl;
 }
 
 int	request::getHeaderValue(const std::string &header,std::string &buffer)
@@ -799,6 +809,7 @@ request& request::operator=(const request& obj)
 		http = obj.http;
 		host = obj.host;
 		headers = obj.headers;
+		body.clear();
 		body = obj.body;
 		req = obj.req;
 		error = obj.error;

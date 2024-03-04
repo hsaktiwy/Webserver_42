@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/24 02:49:16 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/01 19:08:34 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -189,17 +189,21 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to
 		bytes_read = read(poll_fds[i].fd,buffer, CHUNK_SIZE);
 		if (bytes_read > 0)
 			client.BufferingRequest(serverBlocks, buffer, bytes_read);
+		if (bytes_read < 0)
+		{
+			((request &)client.getHttp_request()).setError(true);
+			((request &)client.getHttp_request()).setStatus(500);
+			((request &)client.getHttp_request()).setRequestRead(true);
+		}
 		// std::cout << RED << "BYTES Read From the request " << bytes_read << RESET<< std::endl;
 	}
 	// this part where we will handle some additional request parsing, at the time where the request was fully read
 	if (client.getHttp_request().getRequestRead())
 	{
+		// printf("Body :\n%s\n", ((request &)client.getHttp_request()).getBody().c_str());
+		// exit(0);
 		client.ParseRequest(serverBlocks);
 		((request &)client.getHttp_request()).setHandleRequest(true);
-	}
-	else if (bytes_read < 0)
-	{
-		perror("read ");
 	}
 }
 
@@ -401,7 +405,7 @@ void	BodyFileResponse(response &resp, Client& client, std::string &file, std::st
 		if (fd == -1)
 		{
 			printf("opening  %s\n", file.c_str());
-			fd = open(file.c_str(), O_RDWR);
+			fd = open(file.c_str(), O_RDONLY);
 			if (fd == -1)
 				perror("Open :");
 			resp.setFd(fd), resp.setFileOpened(true);
@@ -462,6 +466,14 @@ void	handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 		if (buffer.size() > 0)
 		{
 			ssize_t bytes_written = send(poll_fds[i].fd, buffer.c_str(), buffer.size(), MSG_DONTWAIT);
+			if (bytes_written < 0)
+			{
+				printf("nailed it\n");
+				perror(" Pipe ");
+				resp.setBody_sent(true);
+				resp.setHeader_sent(true);
+				((request &)client.getHttp_request()).setError(true);
+			}
 			// here we need to chekc if we have 0 or -1 as result
 			// printf("bytes rigth %lu\n",bytes_written);
 		}
@@ -684,7 +696,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				if (poll_fds[i].revents & POLLIN)
 				{
 					// printf("%sClient info [%lu][%d] client time here from %ld%s\n", YELLOW, client_it, ClientsVector[client_it].getClientSocket(),  ClientsVector[client_it].getTime(), RESET);
-					// std::cout<<YELLOW<<"Read Partion Of CLient Request  "<< poll_fds[i].fd <<RESET<<std::endl;
+			
 					handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, ClientsVector[client_it], status_codes);
 					if (ClientsVector[client_it].getHttp_request().getHandleRequest())
 					{
@@ -710,12 +722,13 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 						{handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status,mime_type, ClientsVector[client_it], status_codes);
 						// std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;
 						}
-					if (ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent()
-							|| ClientsVector[client_it].getcgiResponse().isResponseSent())
+					// std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;
+					if (ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent())
 					{
 						
 						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError() || ClientsVector[client_it].getcgiResponse().isError())
 						{
+							printf("%d _ %d\n", isAlive(ClientsVector[client_it]), ClientsVector[client_it].getHttp_request().getError());
 							std::cout<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;
 							std::cout<<YELLOW<<"Connection to Client "<<poll_fds[i].fd<<" closed"<<RESET<<std::endl;
 							ClientsVector.erase(ClientsVector.begin() + client_it);

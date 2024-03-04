@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/26 07:13:38 by aalami           ###   ########.fr       */
+/*   Updated: 2024/02/27 19:14:29 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -322,7 +322,7 @@ void CgiResponse::handleError()
         if (Env.getErrorPage().size() && Env.getErrorPage().compare("valid request"))
         {
             errorResponse += "HTTP/1.1 302 Found\r\n";
-            errorResponse += "Location: ";
+            errorResponse += "Location: /";
             errorResponse += Env.getErrorPage() + "\r\n";
             errorResponse += "Content-Type: text/html\r\n\r\n";
         }

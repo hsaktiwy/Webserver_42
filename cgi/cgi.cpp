@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/25 20:02:40 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/01 23:07:35 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,6 +92,11 @@ void CgiEnv::setContentLength(std::string &value)
 void CgiEnv::setCgiWorker(const Worker &obj)
 {
     worker = obj;
+}
+void CgiEnv::setHttpCookies(std::string &value)
+{
+    if(!value.empty())
+        envMap["HTTP_COOKIE"] = value;
 }
 // void CgiEnv::setRequestMethod()
 // {
@@ -458,10 +463,10 @@ void CgiEnv::setEnvironementData()
     setCgiServerName();
     setCgiServePort();
     setErrorpage();
+    envMap["SERVER_PROTOCOL"] = "HTTP/1.1";
     std::cerr <<envMap["CONTENT_TYPE"]<<std::endl;
     std::cerr <<envMap["CONTENT_LENGTH"]<<std::endl;
     std::cerr<<reqBody<<std::endl;
-    // exit(0);
 }
 void CgiEnv::setRequest(const std::string &req)
 {

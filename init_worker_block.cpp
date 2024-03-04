@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init_worker_block.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/25 14:10:31 by adardour         ###   ########.fr       */
+/*   Updated: 2024/02/29 19:56:41 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -256,6 +256,7 @@ void   init_worker_block(Worker &worker, std::string &host ,std::string &path,st
     if (worker.getErrorPages().size() == 0)
         setErrorPages(worker,worker.getBlockWorker().getDirectives());
     std::string tmp_path = worker.getRoot() + path;
+	printf("full root %s\n",tmp_path.c_str());
     if (Is_Directory(tmp_path) == 0 \
     || Is_Directory(tmp_path) == 1 \
     || Is_Directory(tmp_path) == -1)

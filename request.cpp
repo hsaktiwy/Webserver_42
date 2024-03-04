@@ -174,7 +174,7 @@ static void	FillUriStructor(t_uri& uri, std::string &full_uri)// authority boole
 	// extract the authority
 	if (full_uri[size] && full_uri[size] == '/')
 		size++;
-	printf("size %lu index[%lu] = %c\n", size, size, full_uri[size]);
+	// printf("size %lu index[%lu] = %c\n", size, size, full_uri[size]);
 	// extract the path
 	for (size_t i = size; full_uri[i] && full_uri[i] != '?'; i++)
 	{
@@ -299,7 +299,7 @@ bool	request::StartlineParsing(char *buff, ssize_t &bytes_size, size_t &index)
 		Parsed_StartLine = true, left_CR = false, index++,NewLine = true;
 	else if (left_CR == true && index < bytes_size && buff[index] != '\n')
 	{
-		printf("Supper_be\n");
+		// printf("Supper_be\n");
 		error = true, RequestRead = true, status = 400;
 		return (false);
 	}
@@ -456,9 +456,9 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 			return (false);
 		}
 		// initialize our worker init base one our uri parsing result and host identifying
-		printf("%s _ %s\n", method_uri.c_str(), path.c_str());
+		// printf("%s _ %s\n", method_uri.c_str(), path.c_str());
 		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
-		printf("is_regular %d is_dir %d\n", is_regular, is_dir);
+		// printf("is_regular %d is_dir %d\n", is_regular, is_dir);
 		// exit(0);
 		// check for max body size existing and it value
 		if (worker.get_max_body_size() != "")
@@ -681,10 +681,10 @@ void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status
 
 	// this will check if our configue has another idea
 	std::vector<std::string> allowedMethods = worker.getAllowMethods();
-	printf("%lu size\n", allowedMethods.size());
+	// printf("%lu size\n", allowedMethods.size());
 	if (error == false && allowedMethods.size() != 0)
 	{
-		printf("%d", find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end());
+		// printf("%d", find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end());
 		if (find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end())
 			supported2 = true;
 	}
@@ -713,13 +713,13 @@ bool	IndexingtoIndex(Worker& worker, int &is_dir, int &is_regular, t_uri& uri, b
 
 void	FileAccessingRigth(Worker& worker, t_uri& uri, bool &error, int &status, int &is_regular, std::string &method)
 {
-	printf("error  %d status %d regular %d\n", error, status, is_regular);
+	// printf("error  %d status %d regular %d\n", error, status, is_regular);
 	if (error == false && is_regular == 1)
 	{
 		int rigths = (method == "POST") ? F_OK : F_OK | R_OK;
 		std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
 		int r_acceess = access(check.c_str(), rigths);
-		printf("access rigth (path : %s): %d\n", check.c_str(), r_acceess);
+		// printf("access rigth (path : %s): %d\n", check.c_str(), r_acceess);
 		if (r_acceess != 0)
 			(errno == EACCES) ? (error = true, status = 403) : (error = true, status = 404);
 	}

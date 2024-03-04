@@ -232,7 +232,7 @@ void   init_worker_block(Worker &worker, std::string &host ,std::string &path,st
     //     return;
     // }
     // chdir("..");
-	printf("%s\n",path.c_str());
+	// printf("%s\n",path.c_str());
     std::string host_name;
     worker.setPath(path);
     get_matched_server_block(host,serverBlocks,worker,ip_address);
@@ -257,7 +257,7 @@ void   init_worker_block(Worker &worker, std::string &host ,std::string &path,st
     if (worker.getErrorPages().size() == 0)
         setErrorPages(worker,worker.getBlockWorker().getDirectives());
     std::string tmp_path = worker.getRoot() + path;
-	printf("full root %s\n",tmp_path.c_str());
+	// printf("full root %s\n",tmp_path.c_str());
     if (Is_Directory(tmp_path) == 0 \
     || Is_Directory(tmp_path) == 1 \
     || Is_Directory(tmp_path) == -1)

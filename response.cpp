@@ -367,7 +367,7 @@ int	fillFile(int fd, std::string &stream, size_t &index, std::string &boundary, 
 	char *buff = (char *)malloc(sizeof(char) * MaxWriteSize);
 	if (!buff)
 		return (-1);
-	printf("stream size %lu _ %s\n", stream.size(), &stream[index]);		
+	// printf("stream size %lu _ %s\n", stream.size(), &stream[index]);		
 	while (index < stream.size() && writtenBytes < MaxWriteSize)
 	{
 		if (stream[index] == '\r' && index + 1 < stream.size() && stream[index + 1] == '\n' && index + 2 < stream.size() && stream[index + 2] == '-')
@@ -387,7 +387,7 @@ int	fillFile(int fd, std::string &stream, size_t &index, std::string &boundary, 
 		writtenBytes++;
 		index++;
 	}
-	printf("writeBytes %lu, index %lu\n", writtenBytes, index);
+	// printf("writeBytes %lu, index %lu\n", writtenBytes, index);
 	if (write(fd, buff, writtenBytes) == -1)
 		return (free(buff), -1);
 	return (free(buff), finished);
@@ -462,7 +462,7 @@ void	response::PostResponse(std::map<unsigned int, std::string> &status_codes)
 bool	response::PostFilesOpen(std::map<unsigned int, std::string> &status_codes, request &req, std::string &UploadPath)
 {
 	std::string path = UploadPath + "/" + CurrentFilename;
-	printf("Path %s\n", path.c_str());
+	// printf("Path %s\n", path.c_str());
 	fd = open(path.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
 	if (fd == -1)
 	{
@@ -515,7 +515,7 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 	// printf("Post handling\n");
 	if (POST_Init == false)
 	{
-		printf("%s _  %s\n", wk.getRoot().c_str(), UploadPath.c_str());
+		// printf("%s _  %s\n", wk.getRoot().c_str(), UploadPath.c_str());
 		// check first for the Content-Type  == multipart/form-data then define the boundary value
 		if (!PostInit(status_codes, req, body))
 			return ;

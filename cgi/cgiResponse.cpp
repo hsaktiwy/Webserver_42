@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/27 19:14:29 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/05 03:08:34 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -307,10 +307,10 @@ void CgiResponse::constructScriptEnv()
         isDataset = true;
     }
     
-    // for (size_t i = 0; scriptData[i] != NULL; i++)
-    // {
-    //     printf("%s\n", scriptData[i]);
-    // }
+    for (size_t i = 0; scriptData[i] != NULL; i++)
+    {
+        printf("%s\n", scriptData[i]);
+    }
     
 }
 void CgiResponse::handleError()

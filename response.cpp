@@ -575,7 +575,8 @@ void	response::Get(std::map<unsigned int, std::string> &status_codes)
 		Code =  Status(206, status_codes);
 	std::string Hconnection = "Connection: " + ConnectionType(req);
 	http_response = "HTTP/1.1 "+ Code +"\r\n" + Hconnection + "\r\nContent-Type: " + FileType + "\r\n";
-	file = wk.getRoot() + req.getUri().path;
+	file = wk.getRoot() + "/" + req.getUri().path;
+	file = NormilisePath(file);
 	header_size = http_response.size();
 }
 

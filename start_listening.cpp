@@ -194,14 +194,10 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to
 			((request &)client.getHttp_request()).setStatus(500);
 			((request &)client.getHttp_request()).setRequestRead(true);
 		}
-		// std::cout << RED << "BYTES Read From the request " << bytes_read << RESET<< std::endl;
 	}
 	// this part where we will handle some additional request parsing, at the time where the request was fully read
 	if (client.getHttp_request().getRequestRead())
 	{
-		// printf("%s>>>\n",client.getHttp_request().getMethod_uri().c_str());
-		// printf("Body :\n%s\n", ((request &)client.getHttp_request()).getBody().c_str());
-		// exit(0);
 		client.ParseRequest(serverBlocks);
 		((request &)client.getHttp_request()).setHandleRequest(true);
 	}
@@ -405,7 +401,13 @@ void	BodyFileResponse(response &resp, Client& client, std::string &file, std::st
 			// printf("opening  %s\n", file.c_str());
 			fd = open(file.c_str(), O_RDONLY);
 			if (fd == -1)
-				perror("Open :");// this must be prortect end the client connection there is a error .
+			{
+				perror("Open :");// this must be prortect end the client connection there is a error 
+				resp.setBody_sent(true);
+				resp.setHeader_sent(true);
+				((request &)client.getHttp_request()).setError(true);
+				return ;
+			}
 			resp.setFd(fd), resp.setFileOpened(true);
 		}
 		// SEND BODY FILE: IN THE FORM OFF CHUNKS MAX SIZE == CHUNK_SIZE
@@ -675,8 +677,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				}
 				if (poll_fds[i].revents & POLLIN)
 				{
-					// printf("%sClient info [%lu][%d] client time here from %ld%s\n", YELLOW, client_it, ClientsVector[client_it].getClientSocket(),  ClientsVector[client_it].getTime(), RESET);
-					// std::cout<<YELLOW<<"Read Partion Of CLient Request  "<< poll_fds[i].fd <<RESET<<std::endl;
 					handle_request(poll_fds,i,&ready_to_write,&size_fd,serverBlocks, response, ClientsVector[client_it], status_codes);
 					if (ClientsVector[client_it].getHttp_request().getHandleRequest())
 					{
@@ -698,13 +698,11 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				else if (poll_fds[i].revents & POLLOUT)
 				{
 					handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status,mime_type, ClientsVector[client_it], status_codes);
-					// std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;
 					if (ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent())
 					{
 
 						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError())
 						{
-							// printf("%d _ %d\n", isAlive(ClientsVector[client_it]), ClientsVector[client_it].getHttp_request().getError());
 							std::cout<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;
 							std::cout<<YELLOW<<"Connection to Client "<<poll_fds[i].fd<<" closed"<<RESET<<std::endl;
 							ClientsVector.erase(ClientsVector.begin() + client_it);
@@ -714,8 +712,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 						}
 						else
 						{
-							printf("Client info [%lu][%d] client time here from %ld\n", client_it, ClientsVector[client_it].getClientSocket(),  ClientsVector[client_it].getTime());
-							printf("socket %d REInitialized\n", ClientsVector[client_it].getClientSocket());
 							Client client;
 							client.setClientSocket(ClientsVector[client_it].getClientSocket());
 							ClientsVector[client_it] = client;

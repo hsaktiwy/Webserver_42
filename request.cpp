@@ -621,7 +621,6 @@ void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 {
 	// std::string allowedMethod[] = {"POST", "GET", "DELETE"};
 	size_t index = 0;
-	std::cout << body.size() << std::endl;
 	if (!Parsed_StartLine)
 	{
 		// printf("Test1\n");
@@ -700,7 +699,8 @@ bool	IndexingtoIndex(Worker& worker, int &is_dir, int &is_regular, t_uri& uri, b
 
 	if (error == false && is_dir == 1 && index.size() != 0)
 	{
-		std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
+		std::string check = (worker.getRoot() + "/" + uri.path);
+		check = NormilisePath(check);
 		if (access(check.c_str(), F_OK) == 0)
 		{
 			uri.path += index;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   blockworker.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/13 19:29:15 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/06 18:44:22 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -307,4 +307,23 @@ void    Worker::setPathUpload(std::string const &path)
 std::string    &Worker::getPathUpload()
 {
 	return this->path_upload;
+}
+
+std::string Worker::get_bash_bin() const
+{
+	return this->cgi_bash;
+}
+
+std::string Worker::get_python_bin() const
+{
+	return this->cgi_python;
+}
+
+void	Worker::set_bash_bin(const std::string &path)
+{
+	this->cgi_bash = path;
+}
+void	Worker::set_python_bin(const std::string &path)
+{
+	this->cgi_python = path;
 }

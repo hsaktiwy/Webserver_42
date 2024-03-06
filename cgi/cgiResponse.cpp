@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgiResponse.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/05 03:08:34 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/05 15:17:07 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -307,17 +307,17 @@ void CgiResponse::constructScriptEnv()
         isDataset = true;
     }
     
-    for (size_t i = 0; scriptData[i] != NULL; i++)
-    {
-        printf("%s\n", scriptData[i]);
-    }
+    // for (size_t i = 0; scriptData[i] != NULL; i++)
+    // {
+    //     printf("%s\n", scriptData[i]);
+    // }
     
 }
 void CgiResponse::handleError()
 {
     if (Env.isAutoIndexReq() || Env.getStatus())
     {
-        printf("Autoindex : %d, status : %d\n", Env.isAutoIndexReq() ,Env.getStatus());
+            printf("Autoindex : %d, status : %d\n", Env.isAutoIndexReq() ,Env.getStatus());
             printf("%s\n", Env.getErrorPage().c_str());
         if (Env.getErrorPage().size() && Env.getErrorPage().compare("valid request"))
         {

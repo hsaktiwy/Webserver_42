@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/05 03:24:42 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/01 23:07:35 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,8 +160,7 @@ void CgiEnv::setCgiRoot() //this function check if the root directive set for th
             accessDir = access(cgiRoot.c_str(), F_OK | X_OK);
             isValidDir = Is_Directory(cgiRoot);
             if (!isValidDir && !accessDir)
-            {    cgiDir = true;
-                envMap["ROOT"] = cgiRoot;}
+                cgiDir = true;
             else if (isValidDir == -1 || accessDir == -1)
             {
                 if (accessDir == -1)
@@ -465,9 +464,9 @@ void CgiEnv::setEnvironementData()
     setCgiServePort();
     setErrorpage();
     envMap["SERVER_PROTOCOL"] = "HTTP/1.1";
-    // std::cerr <<envMap["CONTENT_TYPE"]<<std::endl;
-    // std::cerr <<envMap["CONTENT_LENGTH"]<<std::endl;
-    // std::cerr<<reqBody<<std::endl;
+    std::cerr <<envMap["CONTENT_TYPE"]<<std::endl;
+    std::cerr <<envMap["CONTENT_LENGTH"]<<std::endl;
+    std::cerr<<reqBody<<std::endl;
 }
 void CgiEnv::setRequest(const std::string &req)
 {

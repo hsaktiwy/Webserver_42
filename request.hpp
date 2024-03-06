@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/23 00:20:45 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/06 15:22:48 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,7 @@ class request {
 		bool	MethodParsing(char *buff, ssize_t &bytes_size, size_t &index);
 		bool	UriParsing(char *buff, ssize_t &bytes_size, size_t &index);
 		bool	ProtocolParsing(char *buff, ssize_t &bytes_size, size_t &index);
-		bool	HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& worker, char *buff, ssize_t &bytes_size, size_t &index);
+		bool 	HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& worker, char *buff, ssize_t &bytes_size, size_t &index,int fd,std::map<int, int> &matched_server_block);
 		bool	BaseHeadersParsing(char *buff, ssize_t &bytes_size, size_t &index);
 		bool	IdentifieHost(char *buff, ssize_t &bytes_size, size_t &index);
 		void	BodyDelimiterIdentification( void );
@@ -145,7 +145,7 @@ class request {
 		~request();
 		request(const request& copy);
 		// void							ParseRequest(char *request);
-		void							ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker,char *buff, ssize_t bytes);
+		void							ParseRequest(std::vector<ServerBlocks> &serverBlocks,std::map<int, int> &matched_server_block , Worker& worker, char *buff, ssize_t bytes_size,int fd);
 		void							CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker);// THIS WILL CHECK THE REQUEST VALIDITY
 		request&						operator=(const request& obj);
 

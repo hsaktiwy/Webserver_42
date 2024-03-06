@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   handle_errors.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/09 12:17:44 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/10 18:34:42 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/06 16:40:33 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,19 @@ void    handle_directives(std::string &type, std::string &directive,std::string 
     static std::vector<std::string> error_page_token;
     if (!type.compare("argument"))
     {
+        if (!directive.compare("client_max_body_size"))
+        {
+            int i = 0;
+            while (token[i] != '\0')
+            {
+                if (!std::isdigit(token[i]))
+                {
+                    error = "invalid argument in " + directive + " directive in " + convertToString(line);
+                    throw error;
+                }
+                i++;
+            }
+        }
         if (!directive.compare("uploads"))
         {   
             number_of_args++;

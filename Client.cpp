@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/29 22:20:11 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/06 15:32:21 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ Client& Client::operator=(const Client& obj)
 {
 	if (this != &obj)
 	{
+		this->fd_server = obj.fd_server;
 		worker = obj.worker;
 		http_request = obj.http_request;
 		http_response = obj.http_response;
@@ -86,11 +87,11 @@ void	Client::CreateResponse(std::map<unsigned int, std::string> &status_codes)
 	http_response.responed(status_codes);
 }
 
-void	Client::BufferingRequest(std::vector<ServerBlocks> &serverBlocks, char *buff, size_t bytes)
+void	Client::BufferingRequest(std::vector<ServerBlocks> &serverBlocks, char *buff,std::map<int, int> &matched_server_block  ,size_t bytes)
 {
 	if (inProcess == false)
 		inProcess = true;
-    http_request.ParseRequest(serverBlocks, worker, buff, bytes);
+    http_request.ParseRequest(serverBlocks, matched_server_block,worker, buff ,bytes,fd_server);
 }
 
 response const	&Client::getHttp_response( void ) const

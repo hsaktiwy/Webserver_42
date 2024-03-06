@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   http.server.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/29 19:56:02 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/06 15:27:30 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,6 +171,7 @@ private:
     std::string max_body_size;
     std::string path_error_page;
     std::string path_upload;
+    std::vector<std::string> cgi;
     std::vector<std::vector<std::string> > error_page;
     std::vector<std::string> allow_methods;
     int track_status;
@@ -180,8 +181,10 @@ private:
 public:
     Worker();
     Worker(std::vector<ServerBlocks> &blocks,std::string &host);
+    
     ServerBlocks getBlockWorker() const;
     LocationsBlock getLocationWorker() const;
+    
     std::string getRoot() const;
     std::string getQuery() const;
     std::string getIndex() const;
@@ -194,10 +197,13 @@ public:
     std::string &getPathUpload();
     std::vector<std::string> const &getAllowMethods() const;
     std::vector<std::vector<std::string> >  &getErrorPages() ;
+    std::vector<std::string> const &getCgi() const ;
+
+    void    setCgi(const std::vector<std::string> &args);
     void    setBlockWorker(const ServerBlocks& blocks);
     void    setLocationWorker(const ServerBlocks& block,std::string &path);
     void    setRoot(const std::string& newRoot);
-    void    setIndex(const std::vector<std::string>&   args,const std::string &root);// modified bye hamza 
+    void    setIndex(const std::vector<std::string>&   args,const std::string &root);
     void    setRedirect(const std::string& newRedirect);
     void    setMethod(std::vector<std::string>  &args);
     void    setHost(const std::string& newHost);
@@ -210,13 +216,12 @@ public:
     bool    find_root(const ServerBlocks &block,const std::string &path);
     void    found_index_file(const std::string &root);//, const std::string &path);// modified bye hamza 
     void    setPathError(const std::vector<std::vector<std::string> > &error_page, unsigned int status, const std::string &root);
-    void    setIndex2(std::string const &path);
     void    setQuery(std::string const &query);
     void    setPathUpload(std::string const &path);
-    void set_track_status(int flag);
-    void setCgiStatus(bool state);
-    bool getCgiStatus();
-    int get_track_status();
+    void    set_track_status(int flag);
+    void    setCgiStatus(bool state);
+    bool    getCgiStatus();
+    int     get_track_status();
 };
 
 void            start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks, std::map<unsigned int, std::string> &status_codes);
@@ -230,7 +235,7 @@ std::string     getTokenType(const std::string& token);
 std::string     trim(const std::string& str);
 std::string     ft_trim(const std::string& str, const std::string& targets);
 int             Is_Directory(const std::string &root);
-void            init_worker_block(Worker &worker, std::string &host, std::string &path,std::vector<ServerBlocks> &serverBlocks, int &is_dir, int &is_regular);
+void            init_worker_block(Worker &worker, std::string &host ,std::string &path,std::vector<ServerBlocks> &serverBlocks, int &is_dir, int &is_regular,int fd,std::map<int, int> &matched_server_block);
 void            check_duplications(std::vector<ServerBlocks> serverBlocks);
 const std::string convertToString(long long line);
 

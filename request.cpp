@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/27 16:46:44 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/06 16:31:24 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,7 +177,6 @@ static void	FillUriStructor(t_uri& uri, std::string &full_uri)// authority boole
 	// extract the authority
 	if (full_uri[size] && full_uri[size] == '/')
 		size++;
-	printf("size %lu index[%lu] = %c\n", size, size, full_uri[size]);
 	// extract the path
 	for (size_t i = size; full_uri[i] && full_uri[i] != '?'; i++)
 	{
@@ -434,7 +433,7 @@ void	request::BodyDelimiterIdentification( void )
 	}
 }
 
-bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& worker, char *buff, ssize_t &bytes_size, size_t &index)
+bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& worker, char *buff, ssize_t &bytes_size, size_t &index,int fd,std::map<int, int> &matched_server_block)
 {
 	if (!R_FUll_HEADERS)
 	{
@@ -459,9 +458,7 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 			return (false);
 		}
 		// initialize our worker init base one our uri parsing result and host identifying
-		printf("%s _ %s\n", method_uri.c_str(), path.c_str());
-		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
-		printf("is_regular %d is_dir %d\n", is_regular, is_dir);
+		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular,fd,matched_server_block);
 		// exit(0);
 		// check for max body size existing and it value
 		if (worker.get_max_body_size() != "")
@@ -620,7 +617,7 @@ bool	request::BodyParsing(char *buff, ssize_t &bytes_size, size_t &index)
 	}
 	return (true);
 }
-void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker, char *buff, ssize_t bytes_size)
+void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks,std::map<int, int> &matched_server_block , Worker& worker, char *buff, ssize_t bytes_size,int fd)
 {
 	// std::string allowedMethod[] = {"POST", "GET", "DELETE"};
 	size_t index = 0;
@@ -639,7 +636,7 @@ void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		// printf("Test2\n");
 		// printf("Test2, %d\n", FillingBuffer);
 		// header parsing
-		if (!HeadersParsing(serverBlocks, worker, buff, bytes_size, index))
+		if (!HeadersParsing(serverBlocks, worker, buff, bytes_size, index,fd,matched_server_block))
 			return ;
 	}
 	// check the body existance the read and define the end of it
@@ -684,7 +681,6 @@ void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status
 
 	// this will check if our configue has another idea
 	std::vector<std::string> allowedMethods = worker.getAllowMethods();
-	printf("%lu size\n", allowedMethods.size());
 	if (error == false && allowedMethods.size() != 0)
 	{
 		printf("%d", find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end());
@@ -716,7 +712,6 @@ bool	IndexingtoIndex(Worker& worker, int &is_dir, int &is_regular, t_uri& uri, b
 
 void	FileAccessingRigth(Worker& worker, t_uri& uri, bool &error, int &status, int &is_regular, std::string &method)
 {
-	printf("error  %d status %d regular %d\n", error, status, is_regular);
 	if (error == false && is_regular == 1)
 	{
 		int rigths = (method == "POST") ? F_OK : F_OK | R_OK;

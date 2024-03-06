@@ -184,7 +184,7 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to
 	// and parse it at the same time to define if it ended or not
 	if (!client.getHttp_request().getRequestRead())
 	{
-		char buffer[CHUNK_SIZE];
+		char buffer[CHUNK_SIZE] = "HTTP/1.1 EXIT";
 		bytes_read = read(poll_fds[i].fd,buffer, CHUNK_SIZE);
 		if (bytes_read > 0)
 			client.BufferingRequest(serverBlocks, buffer, bytes_read);
@@ -448,6 +448,8 @@ void	handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 			BodyStringBodyTransfert(resp, writeBytes, buffer);
 			if (resp.getBody_sent() == false && resp.getBody_size() <= 0)
 				resp.setBody_sent(true);
+			std::cout << client.getHttp_request().getMethod_uri() << std::endl << buffer << std::endl;
+			std::cout << resp.getBody_sent() << std::endl;
 		}
 		else
 		{
@@ -715,7 +717,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 							Client client;
 							client.setClientSocket(ClientsVector[client_it].getClientSocket());
 							ClientsVector[client_it] = client;
-							// printf("-->%d\n",ClientsVector[client_it].getHttp_request().getHandleRequest());
+							printf("-->%d\n",ClientsVector[client_it].getHttp_request().getHandleRequest());
 							poll_fds[i].events = POLLIN;
 							// initialize all request and response values
 						}

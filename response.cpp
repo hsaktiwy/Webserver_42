@@ -207,10 +207,11 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 		else
 		{
 			// this must be deleted
+			printf("wtf?");
 			body_string = "<html>\r\n<head>\r\n	<title>Valide File</title>\r\n</head>\r\n<body>\r\n	<h1>The response must be here!.</h1>\r\n</body>\r\n</html>\r\n";
 			body_size = body_string.size();
 			std::string Hconnection = "Connection: " + ConnectionType(req);
-			http_response = "HTTP/1.1 200 OK\r\n" + Hconnection + "\r\nContent-Type: text/html\r\nServer: " + ((std::string)SERVERNAME) + "Content-Length: " + ToString(body_size) + "\r\n\r\n";
+			http_response = "HTTP/1.1 200 OK\r\n" + Hconnection + "\r\nContent-Type: text/html\r\nServer: " + ((std::string)SERVERNAME) + "\r\nContent-Length: " + ToString(body_size) + "\r\n\r\n";
 			header_size = http_response.size();
 			readyToResponed = true;
 		}

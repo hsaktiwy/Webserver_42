@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   http.server.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/07 18:32:31 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/03/06 18:31:42 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,8 @@ std::string getTokenType(const std::string& token)
     tokenTypes.insert(std::make_pair("index", "directive"));
     tokenTypes.insert(std::make_pair("root", "directive"));
     tokenTypes.insert(std::make_pair("to", "directive"));
-    tokenTypes.insert(std::make_pair("cgi", "directive"));
+    tokenTypes.insert(std::make_pair("cgi_python", "directive"));
+    tokenTypes.insert(std::make_pair("cgi_bash", "directive"));
     tokenTypes.insert(std::make_pair("server_names", "directive"));
     tokenTypes.insert(std::make_pair("{", "open_block"));
     tokenTypes.insert(std::make_pair("}", "close_block"));

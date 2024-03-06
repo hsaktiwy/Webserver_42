@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/06 15:27:30 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/06 18:47:49 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,7 +171,8 @@ private:
     std::string max_body_size;
     std::string path_error_page;
     std::string path_upload;
-    std::vector<std::string> cgi;
+    std::string cgi_python;
+    std::string cgi_bash;
     std::vector<std::vector<std::string> > error_page;
     std::vector<std::string> allow_methods;
     int track_status;
@@ -185,7 +186,10 @@ public:
     ServerBlocks getBlockWorker() const;
     LocationsBlock getLocationWorker() const;
     
+    
     std::string getRoot() const;
+    std::string get_bash_bin() const;
+    std::string get_python_bin() const;
     std::string getQuery() const;
     std::string getIndex() const;
     std::string getRedirect() const;
@@ -199,7 +203,8 @@ public:
     std::vector<std::vector<std::string> >  &getErrorPages() ;
     std::vector<std::string> const &getCgi() const ;
 
-    void    setCgi(const std::vector<std::string> &args);
+    void    set_bash_bin(const std::string &path);
+    void    set_python_bin(const std::string &path);
     void    setBlockWorker(const ServerBlocks& blocks);
     void    setLocationWorker(const ServerBlocks& block,std::string &path);
     void    setRoot(const std::string& newRoot);

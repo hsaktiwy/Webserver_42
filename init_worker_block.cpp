@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/06 15:59:48 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/06 18:45:07 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,9 +73,13 @@ void    setDirectives(T &directives,Worker &worker)
 		{
 			worker.setPathUpload(directives[i].getArgument()[0]);
 		}
-		else if (!directives[i].getDirective().compare("cgi"))
+		else if (!directives[i].getDirective().compare("cgi_python"))
 		{
-			worker.setCgi(directives[i].getArgument());
+			worker.set_python_bin(directives[i].getArgument()[0]);
+		}
+		else if (!directives[i].getDirective().compare("cgi_bash"))
+		{
+			worker.set_bash_bin(directives[i].getArgument()[0]);
 		}
 	}
     
@@ -170,7 +174,6 @@ void    get_matched_server_block(std::string &host_name,std::vector<ServerBlocks
     }
     std::map<int, int>::iterator it = matched_server_block.begin();
     std::map<int, int>::iterator ite = matched_server_block.end();
-    // printf("fd_server = %d\n",fd_server);
     while (it != ite)
     {
         if (it->first == fd_server)
@@ -180,62 +183,8 @@ void    get_matched_server_block(std::string &host_name,std::vector<ServerBlocks
         }
         it++;
     }
-    // host = host_name.substr(0,host_name.find(':')); 
-    // find_ip_address(host, ip_address);
 }
 
-// void    set_based_ip_address(Worker &worker, std::vector<ServerBlocks> &serverBlocks, const std::string listen)
-// {
-//     for (size_t i = 0; i < serverBlocks.size(); i++)
-//     {
-//         for (size_t j = 0; j < serverBlocks[i].getDirectives().size() ; j++)
-//         {
-//             if (!serverBlocks[i].getDirectives()[j].getDirective().compare("listen"))
-//             {
-//                 for (size_t k = 0; k < serverBlocks[i].getDirectives()[j].getArgument().size(); k++)
-//                 {
-//                     if (!serverBlocks[i].getDirectives()[j].getArgument()[k].compare(listen))
-//                     {
-//                         worker.setBlockWorker(serverBlocks[i]);
-//                         return;
-//                     }
-//                 }
-//             }
-//         }
-//     }
-    // std::string port = listen.substr(listen.find(':'));
-    // std::string hostname;
-    // struct in_addr addr;
-    // if (inet_aton(listen.substr(0,listen.find(':')).c_str(), &addr) == 0)
-    // {
-    //     std::cerr << "Invalid IP address\n";
-    //     return;
-    // }
-    // struct hostent* host_info = gethostbyaddr(&addr, sizeof(addr), AF_INET);
-    // if (host_info == NULL)
-    // {
-    //     worker.setBlockWorker(serverBlocks[0]);
-    //     return;
-    // }
-    // hostname = host_info->h_name + port;
-    // for (size_t i = 0; i < serverBlocks.size(); i++)
-    // {
-    //     for (size_t j = 0; j < serverBlocks[i].getDirectives().size() ; j++)
-    //     {
-    //         if (!serverBlocks[i].getDirectives()[j].getDirective().compare("listen"))
-    //         {
-    //             for (size_t k = 0; k < serverBlocks[i].getDirectives()[j].getArgument().size(); k++)
-    //             {
-    //                 if (!serverBlocks[i].getDirectives()[j].getArgument()[k].compare(hostname))
-    //                 {
-    //                     worker.setBlockWorker(serverBlocks[i]);
-    //                     return;
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-// }
 
 void   init_worker_block(Worker &worker, std::string &host ,std::string &path,std::vector<ServerBlocks> &serverBlocks, int &is_dir, int &is_regular,int fd,std::map<int, int> &matched_server_block)
 {

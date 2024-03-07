@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:40 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/07 22:27:40 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/03/06 16:43:29 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,14 +48,14 @@ void show_info(std::vector<ServerBlocks> &blocks) {
     for (size_t i = 0; i < blocks.size(); i++) {
         int j = 0;
         std::cout << "\x1B[1;34m"; 
-        printf("server #%lu\n", i);
+        printf("server #%lu ", i);
         std::cout << "\x1B[0m";
 
         while (j < blocks[i].getDirectives().size()) {
             if (!blocks[i].getDirectives()[j].getDirective().compare("server_names"))
             {
-                std::cout << "\t\x1B[1;32m"; 
-                printf("Server Name %s\n", blocks[i].getDirectives()[j].getArgument()[0].c_str());
+                std::cout << "\x1B[1;32m"; 
+                printf("Server Name %s", blocks[i].getDirectives()[j].getArgument()[0].c_str());
                 std::cout << "\x1B[0m"; 
             }
             if (!blocks[i].getDirectives()[j].getDirective().compare("listen"))

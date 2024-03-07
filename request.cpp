@@ -3,14 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
 /*   Updated: 2024/02/24 16:17:32 by hsaktiwy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+
 #include "request.hpp"
+#include "./cgi/cgi.hpp"
 
 request::request(): RequestRead(false), Parsed_StartLine(false), Parsed_Header(false), Body_Exist(false), Parsed_Body(false), ContentLengthExist(false), HandleRequest(false), R_Method(false), R_URI(false), R_PROTOCOL(false), R_FUll_HEADERS(false), R_FULL_BODY(false)
 {
@@ -28,6 +30,7 @@ request::request(): RequestRead(false), Parsed_StartLine(false), Parsed_Header(f
 	ChunkedRead = false;
 	ChunkedSizeRead = false;
 	ChunkedSize = 0;
+	isCgiRequest = false;
 	is_dir = 0;
 	is_regular = 0;
 	maxBodySizeExist = false;
@@ -299,7 +302,6 @@ bool	request::StartlineParsing(char *buff, ssize_t &bytes_size, size_t &index)
 		Parsed_StartLine = true, left_CR = false, index++,NewLine = true;
 	else if (left_CR == true && index < bytes_size && buff[index] != '\n')
 	{
-		// printf("Supper_be\n");
 		error = true, RequestRead = true, status = 400;
 		return (false);
 	}
@@ -431,7 +433,7 @@ void	request::BodyDelimiterIdentification( void )
 	}
 }
 
-bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& worker, char *buff, ssize_t &bytes_size, size_t &index)
+bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& worker, char *buff, ssize_t &bytes_size, size_t &index,int fd,std::map<int, int> &matched_server_block)
 {
 	if (!R_FUll_HEADERS)
 	{
@@ -456,9 +458,7 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 			return (false);
 		}
 		// initialize our worker init base one our uri parsing result and host identifying
-		// printf("%s _ %s\n", method_uri.c_str(), path.c_str());
-		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular);
-		// printf("is_regular %d is_dir %d\n", is_regular, is_dir);
+		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular,fd,matched_server_block);
 		// exit(0);
 		// check for max body size existing and it value
 		if (worker.get_max_body_size() != "")
@@ -617,7 +617,7 @@ bool	request::BodyParsing(char *buff, ssize_t &bytes_size, size_t &index)
 	}
 	return (true);
 }
-void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker, char *buff, ssize_t bytes_size)
+void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, std::map<int, int> &matched_server_block , Worker& worker, char *buff, ssize_t bytes_size,int fd)
 {
 	// std::string allowedMethod[] = {"POST", "GET", "DELETE"};
 	size_t index = 0;
@@ -635,7 +635,7 @@ void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		// printf("Test2\n");
 		// printf("Test2, %d\n", FillingBuffer);
 		// header parsing
-		if (!HeadersParsing(serverBlocks, worker, buff, bytes_size, index))
+		if (!HeadersParsing(serverBlocks, worker, buff, bytes_size, index,fd,matched_server_block))
 			return ;
 	}
 	// check the body existance the read and define the end of it
@@ -683,7 +683,6 @@ void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status
 	// printf("%lu size\n", allowedMethods.size());
 	if (error == false && allowedMethods.size() != 0)
 	{
-		// printf("%d", find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end());
 		if (find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end())
 			supported2 = true;
 	}
@@ -713,17 +712,14 @@ bool	IndexingtoIndex(Worker& worker, int &is_dir, int &is_regular, t_uri& uri, b
 
 void	FileAccessingRigth(Worker& worker, t_uri& uri, bool &error, int &status, int &is_regular, std::string &method)
 {
-	// printf("error  %d status %d regular %d\n", error, status, is_regular);
 	if (error == false && is_regular == 1)
 	{
 		int rigths = (method == "POST") ? F_OK : F_OK | R_OK;
 		std::string check = (worker.getRoot() + ((worker.getRoot()[worker.getRoot().size() - 1] == '/') ? "" : "/") + uri.path);
 		int r_acceess = access(check.c_str(), rigths);
-		// printf("access rigth (path : %s): %d\n", check.c_str(), r_acceess);
 		if (r_acceess != 0)
 			(errno == EACCES) ? (error = true, status = 403) : (error = true, status = 404);
 	}
-	// exit(0);
 }
 
 void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker)
@@ -738,7 +734,9 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		// std::cout << "host " << host << " root " << root  << " index " << index << " path " << worker.getPath() << " query " << uri.query << std::endl;
 		if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/"))
 		{
+			
 			worker.setCgiStatus(true);
+			isCgiRequest = true;
 			return;
 		}
 		// static level
@@ -856,7 +854,10 @@ int request::getHeaderIndex(const std::string &name) const
 	return (-1);
 }
 // Getter and Setter
-
+std::string const			&request::getBoundary( void ) const
+{
+	return boundary;
+}
 std::string	const			&request::getMethod( void ) const
 {
 	return (method);
@@ -950,4 +951,8 @@ void							request::setRequestRead(bool value)
 void							request::setHandleRequest(bool value)
 {
 	HandleRequest = value;
+}
+bool ::request::getCgiStatus() const
+{
+	return isCgiRequest;
 }

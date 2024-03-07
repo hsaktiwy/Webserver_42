@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   handle_errors.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/09 12:17:44 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/07 22:34:28 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/03/06 16:40:33 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,9 +40,23 @@ void    handle_directives(std::string &type, std::string &directive,std::string 
 {
     std::string error;
     static int number_of_args = 0;
+    static int number_of_root = 0;
     static std::vector<std::string> error_page_token;
     if (!type.compare("argument"))
     {
+        if (!directive.compare("client_max_body_size"))
+        {
+            int i = 0;
+            while (token[i] != '\0')
+            {
+                if (!std::isdigit(token[i]))
+                {
+                    error = "invalid argument in " + directive + " directive in " + convertToString(line);
+                    throw error;
+                }
+                i++;
+            }
+        }
         if (!directive.compare("uploads"))
         {   
             number_of_args++;
@@ -56,6 +70,15 @@ void    handle_directives(std::string &type, std::string &directive,std::string 
         {
             number_of_args++;
             error_page_token.push_back(token);
+        }
+        if (!directive.compare("root"))
+        {
+            number_of_root++;
+            if (number_of_root > 1)
+            {
+                error = "invalid number of arguments in " + directive + " directive in " + convertToString(line);
+                throw error;
+            }
         }
         if (!directive.compare("autoindex"))
         {
@@ -87,6 +110,7 @@ void    handle_directives(std::string &type, std::string &directive,std::string 
         *is_not_semi_colone = 1;
         *argument = 0;
         number_of_args = 0;
+        number_of_root = 0;
         error_page_token.clear();
     }
     else if (!type.compare("directive") || !type.compare("block"))

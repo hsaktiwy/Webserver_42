@@ -3,12 +3,13 @@
 /*                                                        :::      ::::::::   */
 /*   request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/16 21:20:45 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/03/06 15:22:48 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
@@ -123,13 +124,14 @@ class request {
 		std::string				ChunkSizeString;
 		// boundary case
 		std::string				boundary;
+		bool					isCgiRequest;
 
 		// private function in major cases they are supporting the public one
 		bool	StartlineParsing(char *buff, ssize_t &bytes_size, size_t &index);
 		bool	MethodParsing(char *buff, ssize_t &bytes_size, size_t &index);
 		bool	UriParsing(char *buff, ssize_t &bytes_size, size_t &index);
 		bool	ProtocolParsing(char *buff, ssize_t &bytes_size, size_t &index);
-		bool	HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& worker, char *buff, ssize_t &bytes_size, size_t &index);
+		bool 	HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& worker, char *buff, ssize_t &bytes_size, size_t &index,int fd,std::map<int, int> &matched_server_block);
 		bool	BaseHeadersParsing(char *buff, ssize_t &bytes_size, size_t &index);
 		bool	IdentifieHost(char *buff, ssize_t &bytes_size, size_t &index);
 		void	BodyDelimiterIdentification( void );
@@ -143,7 +145,7 @@ class request {
 		~request();
 		request(const request& copy);
 		// void							ParseRequest(char *request);
-		void							ParseRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker,char *buff, ssize_t bytes);
+		void							ParseRequest(std::vector<ServerBlocks> &serverBlocks,std::map<int, int> &matched_server_block , Worker& worker, char *buff, ssize_t bytes_size,int fd);
 		void							CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker);// THIS WILL CHECK THE REQUEST VALIDITY
 		request&						operator=(const request& obj);
 
@@ -161,6 +163,7 @@ class request {
 		std::vector<HTTPHeader>	const	&getHeaders( void ) const;
 		std::string	const				&getBody( void ) const;
 		std::string	const				&getReq( void ) const;
+		std::string const				&getBoundary( void ) const;
 		bool							getError( void ) const;
 		int								getStatus( void ) const;
 		int								getIs_dir( void ) const;
@@ -168,7 +171,7 @@ class request {
 		bool							getRequestRead( void ) const;
 		bool							getHandleRequest( void ) const;
 		size_t							getRequestLength( void ) const;
-
+		bool							getCgiStatus( void ) const;
 		// void							setRequestLength(bool value);
 		void							setRequestRead(bool value);
 		void							setHandleRequest(bool value);

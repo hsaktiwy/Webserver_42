@@ -3,7 +3,7 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+         #
+#    By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/13 12:12:25 by adardour          #+#    #+#              #
 #    Updated: 2024/02/18 10:24:46 by hsaktiwy         ###   ########.fr        #
@@ -17,9 +17,10 @@ CFLAGS = -Wall -Wextra -Werror -fsanitize=address
 SANI = #-fsanitize=address
 
 SRC = Client.cpp            ft_memset.cpp         http.server.cpp       main.cpp              proccess_tokens.cpp   response.cpp          start_serving.cpp \
-blockworker.cpp       handle_errors.cpp     init_worker_block.cpp mime_types.cpp        request.cpp           start_listening.cpp   tools.cpp cgi/cgi.cpp    cgi/cgiEnv.cpp timer.cpp
+blockworker.cpp       handle_errors.cpp     init_worker_block.cpp mime_types.cpp        request.cpp           start_listening.cpp   tools.cpp cgi/cgi.cpp    cgi/cgiResponse.cpp timer.cpp
 
-HPP = Client.hpp      http.server.hpp request.hpp     response.hpp cgi/cgi.hpp
+HPP = Client.hpp      http.server.hpp request.hpp     response.hpp cgi/cgi.hpp cgi/cgiResponse.hpp \
+
 
 OBJ = $(SRC:.cpp=.o)
 
@@ -30,7 +31,7 @@ all: $(TARGET)
 $(TARGET): $(OBJ)
 	$(CC) $(SANI) $(OBJ) -o $@
 
-%.o : %.cpp Client.hpp      http.server.hpp request.hpp     response.hpp cgi/cgi.hpp
+%.o : %.cpp Client.hpp      http.server.hpp request.hpp     response.hpp cgi/cgi.hpp cgi/cgiResponse.hpp
 	$(CC) $(SANI) -c $< -o $@
 
 clean:

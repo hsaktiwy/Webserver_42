@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/06 16:31:24 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/07 22:55:42 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -683,7 +683,6 @@ void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status
 	std::vector<std::string> allowedMethods = worker.getAllowMethods();
 	if (error == false && allowedMethods.size() != 0)
 	{
-		printf("%d", find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end());
 		if (find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end())
 			supported2 = true;
 	}

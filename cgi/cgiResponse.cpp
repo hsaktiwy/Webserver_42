@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgiResponse.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/05 15:17:07 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/08 18:39:15 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@ void CgiResponse::creatCgiResponse()
             fcntl(errorpipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             fcntl(trackerPipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             fcntl(trackerPipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-            std::string path_bin = "/usr/local/bin/python3";
+            std::string path_bin = Env.getScriptBin();
             char **args;
             int status;
             // tmp_socket = dup(socket_fd);
@@ -307,17 +307,17 @@ void CgiResponse::constructScriptEnv()
         isDataset = true;
     }
     
-    // for (size_t i = 0; scriptData[i] != NULL; i++)
-    // {
-    //     printf("%s\n", scriptData[i]);
-    // }
+    for (size_t i = 0; scriptData[i] != NULL; i++)
+    {
+        printf("%s\n", scriptData[i]);
+    }
     
 }
 void CgiResponse::handleError()
 {
     if (Env.isAutoIndexReq() || Env.getStatus())
     {
-            printf("Autoindex : %d, status : %d\n", Env.isAutoIndexReq() ,Env.getStatus());
+        printf("Autoindex : %d, status : %d\n", Env.isAutoIndexReq() ,Env.getStatus());
             printf("%s\n", Env.getErrorPage().c_str());
         if (Env.getErrorPage().size() && Env.getErrorPage().compare("valid request"))
         {

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/06 15:32:21 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/07 22:40:17 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,8 @@ void	Client::ParseRequest(std::vector<ServerBlocks> &serverBlocks)
 			cgiRequest.setContentType(content_type);
 			cgiRequest.setContentLength(content_length);
 		}
-			
+		else if (this->getHttp_request().getMethod().compare("GET"))
+			cgiRequest.setStatusCode(501);
 		cgiRequest.setEnvironementData(); // fill the map of the env needed by the script process and check errors
 	}
 		

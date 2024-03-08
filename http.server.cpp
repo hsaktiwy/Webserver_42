@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   http.server.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/06 18:31:42 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/07 23:12:13 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,12 +87,12 @@ void    parse_config(tokens_iterator  &lines, tokens_map &tokens)
 void    clear_token(const std::string &str, std::string &result)
 {
     for (size_t i = 0; i < str.length(); ++i) {
-        if ((str[i] == '{' || str[i] == '}' || str[i] == ';' || str[i] == '\n' || str[i] == '\"' || str[i] == '\'') &&
+        if ((str[i] == '{' || str[i] == '}' || str[i] == ';' || str[i] == '\n') &&
             (i == 0 || str[i - 1] != ' ')) {
             result += ' ';
         }
         result += str[i];
-        if ((str[i] == '{' || str[i] == '}' || str[i] == ';' || str[i] == '\n' || str[i] == '\"' || str[i] == '\'') &&
+        if ((str[i] == '{' || str[i] == '}' || str[i] == ';' || str[i] == '\n') &&
             (i == str.length() - 1 || str[i + 1] != ' ')) {
             result += ' ';
         }
@@ -121,8 +121,6 @@ std::string getTokenType(const std::string& token)
     tokenTypes.insert(std::make_pair("{", "open_block"));
     tokenTypes.insert(std::make_pair("}", "close_block"));
     tokenTypes.insert(std::make_pair(";", "semi_colon"));
-    tokenTypes.insert(std::make_pair("\'", "single_quote"));
-    tokenTypes.insert(std::make_pair("\"", "double_quote"));
     
     std::map<std::string, std::string>::iterator it = tokenTypes.find(token);
 

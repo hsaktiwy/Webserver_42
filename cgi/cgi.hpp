@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/29 20:40:09 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/08 18:37:54 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ private:
     std::string cgiRoot; //full path to the Root dir of cgi "cgi-bin"
     std::string reqBody;
     std::string boundary;
+    std::string scriptBin;
     std::string contentType;
     std::string contentLength;
     bool validRoot; //check if the root of the request is present and could be opened
@@ -67,8 +68,11 @@ public:
     void setHttpCookies(std::string &value);
     // void setRequestMethod();
     // void constructScriptEnv();
+    void processAndSetSessions(std::string &value);
     void setEnvironementData();
     bool isDirectoryRequest();
+    bool isAllowedMethod();
+    bool isValidscript(std::string &script);
     std::string &getCgiServerName();
     std::string &getCgiServerPort();
     std::string &getCgiScriptName();
@@ -77,6 +81,7 @@ public:
     std::string &getCgiRoot();
     std::string &getInputFromBody();
     std::string &getBoundary();
+    std::string &getScriptBin();
     int getStatus();
     bool isAutoIndexReq();
     bool getCgiDirStatus();

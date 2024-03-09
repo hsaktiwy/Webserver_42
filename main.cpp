@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:40 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/07 23:05:54 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/09 03:02:49 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,7 +135,6 @@ void    iniStatus_codes(std::map<unsigned int, std::string> &status_codes)
     status_codes.insert(std::make_pair(510, "Not Extended"));
     status_codes.insert(std::make_pair(511, "Network Authentication Required"));
 }
-
 
 int main(int c,char **argv)
 {

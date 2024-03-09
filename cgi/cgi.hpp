@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/08 18:37:54 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/08 23:03:28 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ private:
     std::string scriptBin;
     std::string contentType;
     std::string contentLength;
+    std::string redirection;
     bool validRoot; //check if the root of the request is present and could be opened
     bool cgiDir; //is the Dir of cgi ("cgi-bin") is present
     bool cgiScript; //is the cgi script found
@@ -40,6 +41,7 @@ private:
     bool isFile;
     bool ismetaDataset;
     bool isErrorpageSet;
+    bool isRedir;
     int status;
     int extraPathIndex;
     
@@ -56,6 +58,7 @@ public:
     void setCgiServerName();
     void setCgiServePort();
     void setRequest(const std::string &req);
+    void setRedirection();
     // void setCgiScriptName();
     void setCgiPATHINFO();
     void setCgiQueryString();
@@ -85,6 +88,8 @@ public:
     int getStatus();
     bool isAutoIndexReq();
     bool getCgiDirStatus();
+    bool getRedirectionStatus();
+    std::string &getRedirectionpage();
     bool isScriptFound();
     std::string &getErrorPage();
     // char **getenvArray();

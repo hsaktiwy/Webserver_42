@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/07 22:53:39 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/09 04:36:18 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -220,11 +220,11 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to
 			((request &)client.getHttp_request()).setRequestRead(true);
 		}
 		buffer[bytes_read] = '\0';
-		if(std::strlen(buffer) > 0)
-		{
-			ShowLogs(buffer);
+		// if(std::strlen(buffer) > 0)
+		// {
+		// 	ShowLogs(buffer);
 			
-		}
+		// }
 		// std::cout << RED << "BYTES Read From the request " << bytes_read << RESET<< std::endl;
 	}
 	// this part where we will handle some additional request parsing, at the time where the request was fully read

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/08 18:39:15 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/09 04:32:57 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ void CgiResponse::setSocket(int fd)
 }
 void CgiResponse::creatCgiResponse()
 {
-    if (!Env.getStatus() && !isErrorResponse)
+    if (!Env.getStatus() && !isErrorResponse && !Env.getRedirectionStatus())
     {
         if(!processSpawned)
         {
@@ -117,6 +117,7 @@ void CgiResponse::creatCgiResponse()
             if (errorPipeReturn == -1 || pid == -1)
             {
                 Env.setStatusCode(500);
+                Env.setErrorpage();
                 isErrorResponse = true;
                 handleError();
                 return;
@@ -130,18 +131,6 @@ void CgiResponse::creatCgiResponse()
                     std::map<std::string, std::string> tmp = Env.getEnvMap();
                     if (!tmp["REQUEST_METHOD"].compare("POST"))
                     {
-                        // int inputPipeReturn = pipe(inputPipe);
-                        // fcntl(inputPipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-                        // int i = 0;
-                        // std::string str = Env.getInputFromBody();
-                        // int bytes = write(inputPipe[1], &str[i], 1);
-                        // while (bytes)
-                        // {
-                        //     i++;
-                        //     bytes = write(inputPipe[1], &str[i], 1);
-                        //     printf("%d  %d\n",i, bytes);
-                        // }
-                        // close(inputPipe[1]);
                         std::string str = Env.getInputFromBody();
                         printf("%lu\n", strlen(str.data()));
                         printf("%lu\n", str.size());
@@ -194,6 +183,7 @@ void CgiResponse::creatCgiResponse()
                         close(errorpipe[1]);
                         close(trackerPipe[1]);
                         processSpawned = true;
+                        delete [] args;
                         // dup2(socket_fd, tmp_socket);
                     }
                 }
@@ -217,11 +207,12 @@ void CgiResponse::creatCgiResponse()
                     }
                     else
                     {
-                        std::cerr<<buffer<<std::endl;
                         Env.setStatusCode(500);
+                        Env.setErrorpage();
                         isErrorResponse = true;
                         handleError();
                         close(errorpipe[0]);
+                        close(trackerPipe[0]);
                         return;
                     }
                     close(errorpipe[0]);
@@ -234,8 +225,11 @@ void CgiResponse::creatCgiResponse()
                     {
                         kill(processId, SIGINT);
                         Env.setStatusCode(504);
+                        Env.setErrorpage();
                         isErrorResponse = true;
                         handleError();
+                        close(errorpipe[0]);
+                        close(trackerPipe[0]);
                         return;
                     }
                     
@@ -247,8 +241,21 @@ void CgiResponse::creatCgiResponse()
     }
     else
     {
-        handleError();
+        if (!Env.getRedirectionStatus())
+            handleError();
+        else
+            handleRedirection();
     }
+}
+void CgiResponse::handleRedirection()
+{
+    std::string redirPath = Env.getRedirectionpage();
+    std::string response;
+    response += "HTTP/1.1 302 Found\r\n";
+    response += "Location: ";
+    response += redirPath + "\r\n\r\n";
+    send(socket_fd, response.c_str(), response.size(), 0);
+    responseSent=true;
 }
 void CgiResponse::processResponse()
 {
@@ -322,7 +329,7 @@ void CgiResponse::handleError()
         if (Env.getErrorPage().size() && Env.getErrorPage().compare("valid request"))
         {
             errorResponse += "HTTP/1.1 302 Found\r\n";
-            errorResponse += "Location: /";
+            errorResponse += "Location: ";
             errorResponse += Env.getErrorPage() + "\r\n";
             errorResponse += "Content-Type: text/html\r\n\r\n";
         }

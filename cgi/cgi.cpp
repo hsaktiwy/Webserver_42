@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/08 18:54:51 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/09 04:33:07 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ CgiEnv::CgiEnv(const Worker &workerObj) : worker(workerObj)
     isDir = false;
     isFile = false;
     status = 0;
+    isRedir = false;
     extraPathIndex = -1;
     // setPathUriVector();
     // setCgiRoot();
@@ -45,6 +46,7 @@ CgiEnv::CgiEnv()
     autoIndex =  false;
     isDir = false;
     isFile = false;
+    isRedir = false;
     status = 0;
     extraPathIndex = -1;
 }
@@ -73,6 +75,8 @@ CgiEnv &CgiEnv::operator=(const CgiEnv &obj)
         reqBody = obj.reqBody;
         boundary = obj.boundary;
         scriptBin = obj.scriptBin;
+        redirection = obj.redirection;
+        isRedir = obj.isRedir;
     }
     return (*this);
 }
@@ -335,7 +339,6 @@ void CgiEnv::setCgiPATHINFO()
             //     errno == EACCES ? status = 403 : status = 404;
                 envMap["PATH_INFO"] = extraPath;
         }
-    std::cerr<<extraPath<<std::endl;
     }
 }
 bool CgiEnv::isValidscript(std::string &script)
@@ -397,7 +400,7 @@ void CgiEnv::findScript()
                                 if (i + 2 < pathUri.size())
                                     extraPathIndex = i + 2;
                             }
-                            else if(!isHandledScript)
+                            else if(!isHandledScript && !errno)
                                 status = 501;
                             else
                                 errno == EACCES ? status = 403 : status = 404;
@@ -430,7 +433,7 @@ void CgiEnv::findScript()
                     if (i + 2 < pathUri.size())
                         extraPathIndex = i + 2;
                 }
-                else if(!isHandledScript)
+                else if(!isHandledScript && !errno)
                     status = 501;
                 else
                     errno == EACCES ? status = 403 : status = 404;
@@ -541,17 +544,28 @@ void CgiEnv::setErrorpage()
            errorPage = worker.getPathError();
     }
 }
+void CgiEnv::setRedirection()
+{
+    std::string redir = worker.getRedirect();
+    if (redir.size())
+    {
+        redirection = redir;
+        isRedir = true;
+    }
+}
 void CgiEnv::setEnvironementData()
 {
-    setPathUriVector();
-    setCgiRoot();
-    findScript();
-    setCgiPATHINFO();
-    setCgiQueryString();
-    setCgiServerName();
-    setCgiServePort();
-    setErrorpage();
-    envMap["SERVER_PROTOCOL"] = "HTTP/1.1";
+        setPathUriVector();
+        setCgiRoot();
+        findScript();
+        setCgiPATHINFO();
+        setCgiQueryString();
+        setCgiServerName();
+        setCgiServePort();
+        setErrorpage();
+        envMap["SERVER_PROTOCOL"] = "HTTP/1.1";
+        setRedirection();
+
     // std::cerr <<envMap["CONTENT_TYPE"]<<std::endl;
     // std::cerr <<envMap["CONTENT_LENGTH"]<<std::endl;
     // std::cerr<<reqBody<<std::endl;
@@ -683,4 +697,12 @@ std::string &CgiEnv::getBoundary()
 std::string &CgiEnv::getScriptBin()
 {
     return scriptBin;
+}
+bool CgiEnv::getRedirectionStatus()
+{
+    return isRedir;
+}
+std::string &CgiEnv::getRedirectionpage()
+{
+    return redirection;
 }

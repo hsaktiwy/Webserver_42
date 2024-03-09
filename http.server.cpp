@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/07 23:12:13 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/09 03:15:21 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,4 +204,5 @@ void    parse_line(const std::string &line, tokens_map &tokens, int line_number)
         tokenize(trim, tokens, line_number);
         token = strtok(NULL, " ");
     }
+    delete [] line_copy;
 }

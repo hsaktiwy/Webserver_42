@@ -216,7 +216,7 @@ public:
     void    setPath(const std::string& newPath);
     void    setErrorPages(std::vector<std::string>  &args);
     void    set_max_body_size(std::string max_body_size);
-    bool    exact_match(const ServerBlocks &block,const std::string &path);
+    bool    exact_match(const ServerBlocks &block,std::string &path);
     bool    prefix_match(const ServerBlocks &block,const std::string &path);
     bool    find_root(const ServerBlocks &block,const std::string &path);
     void    found_index_file(const std::string &root);//, const std::string &path);// modified bye hamza 

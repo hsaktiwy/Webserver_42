@@ -89,6 +89,7 @@ void	Client::CreateResponse(std::map<unsigned int, std::string> &status_codes)
 
 void	Client::BufferingRequest(std::vector<ServerBlocks> &serverBlocks, char *buff,std::map<int, int> &matched_server_block  ,size_t bytes)
 {
+	
 	if (inProcess == false)
 		inProcess = true;
     http_request.ParseRequest(serverBlocks, matched_server_block,worker, buff ,bytes,fd_server);
@@ -159,6 +160,11 @@ bool			Client::getInProcess( void ) const
 	return (inProcess);
 }
 
+int				Client::getFdServer( void )
+{
+	return fd_server;
+}
+
 void			Client::setTime( long value)
 {
 	time = value;
@@ -167,4 +173,9 @@ void			Client::setTime( long value)
 void			Client::setInProcess( bool value)
 {
 	inProcess = value;
+}
+
+void			Client::setFdServer(int fd_s)
+{	
+	fd_server = fd_s;
 }

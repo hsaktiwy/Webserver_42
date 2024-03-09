@@ -220,6 +220,8 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to
 		}
 		buffer[bytes_read] = '\0';
 		ShowLogs(buffer);
+		printf("\nbytesread %lu\n", bytes_read);
+		printf("%s", buffer);
 	}
 	// this part where we will handle some additional request parsing, at the time where the request was fully read
 	if (client.getHttp_request().getRequestRead())
@@ -468,6 +470,7 @@ void	handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 		{
 			// BODY STRING CASE : where i our code creat the body and it don't need a file at all, this scope will handle it
 			// SEND Headers
+			printf("-->%s\n", resp.getHttp_response().c_str());
 			HeadersTransfert(resp, writeBytes, buffer);
 			// SEND Body
 			BodyStringBodyTransfert(resp, writeBytes, buffer);
@@ -476,6 +479,7 @@ void	handle_response(std::vector<struct pollfd> &poll_fds,int i,int *ready_to_wr
 		}
 		else
 		{
+			printf("-->%s\n", resp.getHttp_response().c_str());
 			// BODY FILE : when our body is in file format
 			// SEND Headers
 			if (resp.getHeader_sent() == false)

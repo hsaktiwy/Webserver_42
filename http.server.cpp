@@ -121,8 +121,6 @@ std::string getTokenType(const std::string& token)
     tokenTypes.insert(std::make_pair("{", "open_block"));
     tokenTypes.insert(std::make_pair("}", "close_block"));
     tokenTypes.insert(std::make_pair(";", "semi_colon"));
-    tokenTypes.insert(std::make_pair("\'", "single_quote"));
-    tokenTypes.insert(std::make_pair("\"", "double_quote"));
     
     std::map<std::string, std::string>::iterator it = tokenTypes.find(token);
 
@@ -206,4 +204,5 @@ void    parse_line(const std::string &line, tokens_map &tokens, int line_number)
         tokenize(trim, tokens, line_number);
         token = strtok(NULL, " ");
     }
+    delete [] line_copy;
 }

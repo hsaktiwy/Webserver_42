@@ -161,7 +161,7 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 		readyToResponed = true;
 		return ;
 	}
-	// printf("ola %d, %p %s %s\n", req.getError(), &req, req.getMethod().c_str(), req.getMethod_uri().c_str());
+	printf("ola %d, %p %s %s\n", req.getError(), &req, req.getMethod().c_str(), req.getMethod_uri().c_str());
 	if (req.getError() == false)
 	{
 		if (req.getIs_dir() == 1 || req.getIs_regular() == 1)
@@ -185,6 +185,7 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 			req.setError(true), req.setStatus(404);
 		}
 	}
+	printf("test???\n");
 	// responed using error pages if  (error  == true)
 	if (req.getError() == true)
 	{
@@ -612,10 +613,8 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 	std::string statusCode;
 
 	worker->setPathError(worker->getErrorPages(), req.getStatus(),worker->getRoot());
-	// printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());
 	if (wk.get_track_status() == 0 || (wk.get_track_status() == 1 && wk.getPathError().empty()))
 	{
-		// printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());
 		if (wk.get_track_status() == 1 && wk.getPathError() == "")
 			req.setStatus(404);
 		std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
@@ -632,12 +631,9 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 		body_size = 0;
 		http_response += body_string;
 		header_size = http_response.size();
-		// printf("Reponse : %s\n", http_response.c_str());
-		// printf("%s", body_string.c_str());
 	}
 	else
 	{
-		// printf("error %d\n", req.getError());
 		std::string path = wk.getLocationWorker().getPath() + "/" + worker->getPathError();
 		path = NormilisePath(path);
 		RedirectionResponse(status_codes, path);
@@ -667,9 +663,6 @@ response& response::operator=(const response& obj)
 {
 	if (this != &obj)
 	{
-		// printf("Copy Assigned oPERATOR IS CALLED\n");
-		// printf("Before setting ->%lld %lu\n", header_size, header_index);
-		// printf("To Copy setting %lld %lu\n", obj.header_size, obj.header_index);
 		http_response = obj.http_response;
 		http_request = obj.http_request;
 		body_string = obj.body_string;
@@ -690,12 +683,10 @@ response& response::operator=(const response& obj)
 		readyToResponed = obj.readyToResponed;
 		StoringFile = obj.StoringFile;
 		POST_Init = obj.POST_Init;
-		// stream = obj.stream;
 		index = obj.index;
 		boundary = obj.boundary;
 		CurrentFilename = obj.CurrentFilename;
 		files = obj.files;
-		// printf("After setting %lld %lu\n", header_size, header_index);
 	}
 	return (*this);
 }

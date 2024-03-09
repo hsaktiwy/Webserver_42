@@ -26,8 +26,6 @@
 // #include "WorkerInit.hpp"
 
 // special character
-#define CRLF "\r\n"
-#define LWS "\r\n "
 #define CR '\r'
 #define SP ' '
 #define HT '\t'

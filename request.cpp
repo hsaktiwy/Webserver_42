@@ -149,35 +149,13 @@ std::string		EscapedEncoding(std::string &uri, bool &error, int &status)
 	return (result);
 }
 
-// static bool absoluteURI(std::string &uri)
-// {
-// 	if (uri.size() > 4)
-// 	{
-// 		bool http = (uri.find("http:://") == 0) ? true : false, https = (uri.find("http:://") == 0) ? true : false;
-// 		if (http || https)
-// 			return (true);
-// 	}
-// 	return (false);
-// }
-
-// bool is_query(char c)
-// {
-// 	if (c == ';' ||  c == '/' ||  c == '?' ||  c == ':' ||  c == '@'
-// 		||  c == '&' ||  c == '=' ||  c == '+' || c == '$' || c == ','
-// 		|| std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == '!'
-// 		|| c == '~' || c == '*' || c == '\'' || c == '(' || c == ')')
-// 		return (true);
-// 	return (false);
-// }
 
 static void	FillUriStructor(t_uri& uri, std::string &full_uri)// authority boolean will confirme if there is a authority in the uri or note
 {
 	size_t size = 0;
-	// size += uri.scheme.size(); 
 	// extract the authority
 	if (full_uri[size] && full_uri[size] == '/')
 		size++;
-	// printf("size %lu index[%lu] = %c\n", size, size, full_uri[size]);
 	// extract the path
 	for (size_t i = size; full_uri[i] && full_uri[i] != '?'; i++)
 	{
@@ -626,14 +604,10 @@ void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, std::map<int
 		// printf("Test1\n");
 		if (!StartlineParsing(buff, bytes_size, index))
 			return ;
-		// if (R_Method && R_URI && R_PROTOCOL)
-		// 	printf("Start line  : %s %s %s\n", method.c_str(), method_uri.c_str(), http.c_str());
 	}
 	// check if the header is parsed
 	if (Parsed_StartLine && !Parsed_Header && index < bytes_size)
 	{
-		// printf("Test2\n");
-		// printf("Test2, %d\n", FillingBuffer);
 		// header parsing
 		if (!HeadersParsing(serverBlocks, worker, buff, bytes_size, index,fd,matched_server_block))
 			return ;
@@ -729,9 +703,7 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 	{
 		// chekc if the method is supported bye the server
 		AllowedMethod(worker, method, error, status);
-		// std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
 		worker.setQuery(uri.query);
-		// std::cout << "host " << host << " root " << root  << " index " << index << " path " << worker.getPath() << " query " << uri.query << std::endl;
 		if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/"))
 		{
 			
@@ -744,7 +716,6 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		bool indexed = IndexingtoIndex(worker, is_dir, is_regular, uri, error);
 		// if the path is file check it existence and access rigth
 		FileAccessingRigth(worker, uri, error, status, is_regular, method);
-		// printf("error %d, status %d\n", error, status);
 	}
 }
 

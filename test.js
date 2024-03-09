@@ -1,7 +1,7 @@
 const axios = require('axios');
 
-const url = 'http://127.0.0.1:5000/';
-const numRequests = 1;
+const url = 'http://127.0.0.1:8080/';
+const numRequests = 5000;
 
 async function sendRequest(url) {
     try {

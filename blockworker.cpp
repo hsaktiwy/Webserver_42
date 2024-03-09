@@ -112,11 +112,20 @@ bool prefix(const std::string &prefix,const std::string &path)
 {   
 	return (path.substr(0, prefix.length())).compare(prefix) == 0;
 }
-bool Worker::exact_match(const ServerBlocks &block,const std::string &path)
+bool Worker::exact_match(const ServerBlocks &block,std::string &path)
 {
+	if (path[0] == '/')
+	{
+		path.erase(0,1);
+	}
 	for (size_t i = 0; i < block.getLocations().size(); i++)
 	{
-		if (!block.getLocations()[i].getPath().compare(path))
+		std::string location_prefix = block.getLocations()[i].getPath();
+		if (location_prefix[0] == '/')
+		{
+			location_prefix.erase(0,1);
+		}
+		if (!location_prefix.compare(path))
 		{
 			this->locationworker = block.getLocations()[i];
 			return true;

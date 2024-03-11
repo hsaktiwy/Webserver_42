@@ -178,7 +178,6 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 		readyToResponed = true;
 		return ;
 	}
-	printf("ola %d, %p %s %s\n", req.getError(), &req, req.getMethod().c_str(), req.getMethod_uri().c_str());
 	if (req.getError() == false)
 	{
 		if (req.getIs_dir() == 1 || req.getIs_regular() == 1)
@@ -202,12 +201,10 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 			req.setError(true), req.setStatus(404);
 		}
 	}
-	printf("test???\n");
 	// responed using error pages if  (error  == true)
 	if (req.getError() == true)
 	{
 		// response for Error handling
-		// printf("solo\n");
 		errorresponse(status_codes);
 		readyToResponed = true;
 	}
@@ -267,78 +264,6 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 		}
 	}
 }
-
-// std::string	getFilename(std::stringstream &stream, std::string &boundary, bool &stop)
-// {
-// 	std::string filename;
-// 	std::string buff;
-// 	std::string boundary2 = "--" + boundary, boundaryEnd = "--" + boundary + "--";
-// 	while (true)
-// 	{
-// 		if (getline(stream, buff, '\n'))
-// 		{
-// 			if (buff.find(boundary2) == std::string::npos && buff.find(boundaryEnd) == std::string::npos)
-// 			{
-// 				size_t	npos = buff.find("Content-Disposition");
-// 				if (npos != std::string::npos && npos == 0)
-// 				{
-// 					std::string Format = "filename=";
-// 					size_t npos2 = buff.find(Format);
-// 					if (npos2 != std::string::npos)
-// 					{
-// 						npos2 += Format.size();
-// 						ExtractValues(buff, filename, npos2);
-// 						// adjust the stream this will surpace any line untell it get a empty line or in our case a line with only \r
-// 						while (getline(stream, buff, '\n'))
-// 						{
-// 							if (buff == "\r")
-// 								break;
-// 						}
-// 						return (filename);
-// 					}
-// 				}
-// 			}
-// 		}
-// 		else
-// 		{
-// 			stop = true;
-// 			break;
-// 		}
-// 	}
-// 	return ("");
-// }
-
-
-// bool	OpenFile(std::string &filename, std::stringstream& stream, std::string &boundary, bool &stop)
-// {
-// 	std::ofstream	Outfile(filename.c_str());
-// 	bool			run = true;
-// 	std::string			buff;
-// 	std::string boundary2 = "--" + boundary, boundaryEnd = "--" + boundary + "--";
-
-// 	if (Outfile.is_open())
-// 	{
-// 		while (run)
-// 		{
-// 			if (getline(stream, buff, '\n'))
-// 			{
-// 				if (buff.find(boundary2) == std::string::npos && buff.find(boundaryEnd) == std::string::npos)
-// 				{
-// 					buff += '\n';
-// 					Outfile << buff;
-// 				}
-// 				else
-// 					break;
-// 			}
-// 			else
-// 				stop = true, run = false;
-// 		}
-// 		Outfile.close();
-// 		return (true);
-// 	}
-// 	else
-// 		return (false);
-// }
 
 bool ft_getline(std::string &stream, size_t &index, std::string &buff,char delimiter)
 {

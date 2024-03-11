@@ -174,7 +174,6 @@ static void UriFormat(t_uri &uri, std::string &full_uri)// 1 for absolute 2 for 
 {
 	// check it the uri start with http or https
 	//[scheme]://[authority]/[path]?[query]#[fragment]
-	// bool	absoluteUri = absoluteURI(full_uri);
 	FillUriStructor(uri, full_uri);
 }
 
@@ -437,8 +436,6 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 		}
 		// initialize our worker init base one our uri parsing result and host identifying
 		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular,fd,matched_server_block);
-		// exit(0);
-		printf("-%d _ %d\n",  is_dir, is_regular);
 		// check for max body size existing and it value
 		if (worker.get_max_body_size() != "")
 		{
@@ -454,7 +451,6 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 		Parsed_Header = true;
 		FillingBuffer = false;
 		left_CR = false;
-		// printf("Does the bodyExist %d, and what delimiter whe need %d\n", Body_Exist, BodyLimiterType);
 	}
 	return (true);
 }
@@ -598,11 +594,9 @@ bool	request::BodyParsing(char *buff, size_t &bytes_size, size_t &index)
 }
 void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, std::map<int, int> &matched_server_block , Worker& worker, char *buff, size_t bytes_size,int fd)
 {
-	// std::string allowedMethod[] = {"POST", "GET", "DELETE"};
 	size_t index = 0;
 	if (!Parsed_StartLine)
 	{
-		// printf("Test1\n");
 		if (!StartlineParsing(buff, bytes_size, index))
 			return ;
 	}
@@ -616,7 +610,6 @@ void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, std::map<int
 	// check the body existance the read and define the end of it
 	if (Parsed_StartLine && Parsed_Header && Body_Exist)
 	{
-		// printf("Test3\n");
 		if (!BodyParsing(buff, bytes_size, index))
 			return ;
 	}

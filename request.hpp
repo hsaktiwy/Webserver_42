@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/06 15:22:48 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/10 23:11:17 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@
 #include "http.server.hpp"
 // #include <dirent.h>
 // #include "WorkerInit.hpp"
-
 // special character
 #define CR '\r'
 #define SP ' '
@@ -122,34 +121,31 @@ class request {
 		std::string				ChunkSizeString;
 		// boundary case
 		std::string				boundary;
-		bool					isCgiRequest;
+		int					isCgiRequest;
 
 		// private function in major cases they are supporting the public one
-		bool	StartlineParsing(char *buff, ssize_t &bytes_size, size_t &index);
-		bool	MethodParsing(char *buff, ssize_t &bytes_size, size_t &index);
-		bool	UriParsing(char *buff, ssize_t &bytes_size, size_t &index);
-		bool	ProtocolParsing(char *buff, ssize_t &bytes_size, size_t &index);
-		bool 	HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& worker, char *buff, ssize_t &bytes_size, size_t &index,int fd,std::map<int, int> &matched_server_block);
-		bool	BaseHeadersParsing(char *buff, ssize_t &bytes_size, size_t &index);
-		bool	IdentifieHost(char *buff, ssize_t &bytes_size, size_t &index);
+		bool	StartlineParsing(char *buff, size_t &bytes_size, size_t &index);
+		bool	MethodParsing(char *buff, size_t &bytes_size, size_t &index);
+		bool	UriParsing(char *buff, size_t &bytes_size, size_t &index);
+		bool	ProtocolParsing(char *buff, size_t &bytes_size, size_t &index);
+		bool 	HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& worker, char *buff, size_t &bytes_size, size_t &index,int fd,std::map<int, int> &matched_server_block);
+		bool	BaseHeadersParsing(char *buff, size_t &bytes_size, size_t &index);
+		bool	IdentifieHost( void );
 		void	BodyDelimiterIdentification( void );
-		bool	BodyParsing(char *buff, ssize_t &bytes_size, size_t &index);
-		bool	BodyIdentifiedByContentLength(char *buff, ssize_t &bytes_size, size_t &index);
-		void	BodyIdentifiedByTransfertEncoding(char *buff, ssize_t &bytes_size, size_t &index);
-		void	BodyIdentifiedByMultFormData(char *buff, ssize_t &bytes_size, size_t &index);
+		bool	BodyParsing(char *buff, size_t &bytes_size, size_t &index);
+		bool	BodyIdentifiedByContentLength(char *buff, size_t &bytes_size, size_t &index);
+		void	BodyIdentifiedByTransfertEncoding(char *buff, size_t &bytes_size, size_t &index);
+		void	BodyIdentifiedByMultFormData(char *buff, size_t &bytes_size, size_t &index);
 
     public:
 		request();
 		~request();
 		request(const request& copy);
-		// void							ParseRequest(char *request);
-		void							ParseRequest(std::vector<ServerBlocks> &serverBlocks,std::map<int, int> &matched_server_block , Worker& worker, char *buff, ssize_t bytes_size,int fd);
-		void							CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker);// THIS WILL CHECK THE REQUEST VALIDITY
+
+		void							ParseRequest(std::vector<ServerBlocks> &serverBlocks,std::map<int, int> &matched_server_block , Worker& worker, char *buff, size_t bytes_size,int fd);
+		void							CheckRequest(Worker& worker, bool &cgiStat);// THIS WILL CHECK THE REQUEST VALIDITY
 		request&						operator=(const request& obj);
 
-		// Method							getMethod( void ) const; // to get the method when we need it
-		// const std::vector<std::string>&	getHeaders( void ) const;// get the headers after being prased
-		void							RequestDisplay( void );
 		int 							getHeaderIndex(const std::string &name) const;
 		int								getHeaderValue(const std::string &header,std::string &buffer);// this function will return 1 if it get the value 0 if there is no header with that name in the request
 		void							AddToRawRequest(char *buff,  ssize_t bytes_read);
@@ -169,7 +165,7 @@ class request {
 		bool							getRequestRead( void ) const;
 		bool							getHandleRequest( void ) const;
 		size_t							getRequestLength( void ) const;
-		bool							getCgiStatus( void ) const;
+		int								getCgiStatus( void ) const;
 		// void							setRequestLength(bool value);
 		void							setRequestRead(bool value);
 		void							setHandleRequest(bool value);

@@ -17,3 +17,5 @@ pipe.cpp
 venv
 myenv
 /Uploads
+sessions
+sessions/*

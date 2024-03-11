@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/24 16:17:32 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/03/11 11:14:54 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "request.hpp"
 #include "./cgi/cgi.hpp"
 
-request::request(): RequestRead(false), Parsed_StartLine(false), Parsed_Header(false), Body_Exist(false), Parsed_Body(false), ContentLengthExist(false), HandleRequest(false), R_Method(false), R_URI(false), R_PROTOCOL(false), R_FUll_HEADERS(false), R_FULL_BODY(false)
+request::request(): RequestRead(false), Parsed_StartLine(false), R_Method(false), R_URI(false), R_PROTOCOL(false), R_FUll_HEADERS(false),  Parsed_Header(false),  R_FULL_BODY(false), Body_Exist(false), Parsed_Body(false), ContentLengthExist(false),  HandleRequest(false)
 {
 	BodyLimiterType = 0;
 	FillingBuffer = false;
@@ -30,7 +30,7 @@ request::request(): RequestRead(false), Parsed_StartLine(false), Parsed_Header(f
 	ChunkedRead = false;
 	ChunkedSizeRead = false;
 	ChunkedSize = 0;
-	isCgiRequest = false;
+	isCgiRequest = -1;
 	is_dir = 0;
 	is_regular = 0;
 	maxBodySizeExist = false;
@@ -59,7 +59,7 @@ static bool CheckUriFormat(std::string &uri)
 }
 
 
-static	bool	getToken(char *buff, size_t &index, ssize_t bytes, std::string &holder, bool &boolean, bool &readStatus)
+static	bool	getToken(char *buff, size_t &index, size_t bytes, std::string &holder, bool &boolean, bool &readStatus)
 {
 	while (index < bytes && buff[index] != ' ')
 	{
@@ -170,7 +170,7 @@ static void	FillUriStructor(t_uri& uri, std::string &full_uri)// authority boole
 	size += uri.query.size();
 }
 
-static void UriFormat(t_uri &uri, std::string &full_uri, std::string &host)// 1 for absolute 2 for relative 3 for autority 
+static void UriFormat(t_uri &uri, std::string &full_uri)// 1 for absolute 2 for relative 3 for autority 
 {
 	// check it the uri start with http or https
 	//[scheme]://[authority]/[path]?[query]#[fragment]
@@ -178,7 +178,7 @@ static void UriFormat(t_uri &uri, std::string &full_uri, std::string &host)// 1 
 	FillUriStructor(uri, full_uri);
 }
 
-bool	request::MethodParsing(char *buff, ssize_t &bytes_size, size_t &index)
+bool	request::MethodParsing(char *buff, size_t &bytes_size, size_t &index)
 {
 	// check if the buff start with sapce this case is not valide at all
 	if (FillingBuffer == false && index < bytes_size && buff[index] == ' ')
@@ -195,7 +195,7 @@ bool	request::MethodParsing(char *buff, ssize_t &bytes_size, size_t &index)
 	return (true);
 }
 
-bool	request::UriParsing(char *buff, ssize_t &bytes_size, size_t &index)
+bool	request::UriParsing(char *buff, size_t &bytes_size, size_t &index)
 {
 	// i will try to avoid all spaces
 	while (FillingBuffer == false && index < bytes_size && buff[index] == ' ')
@@ -209,7 +209,7 @@ bool	request::UriParsing(char *buff, ssize_t &bytes_size, size_t &index)
 	return (true);
 }
 
-bool	request::ProtocolParsing(char *buff, ssize_t &bytes_size, size_t &index)
+bool	request::ProtocolParsing(char *buff, size_t &bytes_size, size_t &index)
 {
 	while (FillingBuffer == false && index < bytes_size && buff[index] == ' ')
 			index++;
@@ -247,7 +247,7 @@ bool	request::ProtocolParsing(char *buff, ssize_t &bytes_size, size_t &index)
 	return (true);
 }
 
-bool	request::StartlineParsing(char *buff, ssize_t &bytes_size, size_t &index)
+bool	request::StartlineParsing(char *buff, size_t &bytes_size, size_t &index)
 {
 	if (!R_Method)
 	{
@@ -286,7 +286,7 @@ bool	request::StartlineParsing(char *buff, ssize_t &bytes_size, size_t &index)
 	return (true);
 }
 
-bool	request::BaseHeadersParsing(char *buff, ssize_t &bytes_size, size_t &index)
+bool	request::BaseHeadersParsing(char *buff, size_t &bytes_size, size_t &index)
 {
 	while (index < bytes_size)
 	{
@@ -345,7 +345,7 @@ bool	request::BaseHeadersParsing(char *buff, ssize_t &bytes_size, size_t &index)
 	return (true);
 }
 
-bool	request::IdentifieHost(char *buff, ssize_t &bytes_size, size_t &index)
+bool	request::IdentifieHost( void )
 {
 	// trim all values
 	for(size_t i = 0; i < headers.size(); i++)
@@ -411,7 +411,7 @@ void	request::BodyDelimiterIdentification( void )
 	}
 }
 
-bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& worker, char *buff, ssize_t &bytes_size, size_t &index,int fd,std::map<int, int> &matched_server_block)
+bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& worker, char *buff, size_t &bytes_size, size_t &index,int fd,std::map<int, int> &matched_server_block)
 {
 	if (!R_FUll_HEADERS)
 	{
@@ -422,13 +422,13 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 	if (R_FUll_HEADERS)
 	{
 		// Identifie our host , plus trim all headers values
-		if (!IdentifieHost(buff, bytes_size, index))
+		if (!IdentifieHost())
 			return (false);
 		// identifie the body delimiter is it Content-Length,Transfer-encoding,Content-Type, or even all of them 
 		BodyDelimiterIdentification();
 		// uri secondary parsing 
 		method_uri = EscapedEncoding(method_uri, error, status);
-		UriFormat(uri, method_uri, host);
+		UriFormat(uri, method_uri);
 		std::string path = "/"  + uri.path;
 		if (http != "HTTP/1.1")
 		{
@@ -438,6 +438,7 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 		// initialize our worker init base one our uri parsing result and host identifying
 		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular,fd,matched_server_block);
 		// exit(0);
+		printf("-%d _ %d\n",  is_dir, is_regular);
 		// check for max body size existing and it value
 		if (worker.get_max_body_size() != "")
 		{
@@ -458,7 +459,7 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 	return (true);
 }
 
-bool	request::BodyIdentifiedByContentLength(char *buff, ssize_t &bytes_size, size_t &index)
+bool	request::BodyIdentifiedByContentLength(char *buff, size_t &bytes_size, size_t &index)
 {
 	while (index < bytes_size)
 	{
@@ -477,7 +478,7 @@ bool	request::BodyIdentifiedByContentLength(char *buff, ssize_t &bytes_size, siz
 	return (true);
 }
 
-void	request::BodyIdentifiedByTransfertEncoding(char *buff, ssize_t &bytes_size, size_t &index)
+void	request::BodyIdentifiedByTransfertEncoding(char *buff, size_t &bytes_size, size_t &index)
 {
 	while (index < bytes_size)
 	{
@@ -529,7 +530,7 @@ void	request::BodyIdentifiedByTransfertEncoding(char *buff, ssize_t &bytes_size,
 	}
 }
 
-void	request::BodyIdentifiedByMultFormData(char *buff, ssize_t &bytes_size, size_t &index)
+void	request::BodyIdentifiedByMultFormData(char *buff, size_t &bytes_size, size_t &index)
 {
 	static std::string tmp;
 	while (index < bytes_size)
@@ -563,7 +564,7 @@ void	request::BodyIdentifiedByMultFormData(char *buff, ssize_t &bytes_size, size
 	}
 }
 
-bool	request::BodyParsing(char *buff, ssize_t &bytes_size, size_t &index)
+bool	request::BodyParsing(char *buff, size_t &bytes_size, size_t &index)
 {
 	if (BodyLimiterType == 0)
 	{
@@ -595,7 +596,7 @@ bool	request::BodyParsing(char *buff, ssize_t &bytes_size, size_t &index)
 	}
 	return (true);
 }
-void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, std::map<int, int> &matched_server_block , Worker& worker, char *buff, ssize_t bytes_size,int fd)
+void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, std::map<int, int> &matched_server_block , Worker& worker, char *buff, size_t bytes_size,int fd)
 {
 	// std::string allowedMethod[] = {"POST", "GET", "DELETE"};
 	size_t index = 0;
@@ -666,7 +667,7 @@ void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status
 		error = true, status = 405;
 }
 
-bool	IndexingtoIndex(Worker& worker, int &is_dir, int &is_regular, t_uri& uri, bool &error)
+void IndexingtoIndex(Worker& worker, int &is_dir, int &is_regular, t_uri& uri, bool &error)
 {
 	std::string index = worker.getIndex();
 
@@ -678,10 +679,8 @@ bool	IndexingtoIndex(Worker& worker, int &is_dir, int &is_regular, t_uri& uri, b
 		{
 			uri.path += index;
 			is_dir = 0; is_regular = 1;
-			return (true);
 		}
 	}
-	return (false);
 }
 
 void	FileAccessingRigth(Worker& worker, t_uri& uri, bool &error, int &status, int &is_regular, std::string &method)
@@ -696,7 +695,7 @@ void	FileAccessingRigth(Worker& worker, t_uri& uri, bool &error, int &status, in
 	}
 }
 
-void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker)
+void	request::CheckRequest(Worker& worker, bool &cgiStat)
 {
 	// RequestDisplay();
 	if (error == false)
@@ -708,35 +707,19 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		{
 			
 			worker.setCgiStatus(true);
-			isCgiRequest = true;
+			isCgiRequest = 1;
+			cgiStat = true;
 			return;
 		}
-		// static level
-		// check for index existing in our location or root
-		bool indexed = IndexingtoIndex(worker, is_dir, is_regular, uri, error);
-		// if the path is file check it existence and access rigth
-		FileAccessingRigth(worker, uri, error, status, is_regular, method);
+		else
+		{
+			isCgiRequest = 0;
+			IndexingtoIndex(worker, is_dir, is_regular, uri, error);
+			// if the path is file check it existence and access rigth
+			FileAccessingRigth(worker, uri, error, status, is_regular, method);
+		}
+		// printf("error %d, status %d\n", error, status);
 	}
-}
-
-void	request::RequestDisplay( void )
-{
-	// this is for display the data stored from the request
-	std::cout << "methode : " << method << ", uri " << method_uri << ", http protocol : " << http << " hostname : " << host << " error " << error << " status " << status <<std::endl;
-	for (std::vector<HTTPHeader>::iterator iter = headers.begin();  iter != headers.end(); iter++)
-	{
-		std::cout <<"--> " << iter->name << " : ";
-		std::cout << iter->values << std::endl;
-		std::cout <<"Form_name: " << iter->Form_name << " , Filename " << iter->filename << ", Probable length in bits = " << iter->end - iter->begin << ", Boundary " << iter->boundry << std::endl;
-		long long s = iter->begin;
-		while (s > 0 && s < req.size() && req[s])
-			std::cout << req[s];
-		std::cout << std::endl;
-	}
-	std::cout << "Body : \n";
-	// std::cout << body;
-	std::cout << "Parsed URI : \n";
-	std::cout << "Uri scheme : " << ",URI authority " << uri.authority  << ",URI path " << uri.path << ",URI query " << uri.query << std::endl;
 }
 
 int	request::getHeaderValue(const std::string &header,std::string &buffer)
@@ -814,7 +797,6 @@ request& request::operator=(const request& obj)
 	}
 	return (*this);
 }
-
 int request::getHeaderIndex(const std::string &name) const
 {
 	for(size_t i = 0; i < headers.size(); i++)
@@ -923,7 +905,7 @@ void							request::setHandleRequest(bool value)
 {
 	HandleRequest = value;
 }
-bool ::request::getCgiStatus() const
+int ::request::getCgiStatus() const
 {
 	return isCgiRequest;
 }

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 14:12:57 by aalami            #+#    #+#             */
-/*   Updated: 2024/02/27 19:10:26 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/09 23:57:07 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include "../http.server.hpp"
 #include <sstream>
 #include<ctime>
-#define RESP_TIMEOUT 120
+#define RESP_TIMEOUT 10
 
 class CgiResponse
 {
@@ -51,12 +51,14 @@ public:
     void setErrorMap(std::map<unsigned int, std::string> &ss_c);
     void creatCgiResponse();
     void handleError();
+    void handleRedirection();
     bool isResponseSent();
     bool isEnvset();
     bool isReqObjectset();
     bool isError();
     bool isProcessSpawned();
     void processResponse();
+    int getsocket();
 };
 
 

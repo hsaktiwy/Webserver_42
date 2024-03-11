@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:04 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/06 16:03:56 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/10 23:08:45 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,13 +31,14 @@ class Client {
 		int			fd_server;
 		CgiEnv      cgiRequest;
 		CgiResponse cgiResponse;
+		bool		iscgi;
 	public:
 		Client();
 		~Client();
 		Client(const Client& copy);
 		Client& operator=(const Client& obj);
 		// this function will int http_request and worker plus parse the request
-		void			ParseRequest(std::vector<ServerBlocks> &serverBlocks);
+		void			ParseRequest( void );
 		void			CreateResponse(std::map<unsigned int, std::string> &status_codes);
 		void			BufferingRequest(std::vector<ServerBlocks> &serverBlocks, char *buff,std::map<int, int> &matched_server_block  ,size_t bytes);
 
@@ -53,6 +54,8 @@ class Client {
 		CgiResponse  	&getcgiResponse();
 		CgiEnv  		&getcgiRequest();
 		int				getFdServer( void );
+		void			set_cgi_status(bool val);
+		bool			&get_cgi_status();
 		//setter
 		void			setClientSocket(int fd);
 		void			setClientRequestState(bool state);

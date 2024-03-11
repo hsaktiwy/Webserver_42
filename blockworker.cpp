@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   blockworker.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/07 22:36:58 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/11 11:24:56 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,27 +108,35 @@ Worker::Worker(std::vector<ServerBlocks> &blocks,std::string &host)
 	}
 }
 
-bool prefix(const std::string &prefix,const std::string &path)
+bool prefix(const std::string &prefix, const std::string &path)
 {   
-	return (path.substr(0, prefix.length())).compare(prefix) == 0;
+    return path.find(prefix) == 0;
 }
-bool Worker::exact_match(const ServerBlocks &block,const std::string &path)
+bool Worker::exact_match(const ServerBlocks &block,std::string &path)
 {
+	if (path[0] == '/')
+	{
+		path.erase(0, 1);
+	}
 	for (size_t i = 0; i < block.getLocations().size(); i++)
 	{
-		if (!block.getLocations()[i].getPath().compare(path))
+		std::string location_prefix = block.getLocations()[i].getPath();
+		if (location_prefix[0] == '/')
+			location_prefix.erase(0,1);
+		if (!location_prefix.compare(path))
 		{
-			this->locationworker = block.getLocations()[i];
+			locationworker = block.getLocations()[i];
 			return true;
 		}
 	}
 	return false;
 }
-bool Worker::prefix_match(const ServerBlocks &block,const std::string &path)
+bool Worker::prefix_match(const ServerBlocks &block,std::string &path)
 {
 	for (size_t i = 0; i < block.getLocations().size(); i++)
 	{
-		if (block.getLocations()[i].getPath().compare("/") && prefix(block.getLocations()[i].getPath(),path))
+		std::string location_prefix = block.getLocations()[i].getPath();
+		if (prefix(location_prefix,path))
 		{
 			this->locationworker = block.getLocations()[i];
 			return true;

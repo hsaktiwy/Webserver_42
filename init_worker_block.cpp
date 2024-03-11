@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/06 18:45:07 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/09 15:52:12 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,36 +103,7 @@ int Is_Directory(const std::string &root)
 	return (-1);
 }
 
-void find_ip_address(std::string &host,std::string &ipAddresses)
-{
-    struct addrinfo hints, *result, *p;
-    std::memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    int status = getaddrinfo(host.c_str(), NULL, &hints, &result);
-    if (status != 0)
-    {
-        std::cerr << "getaddrinfo error: " << gai_strerror(status) << std::endl;
-        exit(1);
-    }
-    for (p = result; p != NULL; p = p->ai_next)
-    {
-        void* addr;
-        char ipstr[INET_ADDRSTRLEN];
-
-        if (p->ai_family == AF_INET)
-        {
-            struct sockaddr_in* ipv4 = reinterpret_cast<struct sockaddr_in*>(p->ai_addr);
-            addr = &(ipv4->sin_addr);
-        } 
-        inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr);
-        ipAddresses += ipstr;
-        break;
-    }
-    freeaddrinfo(result); 
-}
-
-void    get_port(std::vector<Directives> &directives,std::string &port)
+void    get_port(std::vector<Directives> &directives,std::string &port) 
 {
     int i = 0;
     while (i < directives.size())
@@ -148,14 +119,17 @@ void    get_port(std::vector<Directives> &directives,std::string &port)
 }
 void    get_matched_server_block(std::string &host_name,std::vector<ServerBlocks> &blocks,Worker &worker,int fd_server,std::map<int, int> &matched_server_block)
 {
+    const size_t size_blocks = blocks.size();
     std::string host = host_name.substr(0,host_name.find(':'));
-    for (size_t i = 0; i < blocks.size(); i++)
+    for (size_t i = 0; i < size_blocks; i++)
     {
-        for (size_t j = 0; j < blocks[i].getDirectives().size() ; j++)
+        const size_t size_directives = blocks[i].getDirectives().size();
+        for (size_t j = 0; j <  size_directives; j++)
         {
             if (!blocks[i].getDirectives()[j].getDirective().compare("server_names"))
             {
-                for (size_t k = 0; k < blocks[i].getDirectives()[j].getArgument().size(); k++)
+                const size_t size_arguments = blocks[i].getDirectives()[j].getArgument().size();
+                for (size_t k = 0; k < size_arguments; k++)
                 {
                     if (!blocks[i].getDirectives()[j].getArgument()[k].compare(host))
                     {
@@ -189,19 +163,28 @@ void    get_matched_server_block(std::string &host_name,std::vector<ServerBlocks
 void   init_worker_block(Worker &worker, std::string &host ,std::string &path,std::vector<ServerBlocks> &serverBlocks, int &is_dir, int &is_regular,int fd,std::map<int, int> &matched_server_block)
 {
     int find;
-    std::string ip_address;
     std::string port;
 
+    // for (size_t i = 0; i < serverBlocks.size(); i++)
+    // {
+    //     for (size_t k = 0; k < serverBlocks[i].getDirectives().size(); k++)
+    //     {
+    //         for (size_t aa = 0; aa < serverBlocks[i].getDirectives()[k].getArgument().size(); aa++)
+    //         {
+    //            printf("%s\n",serverBlocks[i].getDirectives()[k].getArgument()[aa].c_str());
+    //         }
+            
+    //     }
+        
+    // }
+    
+    // exit(0);
     std::string host_name;
     worker.setPath(path);
+    // printf("path %s\n",worker.getPath().c_str());
     get_matched_server_block(host,serverBlocks,worker,fd,matched_server_block);
+    // printf("root %s\n",worker.getRoot().c_str());
 
-    // if (!ip_address.empty())
-    // {
-    //     port = host.substr(host.find(':')).c_str();
-    //     host_name = ip_address + port;
-    //     set_based_ip_address(worker,serverBlocks,host_name);
-    // }
     worker.setLocationWorker(worker.getBlockWorker(),path);
     set(worker.getLocationWorker().getDirectives(),worker,worker.getPath());
     if (worker.getRoot().empty())

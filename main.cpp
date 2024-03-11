@@ -6,11 +6,26 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:40 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/06 16:43:29 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/09 21:14:48 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http.server.hpp"
+
+bool check_quote(const std::string &line, char &qoute)
+{
+    int i = 0;
+    while (line[i])
+    {
+        if (line[i] == '\'' || line[i] == '\"')
+        {
+            qoute = line[i];
+            return true;
+        }
+        i++;
+    }
+    return false;
+}
 
 void    readAndParseConfig(int c, char **argv,tokens_iterator &lines)
 {
@@ -19,11 +34,13 @@ void    readAndParseConfig(int c, char **argv,tokens_iterator &lines)
     std::string     path;
     std::string     line;
     std::ifstream   configfile;
+    
 
     if (c == 1)
         path = DEFAULT_CONFIG_PATH;
     else 
         path = argv[1];
+
     std::ifstream file(path.c_str());
     if (file.is_open())
     { 
@@ -46,7 +63,7 @@ void show_info(std::vector<ServerBlocks> &blocks) {
     
     printf("\nSERVER INFO\t\n");
     for (size_t i = 0; i < blocks.size(); i++) {
-        int j = 0;
+        size_t j = 0;
         std::cout << "\x1B[1;34m"; 
         printf("server #%lu ", i);
         std::cout << "\x1B[0m";
@@ -138,7 +155,12 @@ void    iniStatus_codes(std::map<unsigned int, std::string> &status_codes)
 
 
 int main(int c,char **argv)
-{
+{   
+    if (c > 2)
+    {
+        printf("not a valid argument\n");
+        exit(1);
+    }
     tokens_iterator lines;
     tokens_map tokens;
     std::vector<ServerBlocks> serverBlocks;
@@ -153,8 +175,11 @@ int main(int c,char **argv)
         handle_errors(tokens);
         proccess_tokens(tokens,serverBlocks);
         check_duplications(serverBlocks);
-        show_info(serverBlocks);
-        start_listening_and_accept_request(serverBlocks, status_codes);
+        while(1)
+        {
+            
+        }
+        // start_listening_and_accept_request(serverBlocks, status_codes);
     }
     catch(std::string & e)
     {

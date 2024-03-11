@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/06 16:04:33 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/09 21:14:24 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,11 +43,24 @@ void    get_port_host(ServerBlocks &serverBlocks,t_port_host &port_host)
 		{
 			str = serverBlocks.getDirectives()[i].getArgument()[0];
 			int find = str.find(':');
-			port = str.substr(find + 1);
-			host = str.substr(0,find);
+			if (find == -1)
+			{
+				host = "0.0.0.0";
+				port = str.substr(find + 1);
+			}
+			else if (find == 0)
+			{
+				printf("not valid!");
+				exit(1);
+			}
+			else
+			{
+				host = str.substr(0,find);
+				port = str.substr(find + 1);
+			}
 			if ((atoi(port.c_str()) < 0 || atoi(port.c_str()) > 65535) || !valid_port(port))
 			{
-				printf("error \n");
+				printf("not valid!");
 				exit(1);
 			}
 			port_host.port = atoi(port.c_str());
@@ -125,59 +138,6 @@ void    init_poll_fds(std::vector<struct pollfd> &poll_fds,int size,std::vector<
 	}
 }
 
-int create_socket_client(std::vector<int> &sockets,std::vector<struct pollfd> &poll_fds, nfds_t *size_fd, int i)
-{
-	int client_socket;
-	sockaddr_in client;
-	socklen_t socklen = sizeof(client);
-	client_socket = accept(sockets[i], (struct sockaddr *)&client, &socklen);
-	if (client_socket < 0)
-	{
-		if (errno == EWOULDBLOCK || errno == EAGAIN)
-		{
-			return 35;
-		}
-		else
-		{
-			std::cout << "Error in accepting connection\n";
-			return -1;
-		}
-	}
-	else
-	{
-		struct pollfd temp;
-		temp.fd = client_socket;
-		temp.events = POLLIN | POLLOUT; 
-		poll_fds.push_back(temp);
-		(*size_fd)++;
-	}
-	return (client_socket);
-}
-
-// void handle_read(std::vector<struct pollfd> &poll_fds, int i, int *ready_to_write, 
-//                   nfds_t *size_fd, std::vector<ServerBlocks> &serverBlocks, std::string &response, int *flag,int *status,std::string &human_status,std::string &mime_type)
-// {
-//     char buffer[1024];
-//     int bytes_read = recv(poll_fds[i].fd, buffer, sizeof(buffer) - 1, 0);
-//     if (bytes_read > 0)
-//     {
-//         buffer[bytes_read] = '\0';
-//         init_worker_block(buffer, serverBlocks);
-//         *ready_to_write = 1;
-//     }
-//     else if (bytes_read == 0)
-//     {
-//         printf("close client\n");
-//         close(poll_fds[i].fd);
-//         poll_fds.erase(poll_fds.begin() + i);
-//         (*size_fd)--;
-//     }
-//     else
-//     {
-//         perror("recv ");
-//     }
-// }
-
 void	ShowLogs(char (&buffer)[CHUNK_SIZE + 1])
 {
  	std::time_t now = std::time(NULL);
@@ -197,8 +157,7 @@ void	ShowLogs(char (&buffer)[CHUNK_SIZE + 1])
     std::cout << " " << time_info->tm_hour << ':' << time_info->tm_min << ':' << time_info->tm_sec << " ";
 	std::cout << "[REQUEST]  " ;
 	printf("%s ",method.c_str());
-	printf("%s ",path.c_str());
-	printf("\n");
+	printf("%s \n",path.c_str());
 }
 
 void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to_write, nfds_t *size_fd,std::vector<ServerBlocks> &serverBlocks,std::string &response, Client & client, std::map<unsigned int, std::string> &status_codes,std::map<int, int> &matched_server_block)
@@ -219,8 +178,11 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to
 			((request &)client.getHttp_request()).setStatus(500);
 			((request &)client.getHttp_request()).setRequestRead(true);
 		}
-		buffer[bytes_read] = '\0';
-		ShowLogs(buffer);
+		if (std::strlen(buffer) > 0)
+		{
+			buffer[bytes_read] = '\0';
+			ShowLogs(buffer);
+		}
 		// std::cout << RED << "BYTES Read From the request " << bytes_read << RESET<< std::endl;
 	}
 	// this part where we will handle some additional request parsing, at the time where the request was fully read
@@ -238,7 +200,9 @@ bool	RangeFormat(const HTTPHeader &header, response  &response, long long FileSi
 	bool Valide = true;
 	long long	start = 0;
 	long long	end = -1;
+	
 	std::string A,S,E; 
+	
 	if (header.values.size() > 0)
 	{
 		std::string value = header.values;
@@ -313,6 +277,7 @@ std::string	HandleHeaderFileStatus(Client& client, long long size, long long LMT
 			|| FileType.find("audio") != std::string::npos)
 			ResponseHeader += "Accept-Ranges: bytes\r\n"; 
 	}
+	// ResponseHeader += "Access-Control-Allow-Origin : *\r\n";
 	ResponseHeader += "Server: " + ((std::string)SERVERNAME) + "\r\n\r\n"; 
 	((response  &)resp).setBody_size(rest + ResponseHeader.size());
 	return (ResponseHeader);
@@ -635,6 +600,7 @@ bool	isAlive(Client & client)
 	return (false);
 }
 
+
 void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,std::map<unsigned int, std::string> &status_codes)
 {
 	std::string response;
@@ -661,8 +627,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 	std::vector<Client> ClientsVector;
 	
 	nfds_t size_fd = poll_fds.size();
-	std::cout<<GREEN<<" Waiting for an incomming request "<<RESET<<std::endl;
-	
+	std::cout<<GREEN<<"Waiting for an incoming request... "<<RESET<<std::endl;
 	// std::map<int, int>::iterator it = matched_server_block.begin();
 	// std::map<int, int>::iterator ite = matched_server_block.end();
 
@@ -684,7 +649,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 		}
 		if (pollRet == 0)
 		{
-			std::cout<<RED<<"Connection timeout...."<<RESET<<std::endl;
+			std::cout<<RED<<"Connection timeout ..."<<RESET<<std::endl;
 			continue;
 		}
 		for (size_t i = 0; i < poll_fds.size(); i++)
@@ -716,7 +681,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				tmp.fd = acceptRet; // add a client socket to the poll array
 				tmp.events = POLLIN; // waiting for I/O on this socket
 				poll_fds.push_back(tmp); 
-					// pollFdsSize++;
+				// pollFdsSize++;
 			}
 			else if (i >= sockets.size())
 			{
@@ -754,13 +719,13 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 					if (ClientsVector[client_it].getHttp_request().getCgiStatus() && !ClientsVector[client_it].getcgiResponse().isResponseSent())
 						handleCgiResponse(poll_fds, i, ClientsVector[client_it], status_codes);
 					else
-						{handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status,mime_type, ClientsVector[client_it], status_codes);
-						// std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;
-						}
+					{
+						handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status,mime_type, ClientsVector[client_it], status_codes);
+					// std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;
+					}
 					// std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;
 					if (ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent())
 					{
-						
 						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError() || ClientsVector[client_it].getcgiResponse().isError())
 						{
 							// printf("%d _ %d\n", isAlive(ClientsVector[client_it]), ClientsVector[client_it].getHttp_request().getError());

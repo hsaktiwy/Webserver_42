@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/06 18:47:49 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/08 20:18:30 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,8 +216,8 @@ public:
     void    setPath(const std::string& newPath);
     void    setErrorPages(std::vector<std::string>  &args);
     void    set_max_body_size(std::string max_body_size);
-    bool    exact_match(const ServerBlocks &block,const std::string &path);
-    bool    prefix_match(const ServerBlocks &block,const std::string &path);
+    bool    exact_match(const ServerBlocks &block,std::string &path);
+    bool    prefix_match(const ServerBlocks &block,std::string &path);
     bool    find_root(const ServerBlocks &block,const std::string &path);
     void    found_index_file(const std::string &root);//, const std::string &path);// modified bye hamza 
     void    setPathError(const std::vector<std::vector<std::string> > &error_page, unsigned int status, const std::string &root);

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/07 22:40:17 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/11 02:37:34 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ Client::Client() : http_response(http_request, worker) , cgiRequest(worker)
 	requestReceived = false;
 	responseSent = false;
 	inProcess = false;
+	iscgi = false;
 	time = CurrentTime();
 }
 
@@ -49,15 +50,24 @@ Client& Client::operator=(const Client& obj)
 		cgiResponse = obj.cgiResponse;
 		inProcess = obj.inProcess;
 		time = obj.time;
+		iscgi = obj.iscgi;
 	}
 	return (*this);
 }
-
+void	Client::set_cgi_status(bool val)
+{
+	iscgi = val;
+}
+bool	&Client::get_cgi_status()
+{
+	return iscgi;
+}
 void	Client::ParseRequest(std::vector<ServerBlocks> &serverBlocks)
 {
-    http_request.CheckRequest(serverBlocks, worker);
-	if (http_request.getCgiStatus()) // check if the request is a cgi request
+    http_request.CheckRequest(serverBlocks, worker, this->get_cgi_status());
+	if (get_cgi_status()) // check if the request is a cgi request
 	{
+		printf("is cgi req\n");
 			std::string http_cookie;
 		cgiRequest.setCgiWorker(worker); //set the worker of the cgi request
 		cgiRequest.setRequest(this->getHttp_request().getMethod()); //init the method 
@@ -77,10 +87,9 @@ void	Client::ParseRequest(std::vector<ServerBlocks> &serverBlocks)
 			cgiRequest.setContentLength(content_length);
 		}
 		else if (this->getHttp_request().getMethod().compare("GET"))
-			cgiRequest.setStatusCode(501);
+			cgiRequest.setStatusCode(405);
 		cgiRequest.setEnvironementData(); // fill the map of the env needed by the script process and check errors
-	}
-		
+	}	
 }
 
 void	Client::CreateResponse(std::map<unsigned int, std::string> &status_codes)

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:04 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/07 22:38:54 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/10 23:08:45 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ class Client {
 		int			fd_server;
 		CgiEnv      cgiRequest;
 		CgiResponse cgiResponse;
+		bool		iscgi;
 	public:
 		Client();
 		~Client();
@@ -53,6 +54,8 @@ class Client {
 		Worker const	&getWorker( void ) const;
 		CgiResponse  &getcgiResponse();
 		CgiEnv  &getcgiRequest();
+		void	set_cgi_status(bool val);
+		bool	&get_cgi_status();
 		
 		void	setFdServer(int fd_server)
 		{	

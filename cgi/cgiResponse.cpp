@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/09 04:32:57 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/10 00:35:56 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,10 @@ CgiResponse &CgiResponse::operator=(const CgiResponse &obj)
         // constructScriptEnv();
     }
     return (*this);
+}
+int CgiResponse::getsocket()
+{
+    return socket_fd;
 }
 void CgiResponse::setErrorMap(std::map<unsigned int, std::string> &ss_c)
 {
@@ -221,6 +225,7 @@ void CgiResponse::creatCgiResponse()
                 {
                     clock_t current = clock();
                     double timeSpent = static_cast<double>(current - processTime) / CLOCKS_PER_SEC;
+                    // printf("current = %ld processTime = %ld fd = %d\n ", current / CLOCKS_PER_SEC, processTime / CLOCKS_PER_SEC, socket_fd);
                     if (timeSpent >= RESP_TIMEOUT)
                     {
                         kill(processId, SIGINT);
@@ -314,10 +319,6 @@ void CgiResponse::constructScriptEnv()
         isDataset = true;
     }
     
-    for (size_t i = 0; scriptData[i] != NULL; i++)
-    {
-        printf("%s\n", scriptData[i]);
-    }
     
 }
 void CgiResponse::handleError()

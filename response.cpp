@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/07 22:44:51 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/11 00:00:07 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,13 +206,46 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 		}
 		else
 		{
+			if (Is_Directory(worker->getRoot() + worker->getPath()) == 0)
+			{
+				DIR *dirent = opendir((worker->getRoot() + worker->getPath()).c_str());
+				if (dirent == NULL)
+				{
+					req.setError(true);
+					errno ==  EACCES ? req.setStatus(403) : req.setStatus(404);
+					return;
+				}
+
+				
+			}
+			else
+			{
+				if (access((worker->getRoot() + worker->getPath()).c_str(),F_OK) == -1)
+				{
+					errno ==  EACCES ? req.setStatus(403) : req.setStatus(404);
+					return;	
+				}
+			}
+			
+			std::remove((worker->getRoot() + worker->getPath()).c_str());
 			// this must be deleted
-			body_string = "<html>\r\n<head>\r\n	<title>Valide File</title>\r\n</head>\r\n<body>\r\n	<h1>The response must be here!.</h1>\r\n</body>\r\n</html>\r\n";
+			body_string = "";
 			body_size = body_string.size();
 			std::string Hconnection = "Connection: " + ConnectionType(req);
-			http_response = "HTTP/1.1 200 OK\r\n" + Hconnection + "\r\nContent-Type: text/html\r\nServer: " + ((std::string)SERVERNAME) + "\r\nContent-Length: " + ToString(body_size) + "\r\n\r\n";
+			http_response = "HTTP/1.1 204 No Content\r\n" + Hconnection + "\r\n\r\n";
 			header_size = http_response.size();
 			readyToResponed = true;
+			
+
+			// 			std::cout<< worker->getRoot() + worker->getPath()<< std::endl;
+			// printf("%d\n",std::remove((worker->getRoot() + worker->getPath()).c_str()));
+			// // perror("remove : ");
+			// // this must be deleted
+			// std::string Hconnection = "Connection: " + ConnectionType(req);
+			
+			// header_size = http_response.size();
+			// body_string = "";
+			// readyToResponed = true;
 		}
 	}
 }

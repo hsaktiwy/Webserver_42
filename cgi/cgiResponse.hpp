@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 14:12:57 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/09 02:31:40 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/09 23:57:07 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ public:
     bool isError();
     bool isProcessSpawned();
     void processResponse();
+    int getsocket();
 };
 
 

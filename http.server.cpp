@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/06 18:31:42 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/08 16:23:30 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,16 +86,16 @@ void    parse_config(tokens_iterator  &lines, tokens_map &tokens)
 
 void    clear_token(const std::string &str, std::string &result)
 {
-    for (size_t i = 0; i < str.length(); ++i) {
-        if ((str[i] == '{' || str[i] == '}' || str[i] == ';' || str[i] == '\n' || str[i] == '\"' || str[i] == '\'') &&
-            (i == 0 || str[i - 1] != ' ')) {
+    for (size_t i = 0; i < str.length(); ++i)
+    {
+        if ((str[i] == '{' || str[i] == '}' || str[i] == ';' || str[i] == '\n') &&
+            (i == 0 || str[i - 1] != ' '))
             result += ' ';
-        }
+
         result += str[i];
-        if ((str[i] == '{' || str[i] == '}' || str[i] == ';' || str[i] == '\n' || str[i] == '\"' || str[i] == '\'') &&
-            (i == str.length() - 1 || str[i + 1] != ' ')) {
+        if ((str[i] == '{' || str[i] == '}' || str[i] == ';' || str[i] == '\n') &&
+            (i == str.length() - 1 || str[i + 1] != ' ')) 
             result += ' ';
-        }
     }
 }
 
@@ -121,8 +121,6 @@ std::string getTokenType(const std::string& token)
     tokenTypes.insert(std::make_pair("{", "open_block"));
     tokenTypes.insert(std::make_pair("}", "close_block"));
     tokenTypes.insert(std::make_pair(";", "semi_colon"));
-    tokenTypes.insert(std::make_pair("\'", "single_quote"));
-    tokenTypes.insert(std::make_pair("\"", "double_quote"));
     
     std::map<std::string, std::string>::iterator it = tokenTypes.find(token);
 
@@ -155,28 +153,37 @@ void tokenize(std::string &token, tokens_map &tokens, int line_number)
     }
     else if (flag_location == 1 && token.length() >= 1)
     {
-        if (!token.compare("{")) {
+        if (!token.compare("{"))
+        {
             tokens_vec.push_back(std::make_pair(token, getTokenType(token)));
             flag_location = 0;
-        } else {
+        }
+        else
+        {
             tokens_vec.push_back(std::make_pair(token, "path"));
         }
-    } else if (flag == 1 && token.length() >= 1) {
-        if (!token.compare(";")) {
+    }
+    else if (flag == 1 && token.length() >= 1)
+    {
+        if (!token.compare(";"))
+        {
             tokens_vec.push_back(std::make_pair(token, getTokenType(token)));
             flag = 0;
-        } else {
+        }
+        else
+        {
             if (!token.compare("\'") || !token.compare("\"") )
             {
                 tokens_vec.push_back(std::make_pair(token, getTokenType(token)));
-                
             }
             else
             {
                 tokens_vec.push_back(std::make_pair(token, "argument"));
             }
         }
-    } else {
+    }
+    else
+    {
         if (token.length() >= 1)
         {
             std::string type = getTokenType(token);
@@ -184,7 +191,8 @@ void tokenize(std::string &token, tokens_map &tokens, int line_number)
             if (!type.compare("directive"))
             {
                 flag = 1;
-            } else if (!type.compare("block") && !token.compare("location"))
+            }
+            else if (!type.compare("block") && !token.compare("location"))
             {
                 flag_location = 1;
             }
@@ -198,7 +206,7 @@ void    parse_line(const std::string &line, tokens_map &tokens, int line_number)
     std::string result;
     clear_token(line, result);
     char *line_copy = new char[result.size() + 1];
-    strcpy(line_copy, result.c_str());
+    std::strcpy(line_copy, result.c_str());
     char *token = strtok(line_copy, " ");
     while (token != NULL)
     {
@@ -206,4 +214,5 @@ void    parse_line(const std::string &line, tokens_map &tokens, int line_number)
         tokenize(trim, tokens, line_number);
         token = strtok(NULL, " ");
     }
+    delete [] line_copy;
 }

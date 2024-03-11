@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/06 13:46:29 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/08 16:51:06 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ void    count_files(int *number_dir,int *number_file,const std::string & root)
         dirent = readdir(dir);
         while ((dirent = readdir(dir)) != NULL)
         {
-            std::string full_path = root + dirent->d_name;
+            std::string full_path = root + "/" + dirent->d_name;
             DIR *subdir = opendir(full_path.c_str());
             if (subdir)
             {
@@ -82,58 +82,75 @@ void    count_files(int *number_dir,int *number_file,const std::string & root)
             }
             else
                 (*number_file)++;
+			// closedir(subdir);
         }
         closedir(dir);
     }
 }
 
-void    autoIndexing(request &req, Worker &wk,std::string &response_head, std::string &body, std::map<unsigned int, std::string> &status_codes)
+void autoIndexing(request &req, Worker &wk, std::string &response_head, std::string &body, std::map<unsigned int, std::string> &status_codes)
 {
     Uri const &uri = req.getUri();
-    std::string path = uri.authority + "/" +uri.path;
+    std::string path = uri.authority + "/" + uri.path;
     std::string File_name, Last_modification, Size, Link, Path;
     Path = wk.getRoot() + req.getUri().path;
-    DIR     *dir = opendir(Path.c_str());
-    struct  dirent *dirent;
+    DIR *dir = opendir(Path.c_str());
+    struct dirent *dirent;
     int number_dir = 0;
     int number_file = 0;
 
-    count_files(&number_dir, &number_file,Path);
+    count_files(&number_dir, &number_file, Path);
     response_head = "HTTP/1.1 200 OK\r\nContent-Type: text/html;charset=UTF-8\r\n";
-    body = "<h1 style=\"padding: 20px;\">Directory listing of " + wk.getRoot() +  " </h1>"  + "\n <p style=\"margin-left:18px;\">directories " + convertToString(number_dir) + " files " + convertToString(number_file) + "<hr style=\"margin-bottom:30px;\">\n<table style=\"width: 100%;\">\n<thead>\n    <tr>\n        <th style=\"width: 40%; text-align: center;\">File Name</th>\n        <th style=\"width: 30%; text-align: center;\">Last modification</th>\n        <th style=\"width: 30%; text-align: center;\">Size</th>\n    </tr>\n</thead>\n<tbody>";
+    body = "<html><head><style>"
+           "body { font-family: Arial, sans-serif; margin: 0; padding: 0; }"
+           "h1 { padding: 20px; }"
+           "table { width: 100%; border-collapse: collapse; }"
+           "th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }"
+           "th { background-color: #f2f2f2; }"
+           "tr:hover { background-color: #f5f5f5; }"
+           "a { text-decoration: none; color: blue; }"
+           ".folder { color: #007bff; }"
+           ".file { color: #28a745; }"
+           "</style></head>"
+           "<body>"
+           "<h1>Directory listing of " + wk.getRoot() + "</h1>\n"
+           "<p style=\"margin-left:18px;\">directories <span class=\"folder\">" + convertToString(number_dir) + "</span> files <span class=\"file\">" + convertToString(number_file) + "</span></p><hr style=\"margin-bottom:30px;\">\n"
+           "<table>\n<thead>\n<tr>\n<th style=\"width: 40%;\">File Name</th>\n<th style=\"width: 30%;\">Last modification</th>\n<th style=\"width: 30%;\">Size</th>\n</tr>\n</thead>\n<tbody>";
+
     if (dir)
     {
-    while ((dirent = readdir(dir)) != NULL)
-    {
-        if (std::strcmp(dirent->d_name, ".") != 0)
+        while ((dirent = readdir(dir)) != NULL)
         {
-            Link = "/" + req.getUri().path + "/" + dirent->d_name;
-            
-            File_name = dirent->d_name,Size = "-", Last_modification = "-";
-            Link = NormilisePath(Link);
-            std::string tmpPath =  Path + "/" + dirent->d_name;
-            struct stat File_state;
-            if (stat(tmpPath.c_str(), &File_state) == 0)
+            if (std::strcmp(dirent->d_name, ".") != 0)
             {
-                std::stringstream ss;
-                ss << File_state.st_size;
-                ss >> Size;
-                Last_modification = TimeToString(File_state.st_mtimespec);
+                Link = "/" + req.getUri().path + "/" + dirent->d_name;
+
+                File_name = dirent->d_name, Size = "-", Last_modification = "-";
+                Link = NormilisePath(Link);
+                std::string tmpPath = Path + "/" + dirent->d_name;
+                struct stat File_state;
+                if (stat(tmpPath.c_str(), &File_state) == 0)
+                {
+                    std::stringstream ss;
+                    ss << File_state.st_size;
+                    ss >> Size;
+                    Last_modification = TimeToString(File_state.st_mtimespec);
+                }
+                std::string line = "<tr>\n<td><a href=\"" + Link + "\">" + File_name + "</a></td>\n<td>" + Last_modification + "</td>\n<td>" + Size + "</td>\n</tr>";
+                body += line;
             }
-            std::string line = "\n    <tr>\n        <td style=\"padding: 5px; text-align: center;\"><a href=\"" +  Link +"\" style=\"text-decoration: none; color: blue;\">" + File_name + "</a></td>\n        <td style=\"padding: 5px; text-align: center;\">" + Last_modification + " </td>\n        <td style=\"padding: 5px; text-align: center;\">" + Size + "</td>\n    </tr>";
-            body += line;
         }
+        closedir(dir);
     }
-    closedir(dir);
-    }
-    body += "\n</tbody>\n</table>";
-    // printf("======================>AutoIndexing\n");
+    body += "</tbody>\n</table></body></html>";
     std::stringstream ss;
     std::string body_size;
     ss << body.size();
     ss >> body_size;
     response_head += "Content-Length: " + body_size + "\r\n\r\n";
+	// printf("\n");
 }
+
 
 
 std::string GetFileType(const std::string &Path)
@@ -367,7 +384,6 @@ int	fillFile(int fd, std::string &stream, size_t &index, std::string &boundary, 
 	char *buff = (char *)malloc(sizeof(char) * MaxWriteSize);
 	if (!buff)
 		return (-1);
-	printf("stream size %lu _ %s\n", stream.size(), &stream[index]);		
 	while (index < stream.size() && writtenBytes < MaxWriteSize)
 	{
 		if (stream[index] == '\r' && index + 1 < stream.size() && stream[index + 1] == '\n' && index + 2 < stream.size() && stream[index + 2] == '-')
@@ -444,7 +460,7 @@ bool	response::PostInit(std::map<unsigned int, std::string> &status_codes, reque
 }
 
 void	response::PostResponse(std::map<unsigned int, std::string> &status_codes)
-{
+{	
 	int code;
 	if (files.size() == 0)
 		code = 200;
@@ -515,7 +531,6 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 	// printf("Post handling\n");
 	if (POST_Init == false)
 	{
-		printf("%s _  %s\n", wk.getRoot().c_str(), UploadPath.c_str());
 		// check first for the Content-Type  == multipart/form-data then define the boundary value
 		if (!PostInit(status_codes, req, body))
 			return ;
@@ -598,7 +613,6 @@ void    response::RedirectionResponse(std::map<unsigned int, std::string> &statu
 	http_response = "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n" + Hconnection + "\r\nContent-Type: text/html\r\n" + "Location: "+ path + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n\r\n";
 	header_size = http_response.size();
 	body_size = 0;
-	// printf("%s\n",http_response.c_str());
 }
 
 void    response::errorresponse(std::map<unsigned int, std::string> &status_codes)

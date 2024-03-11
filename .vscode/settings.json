@@ -72,7 +72,8 @@
         "filesystem": "cpp",
         "__functional_03": "cpp",
         "memory_resource": "cpp",
-        "__memory": "cpp"
+        "__memory": "cpp",
+        "thread": "cpp"
     },
     "workbench.colorCustomizations": {
         "activityBar.background": "#0F350B",

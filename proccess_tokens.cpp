@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   proccess_tokens.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/07 10:23:31 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/07 22:07:02 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/03/07 13:14:54 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,12 +53,10 @@ void proccess_tokens(tokens_map &tokens,std::vector<ServerBlocks> &serverBlocks)
                 else if (!type.compare("argument") && inside_location_block)
                 {
                     locationblock.back().getDirectives().back().setArguments(token);
-                    
                 }
                 else if (!type.compare("semi_colone"))
                 {
                     directive = 0;
-                    
                 }
             }
             if (!type.compare("open_block"))

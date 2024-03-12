@@ -21,7 +21,7 @@ const std::string convertToString(long long line)
 }
 
 
-response::response(request &req, Worker &wk): http_request(&req), worker(&wk), header_index(0), header_size(-1), body_size(-1), header_sent(0), body_sent(0), FileOpened(false), FileSeeked(false),  Seeker(0), fd(-1), readyToResponed(false), StoringFile(false)
+response::response(request &req, Worker &wk): http_request(&req), worker(&wk), header_index(0), body_index(0), header_size(-1), body_size(-1), header_sent(0), body_sent(0), FileOpened(false), FileSeeked(false),  Seeker(0), fd(-1), readyToResponed(false), StoringFile(false)
 {
 
 }

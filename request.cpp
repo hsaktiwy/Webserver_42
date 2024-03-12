@@ -255,7 +255,6 @@ bool	request::StartlineParsing(char *buff, size_t &bytes_size, size_t &index)
 	}
 	if (R_Method && !R_URI && index < bytes_size)
 	{
-		
 		if (!UriParsing(buff, bytes_size, index))
 			return (false);
 	}
@@ -592,7 +591,7 @@ bool	request::BodyParsing(char *buff, size_t &bytes_size, size_t &index)
 	}
 	return (true);
 }
-void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, std::map<int, int> &matched_server_block , Worker& worker, char *buff, size_t bytes_size,int fd)
+void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, std::map<int, int> &matched_server_block , Worker& worker, char *buff, size_t bytes_size, int fd)
 {
 	size_t index = 0;
 	if (!Parsed_StartLine)

@@ -160,7 +160,7 @@ void	ShowLogs(char (&buffer)[CHUNK_SIZE + 1])
 	printf("%s \n",path.c_str());
 }
 
-void    handle_request(std::vector<struct pollfd> &poll_fds, int i,std::vector<ServerBlocks> &serverBlocks, Client & client,std::map<int, int> &matched_server_block)
+void    handle_request(std::vector<struct pollfd> &poll_fds, int i, std::vector<ServerBlocks> &serverBlocks, Client & client, std::map<int, int> &matched_server_block)
 {
 	ssize_t bytes_read;
 	// this part where we will read chunk off our request from the client socket,
@@ -170,7 +170,7 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,std::vector<S
 		char buffer[CHUNK_SIZE + 1];
 		bytes_read = read(poll_fds[i].fd,buffer, CHUNK_SIZE);
 		if (bytes_read > 0)
-			client.BufferingRequest(serverBlocks,buffer,matched_server_block,bytes_read);
+			client.BufferingRequest(serverBlocks, buffer, matched_server_block, bytes_read);
 		if (bytes_read < 0)
 		{
 			((request &)client.getHttp_request()).setError(true);
@@ -179,10 +179,7 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,std::vector<S
 		}
 		buffer[bytes_read] = '\0';
 		if(std::strlen(buffer) > 0)
-		{
 			ShowLogs(buffer);
-		}
-		// std::cout << RED << "BYTES Read From the request " << bytes_read << RESET<< std::endl;
 	}
 	// this part where we will handle some additional request parsing, at the time where the request was fully read
 	if (client.getHttp_request().getRequestRead())
@@ -689,7 +686,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 			}
 			else if (i >= sockets.size())
 			{
-				// printf("Client Number : %lu\n", ClientsVector.size() );
 				size_t client_it;
 				client_it = findClientBySocketFd(ClientsVector, poll_fds[i].fd);
 				if (client_it == ClientsVector.size())
@@ -721,23 +717,13 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				{
 					
 					if (ClientsVector[client_it].get_cgi_status() && !ClientsVector[client_it].getcgiResponse().isResponseSent() )
-					{
-
 						handleCgiResponse(poll_fds, i, ClientsVector[client_it], status_codes);
-					}
 					else
-					{
 						handle_response(poll_fds,i,human_status, ClientsVector[client_it], status_codes);
-					// std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;
-					}
-					// std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;
 					if ((ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent()) || ClientsVector[client_it].getcgiResponse().isResponseSent())//???????????????????????????
 					{
 						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError() || ClientsVector[client_it].getcgiResponse().isError())
 						{
-							// printf("%d _ %d\n", isAlive(ClientsVector[client_it]), ClientsVector[client_it].getHttp_request().getError());
-							// std::cout<<BLUE<<"Response sent to: " <<poll_fds[i].fd<<" !!"<<RESET<<std::endl;
-							// std::cout<<YELLOW<<"Connection to Client "<<poll_fds[i].fd<<" closed"<<RESET<<std::endl;
 							ClientsVector.erase(ClientsVector.begin() + client_it);
 							close(poll_fds[i].fd);
 							poll_fds.erase(poll_fds.begin() + i);

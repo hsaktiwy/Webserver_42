@@ -96,12 +96,12 @@ void	Client::CreateResponse(std::map<unsigned int, std::string> &status_codes)
 	http_response.responed(status_codes);
 }
 
-void	Client::BufferingRequest(std::vector<ServerBlocks> &serverBlocks, char *buff,std::map<int, int> &matched_server_block  ,size_t bytes)
+void	Client::BufferingRequest(std::vector<ServerBlocks> &serverBlocks, char *buff, std::map<int, int> &matched_server_block, size_t bytes)
 {
 	
 	if (inProcess == false)
 		inProcess = true;
-    http_request.ParseRequest(serverBlocks, matched_server_block,worker, buff ,bytes,fd_server);
+    http_request.ParseRequest(serverBlocks, matched_server_block, worker, buff , bytes, fd_server);
 }
 
 response const	&Client::getHttp_response( void ) const

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/10 23:11:17 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/11 23:54:03 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,6 +176,7 @@ class request {
 		void							setHandleRequest(bool value);
 		void							setError(bool value);
 		void							setStatus(int value);
+		bool 							isCgiLocationMatched(Worker &worker);
 };
 std::string get_root(std::vector<Directives> &directives, t_uri &uri);
 #endif

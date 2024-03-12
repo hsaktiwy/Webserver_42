@@ -422,7 +422,7 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 		// Identifie our host , plus trim all headers values
 		if (!IdentifieHost())
 			return (false);
-		// identifie the body delimiter is it Content-Length,Transfer-encoding,Content-Type, or even all of them 
+		// identifie the body delimiter is it Content-Length, Transfer-encoding, Content-Type, or even all of them 
 		BodyDelimiterIdentification();
 		// uri secondary parsing 
 		method_uri = EscapedEncoding(method_uri, error, status);
@@ -591,6 +591,7 @@ bool	request::BodyParsing(char *buff, size_t &bytes_size, size_t &index)
 	}
 	return (true);
 }
+
 void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, std::map<int, int> &matched_server_block , Worker& worker, char *buff, size_t bytes_size, int fd)
 {
 	size_t index = 0;
@@ -611,6 +612,7 @@ void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, std::map<int
 	{
 		if (!BodyParsing(buff, bytes_size, index))
 			return ;
+		
 	}
 	else if (Parsed_StartLine && Parsed_Header)
 	{
@@ -644,10 +646,8 @@ void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status
 			break;
 		}
 	}
-
 	// this will check if our configue has another idea
 	std::vector<std::string> allowedMethods = worker.getAllowMethods();
-	// printf("%lu size\n", allowedMethods.size());
 	if (error == false && allowedMethods.size() != 0)
 	{
 		if (find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end())
@@ -689,7 +689,6 @@ void	FileAccessingRigth(Worker& worker, t_uri& uri, bool &error, int &status, in
 
 void	request::CheckRequest(Worker& worker, bool &cgiStat)
 {
-	// RequestDisplay();
 	if (error == false)
 	{
 		// chekc if the method is supported bye the server
@@ -710,7 +709,6 @@ void	request::CheckRequest(Worker& worker, bool &cgiStat)
 			// if the path is file check it existence and access rigth
 			FileAccessingRigth(worker, uri, error, status, is_regular, method);
 		}
-		// printf("error %d, status %d\n", error, status);
 	}
 }
 
@@ -728,7 +726,7 @@ int	request::getHeaderValue(const std::string &header,std::string &buffer)
 
 request::~request()
 {
-	// std::cout << "Request Detroyed\n";
+
 }
 
 request::request(const request& copy)
@@ -738,7 +736,6 @@ request::request(const request& copy)
 
 request& request::operator=(const request& obj)
 {
-	// std::cout << "Request Copied\n";
 	if (this != &obj)
 	{
 		request_length = obj.request_length;

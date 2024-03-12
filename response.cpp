@@ -21,7 +21,7 @@ const std::string convertToString(long long line)
 }
 
 
-response::response(request &req, Worker &wk): http_request(&req), worker(&wk), header_index(0), body_index(0), header_size(-1), body_size(-1), header_sent(0), body_sent(0), FileOpened(false), FileSeeked(false),  Seeker(0), fd(-1), readyToResponed(false), StoringFile(false)
+response::response(request &req, Worker &wk): http_request(&req), worker(&wk), header_index(0), body_index(0), header_size(-1), body_size(-1), header_sent(0), body_sent(0), FileOpened(false), FileSeeked(false),  Seeker(0), fd(-1), readyToResponed(false), StoringFile(false), POST_Init(false)
 {
 
 }
@@ -191,15 +191,11 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 				readyToResponed = true;
 				return ;
 			}
-			else if (req.getMethod() == "GET" && req.getIs_dir() == 1 && index.size() == 0)
-			{
-				req.setError(true), req.setStatus(404);
-			}
+			else if (req.getMethod() == "GET" && req.getIs_dir() == 1)
+				req.setError(true), req.setStatus(403);
 		}
 		else
-		{
 			req.setError(true), req.setStatus(404);
-		}
 	}
 	// responed using error pages if  (error  == true)
 	if (req.getError() == true)
@@ -292,7 +288,6 @@ std::string	getFilenameExp(std::string &stream, size_t &index, std::string &boun
 	{
 		if (ft_getline(stream, index, buff, '\n'))
 		{
-			// printf("index %lu, buff : %s\n", buff.size(), buff.c_str());
 			if (buff.find(boundary2) == std::string::npos && buff.find(boundaryEnd) == std::string::npos)
 			{
 				size_t	npos = buff.find("Content-Disposition");
@@ -305,18 +300,15 @@ std::string	getFilenameExp(std::string &stream, size_t &index, std::string &boun
 						npos2 += Format.size();
 						ExtractValues(buff, filename, npos2);
 						// adjust the stream this will surpace any line untell it get a empty line or in our case a line with only \r
-						// printf("index_0_ %lu\n", index);
 						int i = 0;
 						while (ft_getline(stream, index, buff, '\n'))
 						{
-							// printf("buff  : %s\n", buff.c_str());
 							if (buff == "\r")
 								break;
 							i++;
 							if (i == 2)
 								exit(0);
 						}
-						// printf("index_1_ %lu\n", index);
 						return (filename);
 					}
 				}
@@ -361,7 +353,6 @@ int	fillFile(int fd, std::string &stream, size_t &index, std::string &boundary, 
 		writtenBytes++;
 		index++;
 	}
-	printf("writeBytes %lu, index %lu\n", writtenBytes, index);
 	if (write(fd, buff, writtenBytes) == -1)
 		return (free(buff), -1);
 	return (free(buff), finished);
@@ -408,7 +399,6 @@ bool	response::PostInit(std::map<unsigned int, std::string> &status_codes, reque
 	}
 	if (MFD_index == -1)
 	{
-		// printf("----->here\n");
 		req.setStatus(400); req.setError(true);
 		errorresponse(status_codes);
 		readyToResponed = true;
@@ -436,12 +426,9 @@ void	response::PostResponse(std::map<unsigned int, std::string> &status_codes)
 bool	response::PostFilesOpen(std::map<unsigned int, std::string> &status_codes, request &req, std::string &UploadPath)
 {
 	std::string path = UploadPath + "/" + CurrentFilename;
-	printf("Path %s\n", path.c_str());
 	fd = open(path.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
 	if (fd == -1)
 	{
-		perror("open ");
-		// printf("ola2\n");
 		req.setStatus(500); req.setError(true);
 		errorresponse(status_codes);
 		readyToResponed = true;
@@ -486,7 +473,6 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 	std::string &UploadPath = wk.getPathUpload();
 	bool	stop = false;
 
-	// printf("Post handling\n");
 	if (POST_Init == false)
 	{
 		// check first for the Content-Type  == multipart/form-data then define the boundary value
@@ -495,18 +481,12 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 	}
 	if (POST_Init == true)
 	{
-		// loop on all data relate to the files we want to create
-		// eliminate boundary if there is one
-		// get the filename from the Content-Disposition
 		if (StoringFile == false)
 			CurrentFilename = getFilenameExp(body, body_index, boundary, stop), StoringFile = true;
-		// printf("filename %s, body_index %lu\n", CurrentFilename.c_str(), body_index);
-		// first check for the file info and get all it data 
 		if (stop == false && StoringFile == true)
 		{
 			if (!CurrentFilename.empty())
 			{
-				// open the file and start writing in the file
 				if (fd == -1)
 				{
 					if (!PostFilesOpen(status_codes, req, UploadPath))
@@ -514,10 +494,8 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 				}
 				if (fd > 0)
 				{
-					// if (!OpenFile(path, stream, boundary, stop))
 					if (!PostFileFilling(status_codes, req, body))
 						return ;
-					// printf("index_body %lu, stop %d result %d\n", body_index, stop);
 				}
 			}
 		}
@@ -526,12 +504,9 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 			body_index = 0;
 			readyToResponed = true;
 		}
-		// create the response
 	}
 	if (readyToResponed)
 		PostResponse(status_codes);
-	// where is should put the file  for new let put them in
-	// std::vector<HTTPHeader> &header = req.getHeaders();
 }
 
 void	response::Get(std::map<unsigned int, std::string> &status_codes)
@@ -591,7 +566,6 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 		ss >> statusCode;
 		if (iter != status_codes.end())
 			HumanRead = iter->second;
-		// this maybe need to be in a folder i mean like a error_page file but with out being define in the http configue file
 		body_string = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n<title>Error Page</title>\r\n<style>\r\nbody {\r\nfont-family: Arial, sans-serif;\r\ntext-align: center;\r\npadding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\nmargin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\nmargin-bottom: 50px;\r\n}\r\n</style>\r\n</head>\r\n<body>\r\n<h1>Error "+ statusCode + "("+ HumanRead +")"+"</h1>\r\n<p>Unhable to reserve a propore response.</p>\r\n</body>\r\n</html>";
 		http_response += "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n";
 		http_response += "Connection: close\r\nContent-Type: text/html\r\n";

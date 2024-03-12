@@ -430,7 +430,6 @@ void	handle_response(std::vector<struct pollfd> &poll_fds,int i,std::string &hum
 		{
 			// BODY STRING CASE : where i our code creat the body and it don't need a file at all, this scope will handle it
 			// SEND Headers
-			printf("-->%s\n", resp.getHttp_response().c_str());
 			HeadersTransfert(resp, writeBytes, buffer);
 			// SEND Body
 			BodyStringBodyTransfert(resp, writeBytes, buffer);
@@ -439,7 +438,6 @@ void	handle_response(std::vector<struct pollfd> &poll_fds,int i,std::string &hum
 		}
 		else
 		{
-			printf("-->%s\n", resp.getHttp_response().c_str());
 			// BODY FILE : when our body is in file format
 			// SEND Headers
 			if (resp.getHeader_sent() == false)
@@ -452,12 +450,8 @@ void	handle_response(std::vector<struct pollfd> &poll_fds,int i,std::string &hum
 				BodyFileResponse(resp, client, file, buffer, writeBytes);
 			}
 		}
-		printf("wtf %lu", buffer.size());
-			// if (buffer.size() == 0)
-			// 	exit(0);
 		if (buffer.size() > 0)
 		{
-			printf("%lu\n", buffer.size());
 			ssize_t bytes_written = send(poll_fds[i].fd, buffer.c_str(), buffer.size(), MSG_DONTWAIT);
 			if (bytes_written < 0)
 			{
@@ -466,7 +460,6 @@ void	handle_response(std::vector<struct pollfd> &poll_fds,int i,std::string &hum
 				((request &)client.getHttp_request()).setError(true);
 			}
 			// here we need to chekc if we have 0 or -1 as result
-			// printf("bytes rigth %lu\n",bytes_written);
 		}
 	}
 }

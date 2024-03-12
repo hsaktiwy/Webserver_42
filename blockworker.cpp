@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/11 11:24:56 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/12 22:37:48 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,7 +145,7 @@ bool Worker::prefix_match(const ServerBlocks &block,std::string &path)
 	return false;
 }
 
-bool Worker::find_root(const ServerBlocks &block,const std::string &path)
+bool Worker::find_root(const ServerBlocks &block)
 {
 	for (size_t i = 0; i < block.getLocations().size(); i++)
 	{
@@ -164,7 +164,7 @@ void    Worker::setLocationWorker(const ServerBlocks& block,std::string &path)
 		return;
 	else if (prefix_match(block,path))
 		return ;
-	else if (find_root(block,path))
+	else if (find_root(block))
 		return ;
 }
 
@@ -266,7 +266,7 @@ std::string    Worker::getPathError() const
 	return this->path_error_page;
 }
 
-void    Worker::setPathError(const std::vector<std::vector<std::string> > &error_page, unsigned int status,const std::string &root)
+void    Worker::setPathError(const std::vector<std::vector<std::string> > &error_page,  int status)
 {
 	this->set_track_status(0);
 	for (size_t i = 0; i < error_page.size(); i++)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/09 04:33:07 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/12 22:37:37 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -539,7 +539,7 @@ void CgiEnv::setErrorpage()
         errorPage = "valid request";
     if (error_status != 0)
     {
-        worker.setPathError(worker.getErrorPages(), error_status, worker.getRoot());
+        worker.setPathError(worker.getErrorPages(), error_status);
         if (worker.get_track_status() && worker.getPathError().size())
            errorPage = worker.getPathError();
     }

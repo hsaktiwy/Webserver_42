@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgiResponse.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/10 00:35:56 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/12 22:40:11 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,7 @@ void CgiResponse::creatCgiResponse()
         {
             // printf("%s\n", Env.getCgiScriptName().c_str());
             // exit(1);
-            int trackerPipeReturn = pipe(trackerPipe);
+            // int trackerPipeReturn = pipe(trackerPipe);
             int errorPipeReturn = pipe(errorpipe);
             fcntl(errorpipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             fcntl(errorpipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
@@ -108,7 +108,7 @@ void CgiResponse::creatCgiResponse()
             fcntl(trackerPipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             std::string path_bin = Env.getScriptBin();
             char **args;
-            int status;
+            // int status;
             // tmp_socket = dup(socket_fd);
             printf("===> %s\n", Env.getCgiScriptName().c_str());
             args = new char *[3];
@@ -142,7 +142,6 @@ void CgiResponse::creatCgiResponse()
                         fd = open("/tmp/tmpFile", O_CREAT | O_RDWR,0644);
                         if (fd == -1)
                             perror("open :");
-                        int i = 0;
                               int bytes  = write(fd, data, str.size());
                             if (bytes == -1)
                                 perror("write :");
@@ -264,7 +263,7 @@ void CgiResponse::handleRedirection()
 }
 void CgiResponse::processResponse()
 {
-    static int i;
+    // static int i;
     char buff_resp[CHUNK_SIZE];
     int bytesRead  = read(trackerPipe[0], buff_resp, CHUNK_SIZE);
     // exit(1);
@@ -296,7 +295,7 @@ void CgiResponse::setCgiEnvObject(CgiEnv &obj)
 }
 void CgiResponse::setErrorResponseState()
 {
-    if (Env.getErrorPage().size() && Env.getErrorPage().compare("valid request") || Env.getErrorPage().empty())
+    if ((Env.getErrorPage().size() && Env.getErrorPage().compare("valid request")) || Env.getErrorPage().empty())
         isErrorResponse = true;
 }
 void CgiResponse::constructScriptEnv()

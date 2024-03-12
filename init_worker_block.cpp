@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/11 11:12:00 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/12 22:32:14 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ void    setErrorPages(Worker &worker, std::vector<Directives> &directives)
 }
 
 template<typename T>
-void    set(T& Directives,Worker &worker, const std::string &path)
+void    set(T& Directives,Worker &worker)
 {
 	for (size_t i = 0; i < Directives.size(); i++)
 	{
@@ -105,7 +105,7 @@ int Is_Directory(const std::string &root)
 
 void    get_port(std::vector<Directives> &directives,std::string &port) 
 {
-    int i = 0;
+    size_t i = 0;
     while (i < directives.size())
     {
         if (!directives[i].getDirective().compare("listen"))
@@ -162,33 +162,16 @@ void    get_matched_server_block(std::string &host_name,std::vector<ServerBlocks
 
 void   init_worker_block(Worker &worker, std::string &host ,std::string &path,std::vector<ServerBlocks> &serverBlocks, int &is_dir, int &is_regular,int fd,std::map<int, int> &matched_server_block)
 {
-    int find;
     std::string port;
 
-    // for (size_t i = 0; i < serverBlocks.size(); i++)
-    // {
-    //     for (size_t k = 0; k < serverBlocks[i].getDirectives().size(); k++)
-    //     {
-    //         for (size_t aa = 0; aa < serverBlocks[i].getDirectives()[k].getArgument().size(); aa++)
-    //         {
-    //            printf("%s\n",serverBlocks[i].getDirectives()[k].getArgument()[aa].c_str());
-    //         }
-            
-    //     }
-        
-    // }
-    
-    // exit(0);
     std::string host_name;
     worker.setPath(path);
-    // printf("path %s\n",worker.getPath().c_str());
     get_matched_server_block(host,serverBlocks,worker,fd,matched_server_block);
-    // printf("root %s\n",worker.getRoot().c_str());
 
     worker.setLocationWorker(worker.getBlockWorker(),path);
-    set(worker.getLocationWorker().getDirectives(),worker,worker.getPath());
+    set(worker.getLocationWorker().getDirectives(),worker);
     if (worker.getRoot().empty())
-        set(worker.getBlockWorker().getDirectives(),worker,worker.getPath());
+        set(worker.getBlockWorker().getDirectives(),worker);
     setDirectives(worker.getBlockWorker().getDirectives(),worker);
     setDirectives(worker.getLocationWorker().getDirectives(),worker);
     setAllowedmethods(worker,worker.getLocationWorker().getDirectives());

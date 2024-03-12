@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/09 12:17:44 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/11 11:13:36 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/12 22:38:28 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -355,7 +355,7 @@ void    handle_errors(tokens_map tokens)
 bool hasDuplicate(std::vector<std::string>& strings)
 {
     std::vector<std::string> duplicate;    
-    for (int i = 0; i < strings.size(); i++)
+    for (size_t i = 0; i < strings.size(); i++)
     {
         std::vector<std::string>::iterator it = std::find(duplicate.begin(), duplicate.end(), strings[i].c_str());
         if (it == duplicate.end())

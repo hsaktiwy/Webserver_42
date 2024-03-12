@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/11 11:17:11 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/12 22:38:48 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ const std::string convertToString(long long line)
 }
 
 
-response::response(request &req, Worker &wk): http_request(&req), worker(&wk), header_index(0), body_index(0), header_size(-1), body_size(-1), header_sent(0), body_sent(0), FileOpened(false), FileSeeked(false),  Seeker(0), fd(-1), readyToResponed(false), StoringFile(false), POST_Init(false)
+response::response(request &req, Worker &wk): http_request(&req), worker(&wk), header_index(0), body_index(0), header_size(-1), body_size(-1), header_sent(0), body_sent(0), FileOpened(false), FileSeeked(false),  Seeker(0), fd(-1), readyToResponed(false), POST_Init(false) , StoringFile(false)
 {
 
 }
@@ -556,7 +556,7 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 	std::stringstream ss;
 	std::string statusCode;
 
-	worker->setPathError(worker->getErrorPages(), req.getStatus(),worker->getRoot());
+	worker->setPathError(worker->getErrorPages(), req.getStatus());
 	if (wk.get_track_status() == 0 || (wk.get_track_status() == 1 && wk.getPathError().empty()))
 	{
 		if (wk.get_track_status() == 1 && wk.getPathError() == "")

@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/11 11:23:07 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/12 22:30:51 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,18 +31,18 @@ bool valid_port(const std::string &port)
 }
 void    get_port_host(ServerBlocks &serverBlocks,t_port_host &port_host)
 {
-	int i = 0;
+	size_t i = 0;
 	std::string str;
 	std::string port;
 	std::string host;
 	std::string ip_address;
-	int find = 0;
+	int find;
 	while (i < serverBlocks.getDirectives().size())
 	{
 		if (!serverBlocks.getDirectives()[i].getDirective().compare("listen"))
 		{
 			str = serverBlocks.getDirectives()[i].getArgument()[0];
-			int find = str.find(':');
+			find = str.find(':');
 			if (find == -1)
 			{
 				host = "0.0.0.0";
@@ -417,7 +417,7 @@ void	BodyFileResponse(response &resp, Client& client, std::string &file, std::st
 	}
 }
 
-void	handle_response(std::vector<struct pollfd> &poll_fds,int i,std::string &human_status, Client & client, std::map<unsigned int, std::string> &status_codes)
+void	handle_response(std::vector<struct pollfd> &poll_fds,int i, Client & client, std::map<unsigned int, std::string> &status_codes)
 {
 	std::string buffer;// this will hold our chunked response
 	response &resp = (response &)client.getHttp_response();;
@@ -559,7 +559,7 @@ size_t findClientBySocketFd(std::vector<Client> &ClientsVector, int fd)
 	}
 	return i;
 }
-void handleCgiResponse(std::vector<struct pollfd> &poll_fds, size_t i, Client & client, std::map<unsigned int, std::string> &status_codes)
+void handleCgiResponse(Client & client, std::map<unsigned int, std::string> &status_codes)
 {
 	CgiResponse &resp = client.getcgiResponse();
 
@@ -606,11 +606,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 	// int timeout = 2 * 60 * 1000;
 	int pollRet = 0;
 	int acceptRet = 0;
-	char buffer[1024];
-	int client_socket = -1;
-	int ready_to_write = 0;
-	int flag = 0;
-	int status;
 	std::string human_status;
 	std::string mime_type;
 	std::map<int, int> matched_server_block;
@@ -620,7 +615,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 	std::vector<int> new_connections;
 	std::vector<Client> ClientsVector;
 	
-	nfds_t size_fd = poll_fds.size();
 	std::cout<<GREEN<<"Waiting for an incoming request... "<<RESET<<std::endl;
 	// std::map<int, int>::iterator it = matched_server_block.begin();
 	// std::map<int, int>::iterator ite = matched_server_block.end();
@@ -662,9 +656,9 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				client.setClientSocket(acceptRet);
 				// printf("lol %lld %lu\n", client.getHttp_response().getHeader_size(),client.getHttp_response().getHeader_index());
 				ClientsVector.push_back(client);
-				char clientIP[INET_ADDRSTRLEN];
-				unsigned short clientPort = ntohs(tmpAddr.sin_port);
-				inet_ntop(AF_INET, &(tmpAddr.sin_addr), clientIP, INET_ADDRSTRLEN);
+				// char clientIP[INET_ADDRSTRLEN];
+				// unsigned short clientPort = ntohs(tmpAddr.sin_port);
+				// inet_ntop(AF_INET, &(tmpAddr.sin_addr), clientIP, INET_ADDRSTRLEN);
 				// std::cout<<GREEN <<"New incomming connection from the client Socket ";
 				// std::cout<<acceptRet<<" with the address : "<<clientIP<<":"<<clientPort<< " To the socket "<<poll_fds[i].fd<<RESET<<std::endl;
 				if (fcntl(acceptRet, F_SETFL,  O_NONBLOCK , FD_CLOEXEC) < 0)
@@ -710,9 +704,9 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				{
 					
 					if (ClientsVector[client_it].get_cgi_status() && !ClientsVector[client_it].getcgiResponse().isResponseSent() )
-						handleCgiResponse(poll_fds, i, ClientsVector[client_it], status_codes);
+						handleCgiResponse(ClientsVector[client_it], status_codes);
 					else
-						handle_response(poll_fds,i,human_status, ClientsVector[client_it], status_codes);
+						handle_response(poll_fds,i, ClientsVector[client_it], status_codes);
 					if ((ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent()) || ClientsVector[client_it].getcgiResponse().isResponseSent())//???????????????????????????
 					{
 						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError() || ClientsVector[client_it].getcgiResponse().isError())

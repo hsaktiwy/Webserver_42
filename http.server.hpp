@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/11 11:14:26 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/12 22:38:10 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -218,9 +218,9 @@ public:
     void    set_max_body_size(std::string max_body_size);
     bool    exact_match(const ServerBlocks &block,std::string &path);
     bool    prefix_match(const ServerBlocks &block,std::string &path);
-    bool    find_root(const ServerBlocks &block,const std::string &path);
+    bool    find_root(const ServerBlocks &block);
     void    found_index_file(const std::string &root);//, const std::string &path);// modified bye hamza 
-    void    setPathError(const std::vector<std::vector<std::string> > &error_page, unsigned int status, const std::string &root);
+    void    setPathError(const std::vector<std::vector<std::string> > &error_page,  int status);
     void    setQuery(std::string const &query);
     void    setPathUpload(std::string const &path);
     void    set_track_status(int flag);

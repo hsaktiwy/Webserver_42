@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   handle_errors.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/09 12:17:44 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/07 23:04:38 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/11 11:13:36 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,15 @@ void    handle_directives(std::string &type, std::string &directive,std::string 
     static std::vector<std::string> error_page_token;
     if (!type.compare("argument"))
     {
+        if (!directive.compare("listen"))
+        {
+            number_of_args++;
+            if (number_of_args > 1 || number_of_args < 0)
+            {
+                error = "invalid number of arguments in " + directive + " directive in " + convertToString(line);
+                throw error;
+            }
+        }
         if (!directive.compare("client_max_body_size"))
         {
             int i = 0;
@@ -161,10 +170,13 @@ void    handle_directives(std::string &type, std::string &directive,std::string 
 
 void    handle_errors(tokens_map tokens)
 {
+    std::stack<std::string> closed;
     vectors_type token_vectors;
+    
     std::string token;
     std::string type;
     std::string error;
+    std::string directive;
 
     int insideServerBlock = 0;
     int is_not_semi_colone = 0;
@@ -177,9 +189,7 @@ void    handle_errors(tokens_map tokens)
     int listen_directive = 0;
 
 
-    std::string directive;
 
-    std::stack<std::string> closed;
     long long line = 0;
     
     for (tokens_map::iterator it = tokens.begin(); it != tokens.end(); it++)

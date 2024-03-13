@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/12 00:03:04 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/13 01:22:04 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -727,6 +727,8 @@ bool request::isCgiLocationMatched(Worker &worker)
 {
     size_t found = worker.getLocationWorker().getPath().find("/cgi-bin");
 	// exit(0);
+	// if (getUri().path.find("cgi-bin") == 0)
+	// 	return true;
 	if (found != std::string::npos)
     {
         if (found == 0)
@@ -746,7 +748,8 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		// std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
 		worker.setQuery(uri.query);
 		// std::cout << "host " << host << " root " << root  << " index " << index << " path " << worker.getPath() << " query " << uri.query << std::endl;
-		if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/") || isCgiLocationMatched(worker))
+		printf("%s\n", worker.getLocationWorker().getPath().c_str());
+		if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/"))
 		{
 			
 			printf("%s",worker.getRoot().c_str());

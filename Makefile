@@ -6,13 +6,13 @@
 #    By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/13 12:12:25 by adardour          #+#    #+#              #
-#    Updated: 2024/02/27 16:23:09 by aalami           ###   ########.fr        #
+#    Updated: 2024/03/13 03:53:09 by aalami           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC = c++ -std=c++98
 
-CFLAGS = -Wall -Wextra -Werror -fsanitize=address
+CFLAGS = -fsanitize=address
 
 SANI = #-fsanitize=address
 
@@ -29,10 +29,10 @@ TARGET = webserv
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
-	$(CC) $(SANI) $(OBJ) -o $@
+	$(CC) $(CFLAGS) $(OBJ) -o $@
 
 %.o : %.cpp Client.hpp      http.server.hpp request.hpp     response.hpp cgi/cgi.hpp cgi/cgiResponse.hpp
-	$(CC) $(SANI) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(OBJ) 

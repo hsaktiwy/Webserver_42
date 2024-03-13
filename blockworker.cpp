@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/13 01:10:09 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/13 01:29:33 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,7 +144,6 @@ bool Worker::prefix_match(const ServerBlocks &block,std::string &path)
 		if (prefix(location_prefix,path))
 		{
 			this->locationworker = block.getLocations()[i];
-			printf("%s\n",locationworker.getPath().c_str());
 			return true;
 		}
 	}

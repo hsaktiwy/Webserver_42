@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   blockworker.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/08 20:28:53 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/13 01:23:11 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,7 +110,11 @@ Worker::Worker(std::vector<ServerBlocks> &blocks,std::string &host)
 
 bool prefix(const std::string &prefix, const std::string &path)
 {   
-    return path.find(prefix) == 0;
+	if (prefix.compare("/"))
+	{
+    	return path.find(prefix) == 0;
+	}
+	return false;
 }
 bool Worker::exact_match(const ServerBlocks &block,std::string &path)
 {
@@ -125,8 +129,6 @@ bool Worker::exact_match(const ServerBlocks &block,std::string &path)
 			location_prefix.erase(0,1);
 		if (!location_prefix.compare(path))
 		{
-			printf("%s\n",location_prefix.c_str());
-			printf("%s\n",path.c_str());
 			locationworker = block.getLocations()[i];
 			return true;
 		}
@@ -135,19 +137,21 @@ bool Worker::exact_match(const ServerBlocks &block,std::string &path)
 }
 bool Worker::prefix_match(const ServerBlocks &block,std::string &path)
 {
+	path = "/" + path;
 	for (size_t i = 0; i < block.getLocations().size(); i++)
 	{
 		std::string location_prefix = block.getLocations()[i].getPath();
 		if (prefix(location_prefix,path))
 		{
 			this->locationworker = block.getLocations()[i];
+			printf("%s\n",locationworker.getPath().c_str());
 			return true;
 		}
 	}
 	return false;
 }
 
-bool Worker::find_root(const ServerBlocks &block,const std::string &path)
+bool Worker::find_root(const ServerBlocks &block)
 {
 	for (size_t i = 0; i < block.getLocations().size(); i++)
 	{
@@ -166,7 +170,7 @@ void    Worker::setLocationWorker(const ServerBlocks& block,std::string &path)
 		return;
 	else if (prefix_match(block,path))
 		return ;
-	else if (find_root(block,path))
+	else if (find_root(block))
 		return ;
 }
 
@@ -268,7 +272,7 @@ std::string    Worker::getPathError() const
 	return this->path_error_page;
 }
 
-void    Worker::setPathError(const std::vector<std::vector<std::string> > &error_page, unsigned int status,const std::string &root)
+void    Worker::setPathError(const std::vector<std::vector<std::string> > &error_page,  int status)
 {
 	this->set_track_status(0);
 	for (size_t i = 0; i < error_page.size(); i++)

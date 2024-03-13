@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgiResponse.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/05 15:17:07 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/10 00:35:56 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,10 @@ CgiResponse &CgiResponse::operator=(const CgiResponse &obj)
     }
     return (*this);
 }
+int CgiResponse::getsocket()
+{
+    return socket_fd;
+}
 void CgiResponse::setErrorMap(std::map<unsigned int, std::string> &ss_c)
 {
     status_codes = ss_c;
@@ -90,7 +94,7 @@ void CgiResponse::setSocket(int fd)
 }
 void CgiResponse::creatCgiResponse()
 {
-    if (!Env.getStatus() && !isErrorResponse)
+    if (!Env.getStatus() && !isErrorResponse && !Env.getRedirectionStatus())
     {
         if(!processSpawned)
         {
@@ -102,7 +106,7 @@ void CgiResponse::creatCgiResponse()
             fcntl(errorpipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             fcntl(trackerPipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             fcntl(trackerPipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-            std::string path_bin = "/usr/local/bin/python3";
+            std::string path_bin = Env.getScriptBin();
             char **args;
             int status;
             // tmp_socket = dup(socket_fd);
@@ -117,6 +121,7 @@ void CgiResponse::creatCgiResponse()
             if (errorPipeReturn == -1 || pid == -1)
             {
                 Env.setStatusCode(500);
+                Env.setErrorpage();
                 isErrorResponse = true;
                 handleError();
                 return;
@@ -130,18 +135,6 @@ void CgiResponse::creatCgiResponse()
                     std::map<std::string, std::string> tmp = Env.getEnvMap();
                     if (!tmp["REQUEST_METHOD"].compare("POST"))
                     {
-                        // int inputPipeReturn = pipe(inputPipe);
-                        // fcntl(inputPipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-                        // int i = 0;
-                        // std::string str = Env.getInputFromBody();
-                        // int bytes = write(inputPipe[1], &str[i], 1);
-                        // while (bytes)
-                        // {
-                        //     i++;
-                        //     bytes = write(inputPipe[1], &str[i], 1);
-                        //     printf("%d  %d\n",i, bytes);
-                        // }
-                        // close(inputPipe[1]);
                         std::string str = Env.getInputFromBody();
                         printf("%lu\n", strlen(str.data()));
                         printf("%lu\n", str.size());
@@ -194,6 +187,7 @@ void CgiResponse::creatCgiResponse()
                         close(errorpipe[1]);
                         close(trackerPipe[1]);
                         processSpawned = true;
+                        delete [] args;
                         // dup2(socket_fd, tmp_socket);
                     }
                 }
@@ -217,11 +211,12 @@ void CgiResponse::creatCgiResponse()
                     }
                     else
                     {
-                        std::cerr<<buffer<<std::endl;
                         Env.setStatusCode(500);
+                        Env.setErrorpage();
                         isErrorResponse = true;
                         handleError();
                         close(errorpipe[0]);
+                        close(trackerPipe[0]);
                         return;
                     }
                     close(errorpipe[0]);
@@ -230,12 +225,16 @@ void CgiResponse::creatCgiResponse()
                 {
                     clock_t current = clock();
                     double timeSpent = static_cast<double>(current - processTime) / CLOCKS_PER_SEC;
+                    // printf("current = %ld processTime = %ld fd = %d\n ", current / CLOCKS_PER_SEC, processTime / CLOCKS_PER_SEC, socket_fd);
                     if (timeSpent >= RESP_TIMEOUT)
                     {
                         kill(processId, SIGINT);
                         Env.setStatusCode(504);
+                        Env.setErrorpage();
                         isErrorResponse = true;
                         handleError();
+                        close(errorpipe[0]);
+                        close(trackerPipe[0]);
                         return;
                     }
                     
@@ -247,8 +246,21 @@ void CgiResponse::creatCgiResponse()
     }
     else
     {
-        handleError();
+        if (!Env.getRedirectionStatus())
+            handleError();
+        else
+            handleRedirection();
     }
+}
+void CgiResponse::handleRedirection()
+{
+    std::string redirPath = Env.getRedirectionpage();
+    std::string response;
+    response += "HTTP/1.1 302 Found\r\n";
+    response += "Location: ";
+    response += redirPath + "\r\n\r\n";
+    send(socket_fd, response.c_str(), response.size(), 0);
+    responseSent=true;
 }
 void CgiResponse::processResponse()
 {
@@ -307,22 +319,18 @@ void CgiResponse::constructScriptEnv()
         isDataset = true;
     }
     
-    // for (size_t i = 0; scriptData[i] != NULL; i++)
-    // {
-    //     printf("%s\n", scriptData[i]);
-    // }
     
 }
 void CgiResponse::handleError()
 {
     if (Env.isAutoIndexReq() || Env.getStatus())
     {
-            printf("Autoindex : %d, status : %d\n", Env.isAutoIndexReq() ,Env.getStatus());
+        printf("Autoindex : %d, status : %d\n", Env.isAutoIndexReq() ,Env.getStatus());
             printf("%s\n", Env.getErrorPage().c_str());
         if (Env.getErrorPage().size() && Env.getErrorPage().compare("valid request"))
         {
             errorResponse += "HTTP/1.1 302 Found\r\n";
-            errorResponse += "Location: /";
+            errorResponse += "Location: ";
             errorResponse += Env.getErrorPage() + "\r\n";
             errorResponse += "Content-Type: text/html\r\n\r\n";
         }

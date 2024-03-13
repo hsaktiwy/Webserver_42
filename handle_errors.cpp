@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/09 12:17:44 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/08 16:43:52 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/11 11:13:36 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,24 @@ void    handle_directives(std::string &type, std::string &directive,std::string 
                     throw error;
                 }
                 i++;
+            }
+        }
+        if (!directive.compare("cgi_python"))
+        {
+            number_of_args++;
+            if (number_of_args > 1 || number_of_args < 0)
+            {
+                error = "invalid number of arguments in " + directive + " directive in " + convertToString(line);
+                throw error;
+            }
+        }
+        if (!directive.compare("cgi_bash"))
+        {
+            number_of_args++;
+            if (number_of_args > 1 || number_of_args < 0)
+            {
+                error = "invalid number of arguments in " + directive + " directive in " + convertToString(line);
+                throw error;
             }
         }
         if (!directive.compare("uploads"))
@@ -390,5 +408,3 @@ void check_duplications(std::vector<ServerBlocks> serverBlocks)
         }
     }
 }
-
-

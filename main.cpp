@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:40 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/09 21:14:48 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/11 11:20:08 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,7 +153,6 @@ void    iniStatus_codes(std::map<unsigned int, std::string> &status_codes)
     status_codes.insert(std::make_pair(511, "Network Authentication Required"));
 }
 
-
 int main(int c,char **argv)
 {   
     if (c > 2)
@@ -175,11 +174,7 @@ int main(int c,char **argv)
         handle_errors(tokens);
         proccess_tokens(tokens,serverBlocks);
         check_duplications(serverBlocks);
-        while(1)
-        {
-            
-        }
-        // start_listening_and_accept_request(serverBlocks, status_codes);
+        start_listening_and_accept_request(serverBlocks, status_codes);
     }
     catch(std::string & e)
     {

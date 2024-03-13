@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/09 21:14:24 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/11 11:23:07 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,9 +178,9 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i,int *ready_to
 			((request &)client.getHttp_request()).setStatus(500);
 			((request &)client.getHttp_request()).setRequestRead(true);
 		}
-		if (std::strlen(buffer) > 0)
+		buffer[bytes_read] = '\0';
+		if(std::strlen(buffer) > 0)
 		{
-			buffer[bytes_read] = '\0';
 			ShowLogs(buffer);
 		}
 		// std::cout << RED << "BYTES Read From the request " << bytes_read << RESET<< std::endl;
@@ -716,15 +716,19 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				}
 				else if (poll_fds[i].revents & POLLOUT)
 				{
-					if (ClientsVector[client_it].getHttp_request().getCgiStatus() && !ClientsVector[client_it].getcgiResponse().isResponseSent())
+					
+					if (ClientsVector[client_it].get_cgi_status() && !ClientsVector[client_it].getcgiResponse().isResponseSent() )
+					{
+
 						handleCgiResponse(poll_fds, i, ClientsVector[client_it], status_codes);
+					}
 					else
 					{
 						handle_response(poll_fds,i,&ready_to_write, &size_fd,response, &flag,&status,human_status,mime_type, ClientsVector[client_it], status_codes);
 					// std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;
 					}
 					// std::cout<<BLUE<<"Part Of Response sent to: " <<poll_fds[i].fd<<" !! [ availble Clients " << ClientsVector.size() << ", Client index " << client_it << "]"<<RESET<<std::endl;
-					if (ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent())
+					if (ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent() || ClientsVector[client_it].getcgiResponse().isResponseSent())
 					{
 						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError() || ClientsVector[client_it].getcgiResponse().isError())
 						{
@@ -763,13 +767,14 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				{
 					if (ClientsVector[client_it].getInProcess() == false && CurrentTime() - ClientsVector[client_it].getTime() > C_TIMEOUT)
 					{
-						// std::cout<<RED<<"Unknown Client "<<poll_fds[i].fd<<" closed the connection"<<RESET<<std::endl;
+						std::cout<<RED<<"Unknown Client "<<poll_fds[i].fd<<" closed the connection"<<RESET<<std::endl;
 						if (ClientsVector[client_it].getHttp_response().getFd() != -1)
 							close(ClientsVector[client_it].getHttp_response().getFd());
 						ClientsVector.erase(ClientsVector.begin() + client_it);
 						close(poll_fds[i].fd);
 						poll_fds.erase(poll_fds.begin() + i);
 						i--;
+						// exit(0);
 					}
 				}
 			}

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/07 21:02:54 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/13 01:22:04 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ request::request(): RequestRead(false), Parsed_StartLine(false), Parsed_Header(f
 	ChunkedRead = false;
 	ChunkedSizeRead = false;
 	ChunkedSize = 0;
-	isCgiRequest = false;
+	isCgiRequest = -1;
 	is_dir = 0;
 	is_regular = 0;
 	maxBodySizeExist = false;
@@ -683,7 +683,6 @@ void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status
 	std::vector<std::string> allowedMethods = worker.getAllowMethods();
 	if (error == false && allowedMethods.size() != 0)
 	{
-		printf("%d", find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end());
 		if (find(allowedMethods.begin(), allowedMethods.end(), method) != allowedMethods.end())
 			supported2 = true;
 	}
@@ -724,7 +723,22 @@ void	FileAccessingRigth(Worker& worker, t_uri& uri, bool &error, int &status, in
 	// exit(0);
 }
 
-void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker)
+bool request::isCgiLocationMatched(Worker &worker)
+{
+    size_t found = worker.getLocationWorker().getPath().find("/cgi-bin");
+	// exit(0);
+	// if (getUri().path.find("cgi-bin") == 0)
+	// 	return true;
+	if (found != std::string::npos)
+    {
+        if (found == 0)
+            return true;
+        else
+            return false;
+    }
+    return false;
+}
+void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker, bool &cgiStat)
 {
 	// RequestDisplay();
 	if (error == false)
@@ -734,18 +748,26 @@ void	request::CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& work
 		// std::string root = worker.getRoot();//get_root(block.getDirectives(), (std::vector<LocationsBlock>&)block.getLocations(), uri);
 		worker.setQuery(uri.query);
 		// std::cout << "host " << host << " root " << root  << " index " << index << " path " << worker.getPath() << " query " << uri.query << std::endl;
+		printf("%s\n", worker.getLocationWorker().getPath().c_str());
 		if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/"))
 		{
 			
+			printf("%s",worker.getRoot().c_str());
+			printf("%s\n",worker.getLocationWorker().getPath().c_str());
+				printf("ssssss\n");
+				
 			worker.setCgiStatus(true);
-			isCgiRequest = true;
+			isCgiRequest = 1;
+			cgiStat = true;
 			return;
 		}
-		// static level
-		// check for index existing in our location or root
-		bool indexed = IndexingtoIndex(worker, is_dir, is_regular, uri, error);
-		// if the path is file check it existence and access rigth
-		FileAccessingRigth(worker, uri, error, status, is_regular, method);
+		else
+		{
+			isCgiRequest = 0;
+			bool indexed = IndexingtoIndex(worker, is_dir, is_regular, uri, error);
+			// if the path is file check it existence and access rigth
+			FileAccessingRigth(worker, uri, error, status, is_regular, method);
+		}
 		// printf("error %d, status %d\n", error, status);
 	}
 }
@@ -845,7 +867,6 @@ request& request::operator=(const request& obj)
 	}
 	return (*this);
 }
-
 int request::getHeaderIndex(const std::string &name) const
 {
 	for(size_t i = 0; i < headers.size(); i++)
@@ -954,7 +975,7 @@ void							request::setHandleRequest(bool value)
 {
 	HandleRequest = value;
 }
-bool ::request::getCgiStatus() const
+int ::request::getCgiStatus() const
 {
 	return isCgiRequest;
 }

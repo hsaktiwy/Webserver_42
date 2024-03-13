@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/06 15:22:48 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/11 23:54:03 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@
 #include "http.server.hpp"
 // #include <dirent.h>
 // #include "WorkerInit.hpp"
-
 // special character
 #define CRLF "\r\n"
 #define LWS "\r\n "
@@ -124,7 +123,7 @@ class request {
 		std::string				ChunkSizeString;
 		// boundary case
 		std::string				boundary;
-		bool					isCgiRequest;
+		int					isCgiRequest;
 
 		// private function in major cases they are supporting the public one
 		bool	StartlineParsing(char *buff, ssize_t &bytes_size, size_t &index);
@@ -146,7 +145,7 @@ class request {
 		request(const request& copy);
 		// void							ParseRequest(char *request);
 		void							ParseRequest(std::vector<ServerBlocks> &serverBlocks,std::map<int, int> &matched_server_block , Worker& worker, char *buff, ssize_t bytes_size,int fd);
-		void							CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker);// THIS WILL CHECK THE REQUEST VALIDITY
+		void							CheckRequest(std::vector<ServerBlocks> &serverBlocks, Worker& worker, bool &cgiStat);// THIS WILL CHECK THE REQUEST VALIDITY
 		request&						operator=(const request& obj);
 
 		// Method							getMethod( void ) const; // to get the method when we need it
@@ -171,12 +170,13 @@ class request {
 		bool							getRequestRead( void ) const;
 		bool							getHandleRequest( void ) const;
 		size_t							getRequestLength( void ) const;
-		bool							getCgiStatus( void ) const;
+		int								getCgiStatus( void ) const;
 		// void							setRequestLength(bool value);
 		void							setRequestRead(bool value);
 		void							setHandleRequest(bool value);
 		void							setError(bool value);
 		void							setStatus(int value);
+		bool 							isCgiLocationMatched(Worker &worker);
 };
 std::string get_root(std::vector<Directives> &directives, t_uri &uri);
 #endif

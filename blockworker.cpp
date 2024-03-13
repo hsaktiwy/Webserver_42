@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/12 22:37:48 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/13 01:10:09 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,7 +110,11 @@ Worker::Worker(std::vector<ServerBlocks> &blocks,std::string &host)
 
 bool prefix(const std::string &prefix, const std::string &path)
 {   
-    return path.find(prefix) == 0;
+	if (prefix.compare("/"))
+	{
+    	return path.find(prefix) == 0;
+	}
+	return false;
 }
 bool Worker::exact_match(const ServerBlocks &block,std::string &path)
 {
@@ -133,12 +137,14 @@ bool Worker::exact_match(const ServerBlocks &block,std::string &path)
 }
 bool Worker::prefix_match(const ServerBlocks &block,std::string &path)
 {
+	path = "/" + path;
 	for (size_t i = 0; i < block.getLocations().size(); i++)
 	{
 		std::string location_prefix = block.getLocations()[i].getPath();
 		if (prefix(location_prefix,path))
 		{
 			this->locationworker = block.getLocations()[i];
+			printf("%s\n",locationworker.getPath().c_str());
 			return true;
 		}
 	}

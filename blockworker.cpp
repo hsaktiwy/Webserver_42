@@ -266,6 +266,7 @@ void    Worker::found_index_file(const std::string &root)
 		closedir(dir);
 	}
 }
+
 std::string    Worker::getPathError() const 
 {
 	return this->path_error_page;

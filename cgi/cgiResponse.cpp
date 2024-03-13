@@ -307,6 +307,7 @@ void CgiResponse::constructScriptEnv()
     int count = 0;
     if (env_size)
     {
+        printf("in\n");
         scriptData = new char* [env_size + 1];
         for (it = envMap.begin(); it != envMap.end(); it++)
         {
@@ -316,6 +317,7 @@ void CgiResponse::constructScriptEnv()
         }
         scriptData[count] = NULL;
         isDataset = true;
+        printf("out\n");
     }
     
     

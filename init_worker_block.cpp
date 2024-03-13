@@ -196,4 +196,8 @@ void   init_worker_block(Worker &worker, std::string &host ,std::string &path,st
         else if (Is_Directory(tmp_path) == 1)
             is_regular = 1;
     }
+    if (worker.getPathUpload().empty())
+    {
+        worker.setPathUpload("Uploads");
+    }
 }

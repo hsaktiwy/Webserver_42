@@ -579,7 +579,7 @@ void handleCgiResponse(Client & client, std::map<unsigned int, std::string> &sta
 	if (!resp.isResponseSent())
 	{
 		if (!resp.isReqObjectset())
-		{	resp.setCgiEnvObject(client.getcgiRequest());
+		{resp.setCgiEnvObject(client.getcgiRequest());
 			resp.setSocket(client.getClientSocket());
 			resp.setErrorMap(status_codes);
 		}

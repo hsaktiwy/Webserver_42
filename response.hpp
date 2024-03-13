@@ -38,8 +38,6 @@ class response {
 		bool						readyToResponed;
 		// to handle post
 		bool						POST_Init;
-		std::stringstream			stream;
-		size_t 						index;
 		std::string 				boundary;
 		bool						StoringFile;
 		std::string					CurrentFilename;
@@ -61,7 +59,6 @@ class response {
 		void		Get(std::map<unsigned int, std::string> &status_codes);
 		void		Post(std::map<unsigned int, std::string> &status_codes);
 
-		std::string	getHttp_response( void );
 		std::string	getHttp_response( void ) const;
 		std::string	getBody_string( void ) const;
 		std::string	getFile( void ) const;

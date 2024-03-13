@@ -148,7 +148,6 @@ void autoIndexing(request &req, Worker &wk, std::string &response_head, std::str
     ss << body.size();
     ss >> body_size;
     response_head += "Content-Length: " + body_size + "\r\n\r\n";
-	// printf("\n");
 }
 
 
@@ -300,14 +299,10 @@ std::string	getFilenameExp(std::string &stream, size_t &index, std::string &boun
 						npos2 += Format.size();
 						ExtractValues(buff, filename, npos2);
 						// adjust the stream this will surpace any line untell it get a empty line or in our case a line with only \r
-						int i = 0;
 						while (ft_getline(stream, index, buff, '\n'))
 						{
 							if (buff == "\r")
 								break;
-							i++;
-							if (i == 2)
-								exit(0);
 						}
 						return (filename);
 					}
@@ -583,11 +578,6 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 	}
 }
 
-std::string response::getHttp_response( void )
-{
-	return (http_response);
-}
-
 response::response():http_request(NULL), worker(NULL),  header_index(0), body_index(0), header_size(-1), body_size(-1), header_sent(0), body_sent(0), FileOpened(false), fd(-1)
 {
 
@@ -626,7 +616,6 @@ response& response::operator=(const response& obj)
 		readyToResponed = obj.readyToResponed;
 		StoringFile = obj.StoringFile;
 		POST_Init = obj.POST_Init;
-		index = obj.index;
 		boundary = obj.boundary;
 		CurrentFilename = obj.CurrentFilename;
 		files = obj.files;

@@ -280,8 +280,7 @@ void	HeadersTransfert(response &resp, size_t &writeBytes, std::string &buffer)
 {
 	long long Hsize = resp.getHeader_size();
 	long long Hindex = resp.getHeader_index();
-	// printf("%lld %lld\n", Hsize, Hindex);
-	// exit(0);
+
 	if (Hindex < Hsize)
 	{
 		size_t bytes = writeBytes;
@@ -332,12 +331,17 @@ void	AdditionnalHeaders(Client &client, response &resp, std::string &file, std::
 	}
 }
 
-void	FileSeeking(response &resp, int fd)
+void	FileSeeking(response &resp, request & req, int fd)
 {
 	size_t 	size_buff = 1000000;
 	char	*buff = (char *)malloc(sizeof(char) * 1000000);
 	if (!buff)
-		size_buff = 0; 
+	{
+		resp.setBody_sent(true);
+		resp.setHeader_sent(true);
+		req.setError(true);
+		return ;
+	}
 	ssize_t bytes_read;
 	size_t fileIndex = resp.getFileIndex();
 	if (size_buff != 0 && resp.getSeeker() != fileIndex)
@@ -347,19 +351,23 @@ void	FileSeeking(response &resp, int fd)
 		bytes_read = read(fd, buff, size_buff);
 		if (bytes_read > 0)
 			resp.setSeeker(resp.getSeeker() + bytes_read);
+		if (bytes_read < 0)
+		{
+			resp.setBody_sent(true);
+			resp.setHeader_sent(true);
+			req.setError(true);
+		}
 	}
 	if (resp.getSeeker() == fileIndex)
 		resp.setFileSeeked(true);
 	free(buff), buff = NULL;
 }
 
-void	getFilePartionBuffer(response &resp, int fd, std::string &buffer, size_t &writeBytes)
+void	getFilePartionBuffer(response &resp, request &req,int fd, std::string &buffer, size_t &writeBytes)
 {
 	char buff[writeBytes];
 	if (resp.getFileEnd() - resp.getFileIndex() < writeBytes)
 		writeBytes = (resp.getFileEnd() - resp.getFileIndex());
-	// printf("rest Off the File %lu(File Index = %lu, File End = %lu) writeBytes Reading Size %lu", (resp.getFileEnd() - resp.getFileIndex()) , resp.getFileIndex(), resp.getFileEnd(), writeBytes);
-	// printf("	%lu\n", writeBytes);
 	ssize_t bytes = read(fd, buff, writeBytes);
 	if (bytes > 0)
 	{
@@ -372,7 +380,11 @@ void	getFilePartionBuffer(response &resp, int fd, std::string &buffer, size_t &w
 		resp.setFileIndex(Findex + bytes);
 	}
 	else if (bytes == -1)
-		write(2, "Something Went Wrong!\n", 22), exit(0);// this must end the connection not end the life off our process
+	{
+		resp.setBody_sent(true);
+		resp.setHeader_sent(true);
+		req.setError(true);
+	}
 }
 
 void	BodyFileResponse(response &resp, Client& client, std::string &file, std::string &buffer, size_t &writeBytes)
@@ -390,7 +402,7 @@ void	BodyFileResponse(response &resp, Client& client, std::string &file, std::st
 			fd = open(file.c_str(), O_RDONLY);
 			if (fd == -1)
 			{
-				perror("Open :");// this must be prortect end the client connection there is a error 
+				// this must be protected end the client connection there is a error 
 				resp.setBody_sent(true);
 				resp.setHeader_sent(true);
 				((request &)client.getHttp_request()).setError(true);
@@ -402,10 +414,11 @@ void	BodyFileResponse(response &resp, Client& client, std::string &file, std::st
 		// IN RANGE CASE GO TO FILEINDEX POSITION
 		if (fd > 0)
 		{
+			request &req = (request &)client.getHttp_request();
 			if (!resp.getFileSeeked())
-				FileSeeking(resp, fd);
+				FileSeeking(resp, req,fd);
 			if (resp.getFileSeeked())
-				getFilePartionBuffer(resp, fd, buffer, writeBytes);
+				getFilePartionBuffer(resp, req, fd, buffer, writeBytes);
 		}
 	}
 	// the case where thw file has no size i mean 0
@@ -711,6 +724,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 					{
 						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError() || ClientsVector[client_it].getcgiResponse().isError())
 						{
+							printf("Closed Connection\n");
 							ClientsVector.erase(ClientsVector.begin() + client_it);
 							close(poll_fds[i].fd);
 							poll_fds.erase(poll_fds.begin() + i);
@@ -750,7 +764,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 						close(poll_fds[i].fd);
 						poll_fds.erase(poll_fds.begin() + i);
 						i--;
-						// exit(0);
 					}
 				}
 			}

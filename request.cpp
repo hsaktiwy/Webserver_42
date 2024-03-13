@@ -14,12 +14,11 @@
 #include "request.hpp"
 #include "./cgi/cgi.hpp"
 
-request::request(): RequestRead(false), Parsed_StartLine(false), R_Method(false), R_URI(false), R_PROTOCOL(false), R_FUll_HEADERS(false),  Parsed_Header(false),  R_FULL_BODY(false), Body_Exist(false), Parsed_Body(false), ContentLengthExist(false),  HandleRequest(false)
+request::request(): RequestRead(false), Parsed_StartLine(false), R_Method(false), R_URI(false), R_PROTOCOL(false), R_FUll_HEADERS(false),  Parsed_Header(false),  R_FULL_BODY(false), Body_Exist(false),  HandleRequest(false)
 {
 	BodyLimiterType = 0;
 	FillingBuffer = false;
 	SLValidity = false;
-	request_length = 0;
 	error = false;
 	status = 200;
 	left_CR = false;
@@ -27,7 +26,6 @@ request::request(): RequestRead(false), Parsed_StartLine(false), R_Method(false)
 	R_HEADER = false;
 	R_VALUE = false;
 	BIndex = 0;
-	ChunkedRead = false;
 	ChunkedSizeRead = false;
 	ChunkedSize = 0;
 	isCgiRequest = -1;
@@ -372,7 +370,6 @@ void	request::BodyDelimiterIdentification( void )
 	int CLIndex = getHeaderIndex("Content-Length");
 	if (CLIndex != -1)
 	{
-		ContentLengthExist =  true;
 		ContentLengthSize = ft_atoll(headers[CLIndex].values.c_str());
 		BodyLimiterType = 1;
 	}
@@ -738,7 +735,6 @@ request& request::operator=(const request& obj)
 {
 	if (this != &obj)
 	{
-		request_length = obj.request_length;
 		method = obj.method;
 		method_uri = obj.method_uri;
 		uri = obj.uri;
@@ -747,7 +743,6 @@ request& request::operator=(const request& obj)
 		headers = obj.headers;
 		body.clear();
 		body = obj.body;
-		req = obj.req;
 		error = obj.error;
 		status = obj.status;
 		is_dir = obj.is_dir;
@@ -757,7 +752,6 @@ request& request::operator=(const request& obj)
 		left_CR = obj.left_CR;
 		NewLine = obj.NewLine;
 		RequestRead = obj.RequestRead;
-		ReadedFullToken = obj.ReadedFullToken;
 		FillingBuffer = obj.FillingBuffer;
 		Parsed_StartLine = obj.Parsed_StartLine;
 		SLValidity = obj.SLValidity;
@@ -771,10 +765,7 @@ request& request::operator=(const request& obj)
 		BodyLimiterType = obj.BodyLimiterType;
 		R_FULL_BODY = obj.R_FULL_BODY;
 		Body_Exist = obj.Body_Exist;
-		Parsed_Body = obj.Parsed_Body;
-		ContentLengthExist = obj.ContentLengthExist;
 		ContentLengthSize = obj.ContentLengthSize;
-		ChunkedRead = obj.ChunkedRead;
 		ChunkedSizeRead = obj.ChunkedSizeRead;
 		ChunkedSize = obj.ChunkedSize;
 		ChunkSizeString = obj.ChunkSizeString;
@@ -795,6 +786,7 @@ int request::getHeaderIndex(const std::string &name) const
 	}
 	return (-1);
 }
+
 // Getter and Setter
 std::string const			&request::getBoundary( void ) const
 {
@@ -835,11 +827,6 @@ std::string	const			&request::getBody( void ) const
 	return (body);
 }
 
-std::string	const			&request::getReq( void ) const
-{
-	return (req);
-}
-
 bool					request::getError( void ) const
 {
 	return (error);
@@ -865,12 +852,6 @@ bool							request::getHandleRequest( void ) const
 	return (HandleRequest);
 }
 
-
-size_t							request::getRequestLength( void ) const
-{
-	return (request_length);
-}
-
 int 					request::getIs_regular( void ) const
 {
 	return (is_regular);
@@ -890,10 +871,12 @@ void							request::setRequestRead(bool value)
 {
 	RequestRead = value;
 }
+
 void							request::setHandleRequest(bool value)
 {
 	HandleRequest = value;
 }
+
 int ::request::getCgiStatus() const
 {
 	return isCgiRequest;

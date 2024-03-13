@@ -12,9 +12,9 @@
 
 CC = c++ -std=c++98
 
-CFLAGS = -Wall -Wextra -Werror -fsanitize=address
+CFLAGS = -Wall -Wextra -Werror
 
-SANI = #-fsanitize=address
+SANI = -fsanitize=address
 
 SRC =      proccess_tokens.cpp  start_listening.cpp init_worker_block.cpp blockworker.cpp handle_errors.cpp  Client.cpp            ft_memset.cpp         http.server.cpp       main.cpp           response.cpp    \
             mime_types.cpp   request.cpp  timer.cpp   tools.cpp cgi/cgi.cpp   cgi/cgiResponse.cpp  

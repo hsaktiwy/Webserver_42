@@ -22,45 +22,20 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "http.server.hpp"
-// #include <dirent.h>
-// #include "WorkerInit.hpp"
-// special character
-#define CR '\r'
+
 #define SP ' '
 #define HT '\t'
-#define LF '\n'
 
 // httpheader structor that willl hold the entty-header (name and values)
 typedef struct t_HTTPHeader
 {
 	std::string				name;
 	std::string				values;
-	bool					error;
-	int						status;
-
 	// this info are for POTS method handling
-	std::string				filename;
-	std::string				Form_name;
 	std::string 			boundry;
-	size_t					length;
-	long long				begin;// this can be delete
-	long long				end;// this can be delete
 } HTTPHeader;
 
-// enum that will have the type of method used
-typedef  enum{
-	GET,
-	POST,
-	DELETE
-}	Method;
-
-typedef  enum{
-	ABSOLUTE,
-	RELATIVE,
-	AUTHORITY
-}	URI_Type;
-
-// hier-part [ "?" query ] [ "#" fragment ]
+//URI: [ "?" query ] [ "#" fragment ]
 typedef struct Uri
 {
 	std::string	authority;// this is the host
@@ -70,7 +45,6 @@ typedef struct Uri
 
 class request {
     private:
-		size_t					request_length;
 		std::string				method;
 		std::string				method_uri;
 		t_uri					uri;
@@ -78,9 +52,6 @@ class request {
 		std::string				host;
 		std::vector<HTTPHeader>	headers;
 		std::string				body;
-		std::string				req;
-		char					*header_start;
-		char					*body_start;
 		bool					error;
 		int						status;
 		int						is_dir;
@@ -93,7 +64,6 @@ class request {
 		bool					left_CR;// this can hold a incomplete dilimiter 0 noting \r will have 1 or \r\n\r
 		bool					NewLine;// in case were there is \r\n
 		bool					RequestRead;
-		bool					ReadedFullToken;
 		bool					FillingBuffer;
 		// booleans to check for the Start line parsing Method URI, PROTOCOL
 		bool					Parsed_StartLine;
@@ -110,12 +80,9 @@ class request {
 		int						BodyLimiterType; // 1 for Content-length, 2 for chunked, 3 for boundary
 		bool					R_FULL_BODY;
 		bool					Body_Exist;
-		bool					Parsed_Body;
-		bool					ContentLengthExist;
 		size_t					ContentLengthSize;
 		bool					HandleRequest;
 		// chunk reading
-		bool					ChunkedRead;
 		bool					ChunkedSizeRead;
 		size_t					ChunkedSize;
 		std::string				ChunkSizeString;
@@ -148,7 +115,6 @@ class request {
 
 		int 							getHeaderIndex(const std::string &name) const;
 		int								getHeaderValue(const std::string &header,std::string &buffer);// this function will return 1 if it get the value 0 if there is no header with that name in the request
-		void							AddToRawRequest(char *buff,  ssize_t bytes_read);
 		std::string	const				&getMethod( void ) const;
 		std::string	const				&getMethod_uri( void ) const;
 		t_uri	const					&getUri( void ) const;
@@ -156,7 +122,6 @@ class request {
 		std::string	const				&getHost( void ) const;
 		std::vector<HTTPHeader>	const	&getHeaders( void ) const;
 		std::string	const				&getBody( void ) const;
-		std::string	const				&getReq( void ) const;
 		std::string const				&getBoundary( void ) const;
 		bool							getError( void ) const;
 		int								getStatus( void ) const;
@@ -164,9 +129,7 @@ class request {
 		int 							getIs_regular( void ) const;
 		bool							getRequestRead( void ) const;
 		bool							getHandleRequest( void ) const;
-		size_t							getRequestLength( void ) const;
 		int								getCgiStatus( void ) const;
-		// void							setRequestLength(bool value);
 		void							setRequestRead(bool value);
 		void							setHandleRequest(bool value);
 		void							setError(bool value);

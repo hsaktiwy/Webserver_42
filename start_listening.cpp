@@ -724,7 +724,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 					{
 						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError() || ClientsVector[client_it].getcgiResponse().isError())
 						{
-							printf("Closed Connection\n");
 							ClientsVector.erase(ClientsVector.begin() + client_it);
 							close(poll_fds[i].fd);
 							poll_fds.erase(poll_fds.begin() + i);

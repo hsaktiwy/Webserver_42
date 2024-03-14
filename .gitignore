@@ -5,7 +5,6 @@ a.out
 client
 server
 configs/
-public/
 .UsableTools/
 DockerFolder/
 Uploads/*
@@ -17,3 +16,4 @@ pipe.cpp
 venv
 myenv
 /Uploads
+sessions/

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload Test</title>
+</head>
+<body>
+    <h1>File Upload Test</h1>
+    <form action="./cgi-bin/upload.py" method="post" enctype="multipart/form-data">
+        <label for="file">Select a file:</label>
+        <input type="file" id="file" name="file" required>
+        <br>
+        <input type="submit" value="Upload">
+    </form>
+</body>
+</html>

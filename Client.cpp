@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/11 11:13:21 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/13 23:55:15 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,9 +61,9 @@ bool	&Client::get_cgi_status()
 {
 	return iscgi;
 }
-void	Client::ParseRequest(std::vector<ServerBlocks> &serverBlocks)
+void	Client::ParseRequest( void )
 {
-    http_request.CheckRequest(serverBlocks, worker, this->get_cgi_status());
+    http_request.CheckRequest(worker, this->get_cgi_status());
 	if (get_cgi_status()) // check if the request is a cgi request
 	{
 		printf("is cgi req\n");
@@ -96,11 +96,12 @@ void	Client::CreateResponse(std::map<unsigned int, std::string> &status_codes)
 	http_response.responed(status_codes);
 }
 
-void	Client::BufferingRequest(std::vector<ServerBlocks> &serverBlocks, char *buff,std::map<int, int> &matched_server_block  ,size_t bytes)
+void	Client::BufferingRequest(std::vector<ServerBlocks> &serverBlocks, char *buff, std::map<int, int> &matched_server_block, size_t bytes)
 {
+	
 	if (inProcess == false)
 		inProcess = true;
-    http_request.ParseRequest(serverBlocks, matched_server_block,worker, buff ,bytes,fd_server);
+    http_request.ParseRequest(serverBlocks, matched_server_block, worker, buff , bytes, fd_server);
 }
 
 response const	&Client::getHttp_response( void ) const
@@ -168,6 +169,11 @@ bool			Client::getInProcess( void ) const
 	return (inProcess);
 }
 
+int				Client::getFdServer( void )
+{
+	return fd_server;
+}
+
 void			Client::setTime( long value)
 {
 	time = value;
@@ -176,4 +182,9 @@ void			Client::setTime( long value)
 void			Client::setInProcess( bool value)
 {
 	inProcess = value;
+}
+
+void			Client::setFdServer(int fd_s)
+{	
+	fd_server = fd_s;
 }

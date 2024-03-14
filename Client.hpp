@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:04 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/10 23:08:45 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/13 23:55:02 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,36 +37,30 @@ class Client {
 		~Client();
 		Client(const Client& copy);
 		Client& operator=(const Client& obj);
-		void			setClientSocket(int fd);
-		void			setClientRequestState(bool state);
-		void			setClientResponseState(bool state);
+		// this function will int http_request and worker plus parse the request
+		void			ParseRequest( void );
+		void			CreateResponse(std::map<unsigned int, std::string> &status_codes);
+		void			BufferingRequest(std::vector<ServerBlocks> &serverBlocks, char *buff,std::map<int, int> &matched_server_block  ,size_t bytes);
+
+		//getter
 		int				getClientSocket() const;
 		bool			getClientResponseSate() const;
 		bool			getClientRequestSate() const;
 		long			getTime( void ) const;
 		bool			getInProcess( void ) const;
-		// this function will int http_request and worker plus parse the request
-		void			ParseRequest(std::vector<ServerBlocks> &serverBlocks);
-		void			CreateResponse(std::map<unsigned int, std::string> &status_codes);
-		void			BufferingRequest(std::vector<ServerBlocks> &serverBlocks, char *buff,std::map<int, int> &matched_server_block  ,size_t bytes);
 		response const	&getHttp_response( void ) const;
 		request const	&getHttp_request( void ) const;
 		Worker const	&getWorker( void ) const;
-		CgiResponse  &getcgiResponse();
-		CgiEnv  &getcgiRequest();
-		void	set_cgi_status(bool val);
-		bool	&get_cgi_status();
-		
-		void	setFdServer(int fd_server)
-		{	
-			this->fd_server = fd_server;
-		}
-
-		int	getFdServer()
-		{
-			return this->fd_server;
-		}
-		
+		CgiResponse  	&getcgiResponse();
+		CgiEnv  		&getcgiRequest();
+		int				getFdServer( void );
+		void			set_cgi_status(bool val);
+		bool			&get_cgi_status();
+		//setter
+		void			setClientSocket(int fd);
+		void			setClientRequestState(bool state);
+		void			setClientResponseState(bool state);
+		void			setFdServer(int fd_s);
 		void			setTime(long value);
 		void			setInProcess(bool value);
 };

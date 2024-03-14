@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:50 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/10 23:07:01 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/13 23:58:12 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,8 +38,6 @@ class response {
 		bool						readyToResponed;
 		// to handle post
 		bool						POST_Init;
-		std::stringstream			stream;
-		size_t 						index;
 		std::string 				boundary;
 		bool						StoringFile;
 		std::string					CurrentFilename;
@@ -61,7 +59,6 @@ class response {
 		void		Get(std::map<unsigned int, std::string> &status_codes);
 		void		Post(std::map<unsigned int, std::string> &status_codes);
 
-		std::string	getHttp_response( void );
 		std::string	getHttp_response( void ) const;
 		std::string	getBody_string( void ) const;
 		std::string	getFile( void ) const;

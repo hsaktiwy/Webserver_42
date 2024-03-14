@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/10 00:35:56 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/14 00:51:26 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,7 @@ void CgiResponse::creatCgiResponse()
             fcntl(trackerPipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             std::string path_bin = Env.getScriptBin();
             char **args;
-            int status;
+            // int status;
             // tmp_socket = dup(socket_fd);
             printf("===> %s\n", Env.getCgiScriptName().c_str());
             args = new char *[3];
@@ -118,7 +118,7 @@ void CgiResponse::creatCgiResponse()
             args[2] = NULL;
             // processSpawned = true;
             int pid = fork();
-            if (errorPipeReturn == -1 || pid == -1)
+            if (errorPipeReturn == -1 || pid == -1 || trackerPipeReturn == -1)
             {
                 Env.setStatusCode(500);
                 Env.setErrorpage();
@@ -130,6 +130,7 @@ void CgiResponse::creatCgiResponse()
             {
                 if (pid == 0)
                 {
+                    printf("gg\n");
                     bool flag = false;
                     int fd;
                     std::map<std::string, std::string> tmp = Env.getEnvMap();
@@ -142,7 +143,6 @@ void CgiResponse::creatCgiResponse()
                         fd = open("/tmp/tmpFile", O_CREAT | O_RDWR,0644);
                         if (fd == -1)
                             perror("open :");
-                        int i = 0;
                               int bytes  = write(fd, data, str.size());
                             if (bytes == -1)
                                 perror("write :");
@@ -264,9 +264,9 @@ void CgiResponse::handleRedirection()
 }
 void CgiResponse::processResponse()
 {
-    static int i;
+    // static int i;
     char buff_resp[CHUNK_SIZE];
-    int bytesRead  = read(trackerPipe[0], buff_resp, CHUNK_SIZE);
+    int bytesRead  = read(trackerPipe[0], buff_resp, 1);
     // exit(1);
     if (bytesRead != -1)
     {
@@ -296,7 +296,7 @@ void CgiResponse::setCgiEnvObject(CgiEnv &obj)
 }
 void CgiResponse::setErrorResponseState()
 {
-    if (Env.getErrorPage().size() && Env.getErrorPage().compare("valid request") || Env.getErrorPage().empty())
+    if ((Env.getErrorPage().size() && Env.getErrorPage().compare("valid request")) || Env.getErrorPage().empty())
         isErrorResponse = true;
 }
 void CgiResponse::constructScriptEnv()

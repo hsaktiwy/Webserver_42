@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/13 01:23:11 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/14 00:06:09 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -267,6 +267,7 @@ void    Worker::found_index_file(const std::string &root)
 		closedir(dir);
 	}
 }
+
 std::string    Worker::getPathError() const 
 {
 	return this->path_error_page;

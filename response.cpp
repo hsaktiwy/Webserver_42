@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/13 01:25:09 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/13 23:58:21 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ const std::string convertToString(long long line)
 }
 
 
-response::response(request &req, Worker &wk): http_request(&req), worker(&wk), body_index(0), body_size(-1), header_index(0), header_size(-1), body_sent(0), header_sent(0), FileOpened(false), fd(-1) ,FileSeeked(false) , Seeker(0), readyToResponed(false), StoringFile(false)
+response::response(request &req, Worker &wk): http_request(&req), worker(&wk), header_index(0), body_index(0), header_size(-1), body_size(-1), header_sent(0), body_sent(0), FileOpened(false), FileSeeked(false),  Seeker(0), fd(-1), readyToResponed(false), POST_Init(false) , StoringFile(false)
 {
 
 }
@@ -88,7 +88,7 @@ void    count_files(int *number_dir,int *number_file,const std::string & root)
     }
 }
 
-void autoIndexing(request &req, Worker &wk, std::string &response_head, std::string &body, std::map<unsigned int, std::string> &status_codes)
+void autoIndexing(request &req, Worker &wk, std::string &response_head, std::string &body)
 {
     Uri const &uri = req.getUri();
     std::string path = uri.authority + "/" + uri.path;
@@ -148,7 +148,6 @@ void autoIndexing(request &req, Worker &wk, std::string &response_head, std::str
     ss << body.size();
     ss >> body_size;
     response_head += "Content-Length: " + body_size + "\r\n\r\n";
-	// printf("\n");
 }
 
 
@@ -178,7 +177,6 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 		readyToResponed = true;
 		return ;
 	}
-	// printf("ola %d, %p %s %s\n", req.getError(), &req, req.getMethod().c_str(), req.getMethod_uri().c_str());
 	if (req.getError() == false)
 	{
 		if (req.getIs_dir() == 1 || req.getIs_regular() == 1)
@@ -186,27 +184,22 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 			if (req.getMethod() == "GET" && req.getIs_dir() == 1 &&  wk.getAutoIndex() == "on")
 			{
 				// autoindexing
-				autoIndexing(req, wk,http_response, body_string, status_codes);
+				autoIndexing(req, wk,http_response, body_string);
 				header_size = http_response.size();
 				body_size = body_string.size();
 				readyToResponed = true;
 				return ;
 			}
-			else if (req.getMethod() == "GET" && req.getIs_dir() == 1 && index.size() == 0)
-			{
-				req.setError(true), req.setStatus(404);
-			}
+			else if (req.getMethod() == "GET" && req.getIs_dir() == 1)
+				req.setError(true), req.setStatus(403);
 		}
 		else
-		{
 			req.setError(true), req.setStatus(404);
-		}
 	}
 	// responed using error pages if  (error  == true)
 	if (req.getError() == true)
 	{
 		// response for Error handling
-		// printf("solo\n");
 		errorresponse(status_codes);
 		readyToResponed = true;
 	}
@@ -267,78 +260,6 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 	}
 }
 
-// std::string	getFilename(std::stringstream &stream, std::string &boundary, bool &stop)
-// {
-// 	std::string filename;
-// 	std::string buff;
-// 	std::string boundary2 = "--" + boundary, boundaryEnd = "--" + boundary + "--";
-// 	while (true)
-// 	{
-// 		if (getline(stream, buff, '\n'))
-// 		{
-// 			if (buff.find(boundary2) == std::string::npos && buff.find(boundaryEnd) == std::string::npos)
-// 			{
-// 				size_t	npos = buff.find("Content-Disposition");
-// 				if (npos != std::string::npos && npos == 0)
-// 				{
-// 					std::string Format = "filename=";
-// 					size_t npos2 = buff.find(Format);
-// 					if (npos2 != std::string::npos)
-// 					{
-// 						npos2 += Format.size();
-// 						ExtractValues(buff, filename, npos2);
-// 						// adjust the stream this will surpace any line untell it get a empty line or in our case a line with only \r
-// 						while (getline(stream, buff, '\n'))
-// 						{
-// 							if (buff == "\r")
-// 								break;
-// 						}
-// 						return (filename);
-// 					}
-// 				}
-// 			}
-// 		}
-// 		else
-// 		{
-// 			stop = true;
-// 			break;
-// 		}
-// 	}
-// 	return ("");
-// }
-
-
-// bool	OpenFile(std::string &filename, std::stringstream& stream, std::string &boundary, bool &stop)
-// {
-// 	std::ofstream	Outfile(filename.c_str());
-// 	bool			run = true;
-// 	std::string			buff;
-// 	std::string boundary2 = "--" + boundary, boundaryEnd = "--" + boundary + "--";
-
-// 	if (Outfile.is_open())
-// 	{
-// 		while (run)
-// 		{
-// 			if (getline(stream, buff, '\n'))
-// 			{
-// 				if (buff.find(boundary2) == std::string::npos && buff.find(boundaryEnd) == std::string::npos)
-// 				{
-// 					buff += '\n';
-// 					Outfile << buff;
-// 				}
-// 				else
-// 					break;
-// 			}
-// 			else
-// 				stop = true, run = false;
-// 		}
-// 		Outfile.close();
-// 		return (true);
-// 	}
-// 	else
-// 		return (false);
-// }
-
 bool ft_getline(std::string &stream, size_t &index, std::string &buff,char delimiter)
 {
 	bool	isthere_data = (index < stream.size()) ? true : false;
@@ -366,7 +287,6 @@ std::string	getFilenameExp(std::string &stream, size_t &index, std::string &boun
 	{
 		if (ft_getline(stream, index, buff, '\n'))
 		{
-			// printf("index %lu, buff : %s\n", buff.size(), buff.c_str());
 			if (buff.find(boundary2) == std::string::npos && buff.find(boundaryEnd) == std::string::npos)
 			{
 				size_t	npos = buff.find("Content-Disposition");
@@ -379,18 +299,11 @@ std::string	getFilenameExp(std::string &stream, size_t &index, std::string &boun
 						npos2 += Format.size();
 						ExtractValues(buff, filename, npos2);
 						// adjust the stream this will surpace any line untell it get a empty line or in our case a line with only \r
-						// printf("index_0_ %lu\n", index);
-						int i = 0;
 						while (ft_getline(stream, index, buff, '\n'))
 						{
-							// printf("buff  : %s\n", buff.c_str());
 							if (buff == "\r")
 								break;
-							i++;
-							if (i == 2)
-								exit(0);
 						}
-						// printf("index_1_ %lu\n", index);
 						return (filename);
 					}
 				}
@@ -411,7 +324,6 @@ std::string	getFilenameExp(std::string &stream, size_t &index, std::string &boun
 int	fillFile(int fd, std::string &stream, size_t &index, std::string &boundary, size_t MaxWriteSize)
 {
 	size_t		writtenBytes = 0;
-	size_t		indexBegin = index;
 	bool		finished = false;
 	std::string boundary2 = "--" + boundary, boundaryEnd = "--" + boundary + "--";
 	char *buff = (char *)malloc(sizeof(char) * MaxWriteSize);
@@ -436,7 +348,6 @@ int	fillFile(int fd, std::string &stream, size_t &index, std::string &boundary, 
 		writtenBytes++;
 		index++;
 	}
-	printf("writeBytes %lu, index %lu\n", writtenBytes, index);
 	if (write(fd, buff, writtenBytes) == -1)
 		return (free(buff), -1);
 	return (free(buff), finished);
@@ -483,7 +394,6 @@ bool	response::PostInit(std::map<unsigned int, std::string> &status_codes, reque
 	}
 	if (MFD_index == -1)
 	{
-		// printf("----->here\n");
 		req.setStatus(400); req.setError(true);
 		errorresponse(status_codes);
 		readyToResponed = true;
@@ -511,12 +421,9 @@ void	response::PostResponse(std::map<unsigned int, std::string> &status_codes)
 bool	response::PostFilesOpen(std::map<unsigned int, std::string> &status_codes, request &req, std::string &UploadPath)
 {
 	std::string path = UploadPath + "/" + CurrentFilename;
-	printf("Path %s\n", path.c_str());
 	fd = open(path.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
 	if (fd == -1)
 	{
-		perror("open ");
-		// printf("ola2\n");
 		req.setStatus(500); req.setError(true);
 		errorresponse(status_codes);
 		readyToResponed = true;
@@ -561,7 +468,6 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 	std::string &UploadPath = wk.getPathUpload();
 	bool	stop = false;
 
-	// printf("Post handling\n");
 	if (POST_Init == false)
 	{
 		// check first for the Content-Type  == multipart/form-data then define the boundary value
@@ -570,18 +476,12 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 	}
 	if (POST_Init == true)
 	{
-		// loop on all data relate to the files we want to create
-		// eliminate boundary if there is one
-		// get the filename from the Content-Disposition
 		if (StoringFile == false)
 			CurrentFilename = getFilenameExp(body, body_index, boundary, stop), StoringFile = true;
-		// printf("filename %s, body_index %lu\n", CurrentFilename.c_str(), body_index);
-		// first check for the file info and get all it data 
 		if (stop == false && StoringFile == true)
 		{
 			if (!CurrentFilename.empty())
 			{
-				// open the file and start writing in the file
 				if (fd == -1)
 				{
 					if (!PostFilesOpen(status_codes, req, UploadPath))
@@ -589,10 +489,8 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 				}
 				if (fd > 0)
 				{
-					// if (!OpenFile(path, stream, boundary, stop))
 					if (!PostFileFilling(status_codes, req, body))
 						return ;
-					// printf("index_body %lu, stop %d result %d\n", body_index, stop);
 				}
 			}
 		}
@@ -601,12 +499,9 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 			body_index = 0;
 			readyToResponed = true;
 		}
-		// create the response
 	}
 	if (readyToResponed)
 		PostResponse(status_codes);
-	// where is should put the file  for new let put them in
-	// std::vector<HTTPHeader> &header = req.getHeaders();
 }
 
 void	response::Get(std::map<unsigned int, std::string> &status_codes)
@@ -624,13 +519,13 @@ void	response::Get(std::map<unsigned int, std::string> &status_codes)
 	std::string Hconnection = "Connection: " + ConnectionType(req);
 	http_response = "HTTP/1.1 "+ Code +"\r\n" + Hconnection + "\r\nContent-Type: " + FileType + "\r\n";
 	file = wk.getRoot() + "/" + req.getUri().path;
+	file = NormilisePath(file);
 	header_size = http_response.size();
 }
 
 
 void    response::RedirectionResponse(std::map<unsigned int, std::string> &status_codes, std::string &path)
 {
-	Worker &wk = *worker;
 	request &req = *http_request;
 	std::string HumanRead;
 	std::stringstream ss;
@@ -657,10 +552,8 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 	std::string statusCode;
 
 	worker->setPathError(worker->getErrorPages(), req.getStatus());
-	// printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());
 	if (wk.get_track_status() == 0 || (wk.get_track_status() == 1 && wk.getPathError().empty()))
 	{
-		// printf("::::::::::::%d __ %s \n", wk.get_track_status(), wk.getPathError().c_str());
 		if (wk.get_track_status() == 1 && wk.getPathError() == "")
 			req.setStatus(404);
 		std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
@@ -668,7 +561,6 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 		ss >> statusCode;
 		if (iter != status_codes.end())
 			HumanRead = iter->second;
-		// this maybe need to be in a folder i mean like a error_page file but with out being define in the http configue file
 		body_string = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n<title>Error Page</title>\r\n<style>\r\nbody {\r\nfont-family: Arial, sans-serif;\r\ntext-align: center;\r\npadding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\nmargin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\nmargin-bottom: 50px;\r\n}\r\n</style>\r\n</head>\r\n<body>\r\n<h1>Error "+ statusCode + "("+ HumanRead +")"+"</h1>\r\n<p>Unhable to reserve a propore response.</p>\r\n</body>\r\n</html>";
 		http_response += "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n";
 		http_response += "Connection: close\r\nContent-Type: text/html\r\n";
@@ -677,24 +569,16 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 		body_size = 0;
 		http_response += body_string;
 		header_size = http_response.size();
-		// printf("Reponse : %s\n", http_response.c_str());
-		// printf("%s", body_string.c_str());
 	}
 	else
 	{
-		// printf("error %d\n", req.getError());
 		std::string path = wk.getLocationWorker().getPath() + "/" + worker->getPathError();
 		path = NormilisePath(path);
 		RedirectionResponse(status_codes, path);
 	}
 }
 
-std::string response::getHttp_response( void )
-{
-	return (http_response);
-}
-
-response::response():http_request(NULL), worker(NULL), body_index(0), body_size(-1), header_index(0), header_size(-1), body_sent(0), header_sent(0), FileOpened(false), fd(-1)
+response::response():http_request(NULL), worker(NULL),  header_index(0), body_index(0), header_size(-1), body_size(-1), header_sent(0), body_sent(0), FileOpened(false), fd(-1)
 {
 
 }
@@ -712,9 +596,6 @@ response& response::operator=(const response& obj)
 {
 	if (this != &obj)
 	{
-		// printf("Copy Assigned oPERATOR IS CALLED\n");
-		// printf("Before setting ->%lld %lu\n", header_size, header_index);
-		// printf("To Copy setting %lld %lu\n", obj.header_size, obj.header_index);
 		http_response = obj.http_response;
 		http_request = obj.http_request;
 		body_string = obj.body_string;
@@ -735,12 +616,9 @@ response& response::operator=(const response& obj)
 		readyToResponed = obj.readyToResponed;
 		StoringFile = obj.StoringFile;
 		POST_Init = obj.POST_Init;
-		// stream = obj.stream;
-		index = obj.index;
 		boundary = obj.boundary;
 		CurrentFilename = obj.CurrentFilename;
 		files = obj.files;
-		// printf("After setting %lld %lu\n", header_size, header_index);
 	}
 	return (*this);
 }

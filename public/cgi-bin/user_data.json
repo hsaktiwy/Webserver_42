@@ -98,5 +98,20 @@
     "username": "matlo",
     "password": "123",
     "email": "eeee@33.com"
+  },
+  {
+    "username": "test_123",
+    "password": "123",
+    "email": "test@gg.com"
+  },
+  {
+    "username": "hamza",
+    "password": "123",
+    "email": "hamza@ff"
+  },
+  {
+    "username": "abc",
+    "password": "123",
+    "email": "zzz@ffssxc"
   }
 ]

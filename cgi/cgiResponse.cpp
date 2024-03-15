@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/14 00:51:26 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/15 03:55:42 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,13 @@ CgiResponse::~CgiResponse()
 {
     if (scriptData != NULL)
     {
-        size_t size = Env.getEnvMap().size();
-        for (size_t i = 0; i < size; i++)
+        size_t i = 0;
+        while (scriptData[i] != NULL)
+        {
             delete [] scriptData[i];
-        delete [] scriptData[size];
+            i++;
+        }
+        delete [] scriptData[i];
         delete [] scriptData;
         scriptData = NULL;
     }
@@ -65,6 +68,7 @@ CgiResponse &CgiResponse::operator=(const CgiResponse &obj)
         trackerPipe[1] = obj.trackerPipe[1];
         inputPipe[0] = obj.inputPipe[0];
         inputPipe[1] = obj.inputPipe[1];
+        printf("asdasdas\n");
         if (scriptData != NULL)
         {
             size_t size = Env.getEnvMap().size();

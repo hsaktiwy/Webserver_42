@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/14 00:06:09 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/15 01:51:19 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,15 +118,11 @@ bool prefix(const std::string &prefix, const std::string &path)
 }
 bool Worker::exact_match(const ServerBlocks &block,std::string &path)
 {
-	if (path[0] == '/')
-	{
-		path.erase(0, 1);
-	}
 	for (size_t i = 0; i < block.getLocations().size(); i++)
 	{
 		std::string location_prefix = block.getLocations()[i].getPath();
-		if (location_prefix[0] == '/')
-			location_prefix.erase(0,1);
+		if (location_prefix[0] != '/')
+			location_prefix = "/" + location_prefix;
 		if (!location_prefix.compare(path))
 		{
 			locationworker = block.getLocations()[i];
@@ -137,14 +133,23 @@ bool Worker::exact_match(const ServerBlocks &block,std::string &path)
 }
 bool Worker::prefix_match(const ServerBlocks &block,std::string &path)
 {
-	path = "/" + path;
 	for (size_t i = 0; i < block.getLocations().size(); i++)
 	{
 		std::string location_prefix = block.getLocations()[i].getPath();
+		if (location_prefix[0] != '/')
+		{
+			location_prefix = "/" + location_prefix;
+		}
+		printf("prefix %s\n",location_prefix.c_str());
+		printf("path %s\n",path.c_str());
 		if (prefix(location_prefix,path))
 		{
 			this->locationworker = block.getLocations()[i];
-			printf("%s\n",locationworker.getPath().c_str());
+			if (this->locationworker.getPath()[0] != '/')
+			{
+				std::string addSlash =  '/' + this->locationworker.getPath();
+				this->locationworker.setPath(addSlash);
+			}
 			return true;
 		}
 	}

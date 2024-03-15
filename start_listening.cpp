@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/14 00:01:18 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/15 01:04:27 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,6 +125,8 @@ void    create_sockets(std::vector<ServerBlocks> &serverBlocks,std::vector<int> 
 			matched_server_block.insert(std::make_pair(socket_fd,i));
 		}
 	}
+	freeaddrinfo(result);
+	
 }
 
 void    init_poll_fds(std::vector<struct pollfd> &poll_fds,int size,std::vector<int> &sockets)

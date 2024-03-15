@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/13 01:25:19 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/15 01:34:54 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -393,14 +393,15 @@ void CgiEnv::findScript()
                         if (is_file)
                         {
                             isHandledScript = isValidscript(pathUri[i + 1]);
-                            if (isHandledScript && !access((currentDir  + "/" + pathUri[i + 1]).c_str(), F_OK | R_OK | X_OK))
+                            int access_ret = access((currentDir  + "/" + pathUri[i + 1]).c_str(), F_OK | R_OK | X_OK);
+                            if (isHandledScript && !access_ret)
                             {
                                 cgiScript = true;
                                 envMap["SCRIPT_NAME"] = currentDir  + "/" + pathUri[i + 1];
                                 if (i + 2 < pathUri.size())
                                     extraPathIndex = i + 2;
                             }
-                            else if(!isHandledScript && !errno)
+                            else if(!isHandledScript)
                                 status = 501;
                             else
                                 errno == EACCES ? status = 403 : status = 404;
@@ -426,14 +427,15 @@ void CgiEnv::findScript()
             else if (is_file == 1)
             {
                 isHandledScript = isValidscript(pathUri[i + 1]);
-                if (!access((currentDir  + "/" + pathUri[i + 1]).c_str(), F_OK | R_OK | X_OK))
+                int access_ret = access((currentDir  + "/" + pathUri[i + 1]).c_str(), F_OK | R_OK | X_OK);
+                if (isHandledScript && !access_ret)
                 {
                     cgiScript = true;
                     envMap["SCRIPT_NAME"] = currentDir  + "/" + pathUri[i + 1];
                     if (i + 2 < pathUri.size())
                         extraPathIndex = i + 2;
                 }
-                else if(!isHandledScript && !errno)
+                else if(!isHandledScript)
                     status = 501;
                 else
                     errno == EACCES ? status = 403 : status = 404;
@@ -446,6 +448,8 @@ void CgiEnv::findScript()
             }
         }
     }
+    else if (!cgiDir)
+        printf("hnaaa \n");
     if (!cgiScript && !Is_Directory(currentDir))
     {
         Dir = opendir(currentDir.c_str());
@@ -528,6 +532,8 @@ bool CgiEnv::isAllowedMethod()
 }
 void CgiEnv::setErrorpage()
 {
+    if (!cgiDir )
+        status = 404;
     if (!isAllowedMethod() && status != 501)
         status = 405;
     unsigned int error_status = 0;
@@ -565,6 +571,10 @@ void CgiEnv::setEnvironementData()
         setErrorpage();
         envMap["SERVER_PROTOCOL"] = "HTTP/1.1";
         setRedirection();
+
+
+        // exit(1);
+        
 
     // std::cerr <<envMap["CONTENT_TYPE"]<<std::endl;
     // std::cerr <<envMap["CONTENT_LENGTH"]<<std::endl;

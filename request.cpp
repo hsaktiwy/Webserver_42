@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/13 23:57:08 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/15 05:24:25 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -686,19 +686,21 @@ void	FileAccessingRigth(Worker& worker, t_uri& uri, bool &error, int &status, in
 
 bool request::isCgiLocationMatched(Worker &worker)
 {
-    size_t found = worker.getLocationWorker().getPath().find("/cgi-bin");
+    size_t found = worker.getLocationWorker().getPath().find("/cgi-bin/");
 	// exit(0);
 	// if (getUri().path.find("cgi-bin") == 0)
 	// 	return true;
 	if (found != std::string::npos)
     {
-        if (found == 0)
+        if (found == 0 )
             return true;
         else
             return false;
     }
     return false;
 }
+
+
 void	request::CheckRequest(Worker& worker, bool &cgiStat)
 {
 	if (error == false)
@@ -707,7 +709,7 @@ void	request::CheckRequest(Worker& worker, bool &cgiStat)
 		AllowedMethod(worker, method, error, status);
 		worker.setQuery(uri.query);
 		std::cout<<"location : "<<worker.getLocationWorker().getPath()<<std::endl;
-		if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/"))
+		if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/") || isCgiLocationMatched(worker))
 		{
 			printf("Ffff\n");
 			worker.setCgiStatus(true);

@@ -6,13 +6,13 @@
 #    By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/13 12:12:25 by adardour          #+#    #+#              #
-#    Updated: 2024/03/14 00:15:40 by aalami           ###   ########.fr        #
+#    Updated: 2024/03/14 23:37:45 by aalami           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC = c++ -std=c++98
 
-CFLAGS = -Wall -Werror -Wextra -fsanitize=address
+CFLAGS = -Wall -Werror -Wextra
 
 SANI = #-fsanitize=address
 

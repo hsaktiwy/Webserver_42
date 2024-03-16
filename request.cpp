@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/15 05:24:25 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/15 23:45:39 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -666,7 +666,7 @@ void IndexingtoIndex(Worker& worker, int &is_dir, int &is_regular, t_uri& uri, b
 		check = NormilisePath(check);
 		if (access(check.c_str(), F_OK) == 0)
 		{
-			uri.path += index;
+			uri.path += + "/" +index;
 			is_dir = 0; is_regular = 1;
 		}
 	}

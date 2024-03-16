@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/13 23:58:21 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/15 23:09:23 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -550,32 +550,34 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 	std::string HumanRead;
 	std::stringstream ss;
 	std::string statusCode;
+	int errorDefault = true;
 
 	worker->setPathError(worker->getErrorPages(), req.getStatus());
+	std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
+	ss << req.getStatus();
+	ss >> statusCode;
+	if (iter != status_codes.end())
+		HumanRead = iter->second;
 	if (wk.get_track_status() == 0 || (wk.get_track_status() == 1 && wk.getPathError().empty()))
-	{
-		if (wk.get_track_status() == 1 && wk.getPathError() == "")
-			req.setStatus(404);
-		std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
-		ss << req.getStatus();
-		ss >> statusCode;
-		if (iter != status_codes.end())
-			HumanRead = iter->second;
 		body_string = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n<title>Error Page</title>\r\n<style>\r\nbody {\r\nfont-family: Arial, sans-serif;\r\ntext-align: center;\r\npadding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\nmargin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\nmargin-bottom: 50px;\r\n}\r\n</style>\r\n</head>\r\n<body>\r\n<h1>Error "+ statusCode + "("+ HumanRead +")"+"</h1>\r\n<p>Unhable to reserve a propore response.</p>\r\n</body>\r\n</html>";
-		http_response += "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n";
-		http_response += "Connection: close\r\nContent-Type: text/html\r\n";
-		size_t size = body_string.size();
-		http_response += "Content-Length: " + ToString(size) + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n\r\n";
-		body_size = 0;
-		http_response += body_string;
-		header_size = http_response.size();
-	}
 	else
 	{
-		std::string path = wk.getLocationWorker().getPath() + "/" + worker->getPathError();
-		path = NormilisePath(path);
-		RedirectionResponse(status_codes, path);
+		std::string path = wk.getRoot() + "/" + wk.getLocationWorker().getPath() + "/" + worker->getPathError();
+		if (access(path.c_str(), F_OK | R_OK) == 0)
+		{
+			file = path;
+			errorDefault = false;
+		}
+		else
+			body_string = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n<title>Error Page</title>\r\n<style>\r\nbody {\r\nfont-family: Arial, sans-serif;\r\ntext-align: center;\r\npadding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\nmargin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\nmargin-bottom: 50px;\r\n}\r\n</style>\r\n</head>\r\n<body>\r\n<h1>Error "+ statusCode + "("+ HumanRead +")"+"</h1>\r\n<p>Unhable to reserve a propore response.</p>\r\n</body>\r\n</html>";
 	}
+	http_response += "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n";
+	http_response += "Connection: close\r\nContent-Type: text/html\r\n";
+	size_t size = body_string.size();
+	if (errorDefault == true)
+		http_response += "Content-Length: " + ToString(size) + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n\r\n";
+	body_size = body_string.size();
+	header_size = http_response.size();
 }
 
 response::response():http_request(NULL), worker(NULL),  header_index(0), body_index(0), header_size(-1), body_size(-1), header_sent(0), body_sent(0), FileOpened(false), fd(-1)

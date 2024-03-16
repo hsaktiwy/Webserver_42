@@ -93,7 +93,8 @@ void autoIndexing(request &req, Worker &wk, std::string &response_head, std::str
     Uri const &uri = req.getUri();
     std::string path = uri.authority + "/" + uri.path;
     std::string File_name, Last_modification, Size, Link, Path;
-    Path = wk.getRoot() + req.getUri().path;
+    Path = wk.getRoot() + "/" + req.getUri().path;
+	printf("%s\n", Path.c_str());
     DIR *dir = opendir(Path.c_str());
     struct dirent *dirent;
     int number_dir = 0;
@@ -170,9 +171,14 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 	Worker &wk = *worker;
 
 	// Redirection Case
-	if (!wk.getRedirect().empty())
+	if (!wk.getRedirect().empty() || req.isRedirect())
 	{
-		std::string path =  wk.getRedirect();
+		std::string path;
+
+		if (req.isRedirect())
+			path = "http://" + req.getHost() + "/" + req.getUri().path + "/";
+		else
+			path =  wk.getRedirect();
 		RedirectionResponse(status_codes, path);
 		readyToResponed = true;
 		return ;

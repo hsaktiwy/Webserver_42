@@ -14,7 +14,7 @@
 #include "request.hpp"
 #include "./cgi/cgi.hpp"
 
-request::request(): RequestRead(false), Parsed_StartLine(false), R_Method(false), R_URI(false), R_PROTOCOL(false), R_FUll_HEADERS(false),  Parsed_Header(false),  R_FULL_BODY(false), Body_Exist(false),  HandleRequest(false)
+request::request(): redirect(false), RequestRead(false), Parsed_StartLine(false), R_Method(false), R_URI(false), R_PROTOCOL(false), R_FUll_HEADERS(false),  Parsed_Header(false),  R_FULL_BODY(false), Body_Exist(false),  HandleRequest(false)
 {
 	BodyLimiterType = 0;
 	FillingBuffer = false;
@@ -656,10 +656,16 @@ void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status
 		error = true, status = 405;
 }
 
-void IndexingtoIndex(Worker& worker, int &is_dir, int &is_regular, t_uri& uri, bool &error)
+void IndexingtoIndex(Worker& worker, int &is_dir, int &is_regular, t_uri& uri, bool &error, bool &redirect)
 {
 	std::string index = worker.getIndex();
 
+
+	if (error == false && is_dir == 1 && uri.path.size() > 0 && uri.path[uri.path.size() - 1] != '/')
+	{
+		redirect = true;
+		return ;
+	}
 	if (error == false && is_dir == 1 && index.size() != 0)
 	{
 		std::string check = (worker.getRoot() + "/" + uri.path);
@@ -720,7 +726,7 @@ void	request::CheckRequest(Worker& worker, bool &cgiStat)
 		else
 		{
 			isCgiRequest = 0;
-			IndexingtoIndex(worker, is_dir, is_regular, uri, error);
+			IndexingtoIndex(worker, is_dir, is_regular, uri, error, redirect);
 			// if the path is file check it existence and access rigth
 			FileAccessingRigth(worker, uri, error, status, is_regular, method);
 		}
@@ -753,6 +759,7 @@ request& request::operator=(const request& obj)
 {
 	if (this != &obj)
 	{
+		redirect = obj.redirect;
 		method = obj.method;
 		method_uri = obj.method_uri;
 		uri = obj.uri;
@@ -803,6 +810,11 @@ int request::getHeaderIndex(const std::string &name) const
 			return (i);
 	}
 	return (-1);
+}
+
+bool							request::isRedirect( void )
+{
+	return (redirect);
 }
 
 // Getter and Setter

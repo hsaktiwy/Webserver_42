@@ -61,6 +61,7 @@ class request {
 		size_t					max_body_size;
 		bool					maxBodySizeExist;
 		//
+		bool					redirect;
 		// tmp
 		size_t					BIndex;
 		bool					left_CR;// this can hold a incomplete dilimiter 0 noting \r will have 1 or \r\n\r
@@ -114,6 +115,7 @@ class request {
 		void							ParseRequest(std::vector<ServerBlocks> &serverBlocks,std::map<int, int> &matched_server_block , Worker& worker, char *buff, size_t bytes_size,int fd);
 		void							CheckRequest(Worker& worker, bool &cgiStat);// THIS WILL CHECK THE REQUEST VALIDITY
 		request&						operator=(const request& obj);
+		bool							isRedirect( void );
 
 		int 							getHeaderIndex(const std::string &name) const;
 		int								getHeaderValue(const std::string &header,std::string &buffer);// this function will return 1 if it get the value 0 if there is no header with that name in the request

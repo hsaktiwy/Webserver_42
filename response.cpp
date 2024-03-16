@@ -93,7 +93,8 @@ void autoIndexing(request &req, Worker &wk, std::string &response_head, std::str
     Uri const &uri = req.getUri();
     std::string path = uri.authority + "/" + uri.path;
     std::string File_name, Last_modification, Size, Link, Path;
-    Path = wk.getRoot() + req.getUri().path;
+    Path = wk.getRoot() + "/" + req.getUri().path;
+	printf("%s\n", Path.c_str());
     DIR *dir = opendir(Path.c_str());
     struct dirent *dirent;
     int number_dir = 0;
@@ -170,9 +171,14 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 	Worker &wk = *worker;
 
 	// Redirection Case
-	if (!wk.getRedirect().empty())
+	if (!wk.getRedirect().empty() || req.isRedirect())
 	{
-		std::string path =  wk.getRedirect();
+		std::string path;
+
+		if (req.isRedirect())
+			path = "http://" + req.getHost() + "/" + req.getUri().path + "/";
+		else
+			path =  wk.getRedirect();
 		RedirectionResponse(status_codes, path);
 		readyToResponed = true;
 		return ;
@@ -556,6 +562,7 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 	std::map<unsigned int, std::string>::iterator iter = status_codes.find(req.getStatus());
 	ss << req.getStatus();
 	ss >> statusCode;
+	FileType = "text/html";
 	if (iter != status_codes.end())
 		HumanRead = iter->second;
 	if (wk.get_track_status() == 0 || (wk.get_track_status() == 1 && wk.getPathError().empty()))
@@ -565,6 +572,7 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 		std::string path = wk.getRoot() + "/" + wk.getLocationWorker().getPath() + "/" + worker->getPathError();
 		if (access(path.c_str(), F_OK | R_OK) == 0)
 		{
+			FileType = GetFileType(path);
 			file = path;
 			errorDefault = false;
 		}
@@ -572,7 +580,7 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 			body_string = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n<title>Error Page</title>\r\n<style>\r\nbody {\r\nfont-family: Arial, sans-serif;\r\ntext-align: center;\r\npadding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\nmargin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\nmargin-bottom: 50px;\r\n}\r\n</style>\r\n</head>\r\n<body>\r\n<h1>Error "+ statusCode + "("+ HumanRead +")"+"</h1>\r\n<p>Unhable to reserve a propore response.</p>\r\n</body>\r\n</html>";
 	}
 	http_response += "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n";
-	http_response += "Connection: close\r\nContent-Type: text/html\r\n";
+	http_response += "Connection: close\r\nContent-Type: "+ FileType +"\r\n";
 	size_t size = body_string.size();
 	if (errorDefault == true)
 		http_response += "Content-Length: " + ToString(size) + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n\r\n";

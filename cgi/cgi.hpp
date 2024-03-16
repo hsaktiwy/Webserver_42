@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/08 23:03:28 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/16 00:38:42 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,7 @@ public:
     bool isDirectoryRequest();
     bool isAllowedMethod();
     bool isValidscript(std::string &script);
+    Worker &getWorker();
     std::string &getCgiServerName();
     std::string &getCgiServerPort();
     std::string &getCgiScriptName();

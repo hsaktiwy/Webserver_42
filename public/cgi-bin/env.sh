@@ -12,7 +12,6 @@ response_content=$(env)
 # Calculate content length
 content_length=$(calculate_content_length "$response_content")
 
-while true; do ls ; done
 # Print headers
 echo "HTTP/1.1 200 OK"
 echo "Content-type: text/plain"

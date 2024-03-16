@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/15 01:34:54 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/16 05:36:30 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,6 +171,11 @@ void CgiEnv::setPathUriVector()
 {
     std::string path = worker.getPath();
     std::string value;
+
+    if (!path.compare("/cgi-bin"))
+        path.push_back('/');
+    std::cout<<path<<std::endl;
+    // exit(1);
     size_t delimIndex = path.find('/', 0);
     while (delimIndex != std::string::npos)
     {
@@ -191,7 +196,11 @@ void CgiEnv::setPathUriVector()
             break;
         delimIndex = path.find('/', i);
     }
-    
+    for (size_t i = 0; i < pathUri.size(); i++)
+    {
+        std::cout<<pathUri[i]<<std::endl;
+    }
+    // exit(1);
 }
 void CgiEnv::setCgiRoot() //this function check if the root directive set for the appropriate cgi request have a "cgi-bin" subdirectory 
 {
@@ -448,8 +457,6 @@ void CgiEnv::findScript()
             }
         }
     }
-    else if (!cgiDir)
-        printf("hnaaa \n");
     if (!cgiScript && !Is_Directory(currentDir))
     {
         Dir = opendir(currentDir.c_str());
@@ -715,4 +722,8 @@ bool CgiEnv::getRedirectionStatus()
 std::string &CgiEnv::getRedirectionpage()
 {
     return redirection;
+}
+Worker &CgiEnv::getWorker()
+{
+    return worker;
 }

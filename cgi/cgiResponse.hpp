@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 14:12:57 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/16 03:12:29 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/16 18:15:19 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ private:
     CgiEnv Env;
     std::string responseStr;
     int socket_fd;
-    int tmp_socket;
+    int tmp_fd;
     int processId;
     clock_t processTime;
     char **scriptData;
@@ -59,6 +59,7 @@ public:
     bool isProcessSpawned();
     void processResponse();
     int getsocket();
+    bool isPostMethod();
 };
 
 

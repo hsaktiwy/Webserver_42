@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/16 05:36:30 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/17 00:01:55 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,6 +98,13 @@ void CgiEnv::setCgiWorker(const Worker &obj)
 {
     worker = obj;
 }
+
+void CgiEnv::setUploadPath()
+{
+    std::string path = worker.getPathUpload();
+    if (!path.empty())
+        envMap["UPLOADS"]=path;
+}
 void CgiEnv::processAndSetSessions(std::string &value)
 {
     std::stringstream stream(value);
@@ -174,7 +181,6 @@ void CgiEnv::setPathUriVector()
 
     if (!path.compare("/cgi-bin"))
         path.push_back('/');
-    std::cout<<path<<std::endl;
     // exit(1);
     size_t delimIndex = path.find('/', 0);
     while (delimIndex != std::string::npos)
@@ -195,10 +201,6 @@ void CgiEnv::setPathUriVector()
         if (i >= path.size())
             break;
         delimIndex = path.find('/', i);
-    }
-    for (size_t i = 0; i < pathUri.size(); i++)
-    {
-        std::cout<<pathUri[i]<<std::endl;
     }
     // exit(1);
 }
@@ -266,7 +268,6 @@ void CgiEnv::setCgiQueryString()
 }
 void CgiEnv::setInputFromBody()
 {
-    std::cout<<RED<<reqBody<<RESET<<std::endl;
     exit(1);
     std::string body;
     if (boundary.size())
@@ -575,6 +576,7 @@ void CgiEnv::setEnvironementData()
         setCgiQueryString();
         setCgiServerName();
         setCgiServePort();
+        setUploadPath();
         setErrorpage();
         envMap["SERVER_PROTOCOL"] = "HTTP/1.1";
         setRedirection();

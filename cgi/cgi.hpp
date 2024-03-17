@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/16 00:38:42 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/16 23:09:49 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ public:
     void setErrorpage();
     void setStatusCode(int code);
     void setInputFromBody();
+    void setUploadPath();
     void setHttpCookies(std::string &value);
     // void setRequestMethod();
     // void constructScriptEnv();

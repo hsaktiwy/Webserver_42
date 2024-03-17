@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:04 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/13 23:55:02 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/16 21:41:45 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,7 @@ class Client {
 		void			setFdServer(int fd_s);
 		void			setTime(long value);
 		void			setInProcess(bool value);
+		void			setCgiResponse(CgiResponse &obj);
 };
 
 #endif

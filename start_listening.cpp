@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/15 01:04:27 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/16 22:57:25 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,26 +140,23 @@ void    init_poll_fds(std::vector<struct pollfd> &poll_fds,int size,std::vector<
 	}
 }
 
-void	ShowLogs(char (&buffer)[CHUNK_SIZE + 1])
+void	ShowLogs(Client &client)
 {
  	std::time_t now = std::time(NULL);
     
     std::tm *time_info = std::localtime(&now);
 	
-	std::string method;
-	std::string path;
-	
-	std::stringstream object(buffer);
-	std::string firstLine;
+	std::string method =  client.getHttp_request().getMethod();
+	std::string path = client.getHttp_request().getUri().path;
 
-	
-	object >> method >> path;
+
 	
 	std::cout << " " << (time_info->tm_year + 1900) << '/' << (time_info->tm_mon + 1) << '/' << time_info->tm_mday << " ";
     std::cout << " " << time_info->tm_hour << ':' << time_info->tm_min << ':' << time_info->tm_sec << " ";
 	std::cout << "[REQUEST]  " ;
 	printf("%s ",method.c_str());
 	printf("%s \n",path.c_str());
+	((request &)client.getHttp_request()).setDisplay(true);
 }
 
 void    handle_request(std::vector<struct pollfd> &poll_fds, int i, std::vector<ServerBlocks> &serverBlocks, Client & client, std::map<int, int> &matched_server_block)
@@ -167,10 +164,11 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i, std::vector<
 	ssize_t bytes_read;
 	// this part where we will read chunk off our request from the client socket,
 	// and parse it at the same time to define if it ended or not
+		char buffer[CHUNK_SIZE + 1];
 	if (!client.getHttp_request().getRequestRead())
 	{
-		char buffer[CHUNK_SIZE + 1];
-		bytes_read = read(poll_fds[i].fd,buffer, CHUNK_SIZE);
+		// printf("%d %p\n", CHUNK_SIZE, buffer);
+		bytes_read = read(poll_fds[i].fd, buffer, CHUNK_SIZE);
 		if (bytes_read > 0)
 			client.BufferingRequest(serverBlocks, buffer, matched_server_block, bytes_read);
 		if (bytes_read < 0)
@@ -179,13 +177,15 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i, std::vector<
 			((request &)client.getHttp_request()).setStatus(500);
 			((request &)client.getHttp_request()).setRequestRead(true);
 		}
-		buffer[bytes_read] = '\0';
-		// if(std::strlen(buffer) > 0)
-		// 	ShowLogs(buffer);
+		if (bytes_read > 0)
+			buffer[bytes_read] = '\0';
 	}
 	// this part where we will handle some additional request parsing, at the time where the request was fully read
+	if (client.getHttp_request().getStartLine() && !client.getHttp_request().getDisplay())
+		ShowLogs(client);
 	if (client.getHttp_request().getRequestRead())
 	{
+		// printf("Ola\n");
 		client.ParseRequest();
 		((request &)client.getHttp_request()).setHandleRequest(true);
 	}
@@ -581,7 +581,9 @@ void handleCgiResponse(Client & client, std::map<unsigned int, std::string> &sta
 	if (!resp.isResponseSent())
 	{
 		if (!resp.isReqObjectset())
-		{resp.setCgiEnvObject(client.getcgiRequest());
+		{
+			CgiEnv &req = client.getcgiRequest();
+			resp.setCgiEnvObject(req);
 			resp.setSocket(client.getClientSocket());
 			resp.setErrorMap(status_codes);
 		}
@@ -614,11 +616,9 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 {
 	std::string response;
 	std::vector<int> sockets;
-	// std::vector<t_socket_data> socketsFds;
 	std::vector<int> vecFds; // save only opened sockets on a vector (useful when working with poll)
 	std::vector<struct pollfd> poll_fds;
 	struct pollfd tmp; 
-	// int timeout = 2 * 60 * 1000;
 	int pollRet = 0;
 	int acceptRet = 0;
 	std::string human_status;
@@ -631,16 +631,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 	std::vector<Client> ClientsVector;
 	
 	std::cout<<GREEN<<"Waiting for an incoming request... "<<RESET<<std::endl;
-	// std::map<int, int>::iterator it = matched_server_block.begin();
-	// std::map<int, int>::iterator ite = matched_server_block.end();
-
-	// while (it != ite)
-	// {
-	// 	printf("%d %d\n",it->first,it->second);
-	// 	it++;
-	// }
-	
-	// exit(0);
 	while (true)
 	{
 		// std::cerr << "Polling " << std::endl;
@@ -671,11 +661,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				client.setClientSocket(acceptRet);
 				// printf("lol %lld %lu\n", client.getHttp_response().getHeader_size(),client.getHttp_response().getHeader_index());
 				ClientsVector.push_back(client);
-				// char clientIP[INET_ADDRSTRLEN];
-				// unsigned short clientPort = ntohs(tmpAddr.sin_port);
-				// inet_ntop(AF_INET, &(tmpAddr.sin_addr), clientIP, INET_ADDRSTRLEN);
-				// std::cout<<GREEN <<"New incomming connection from the client Socket ";
-				// std::cout<<acceptRet<<" with the address : "<<clientIP<<":"<<clientPort<< " To the socket "<<poll_fds[i].fd<<RESET<<std::endl;
 				if (fcntl(acceptRet, F_SETFL,  O_NONBLOCK , FD_CLOEXEC) < 0)
 				{   perror("fctnl");
 					continue;
@@ -724,6 +709,8 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 						handle_response(poll_fds,i, ClientsVector[client_it], status_codes);
 					if ((ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent()) || ClientsVector[client_it].getcgiResponse().isResponseSent())//???????????????????????????
 					{
+						if (ClientsVector[client_it].getcgiResponse().isResponseSent())
+							printf("==>%d\n", ClientsVector[client_it].getcgiRequest().getStatus());
 						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError() || ClientsVector[client_it].getcgiResponse().isError())
 						{
 							ClientsVector.erase(ClientsVector.begin() + client_it);

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/13 23:56:57 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/16 20:15:26 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ typedef struct Uri
 
 class request {
     private:
+		bool					display;
 		std::string				method;
 		std::string				method_uri;
 		t_uri					uri;
@@ -139,6 +140,11 @@ class request {
 		void							setError(bool value);
 		void							setStatus(int value);
 		bool 							isCgiLocationMatched(Worker &worker);
+		
+		bool 							getStartLine( void ) const;
+		bool							getDisplay( void ) const;
+		void							setDisplay(bool value);
+
 };
 std::string get_root(std::vector<Directives> &directives, t_uri &uri);
 #endif

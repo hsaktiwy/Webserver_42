@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/15 23:09:23 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/16 20:29:05 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -231,8 +231,6 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 					errno ==  EACCES ? req.setStatus(403) : req.setStatus(404);
 					return;
 				}
-
-				
 			}
 			else
 			{
@@ -251,17 +249,7 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 			http_response = "HTTP/1.1 204 No Content\r\n" + Hconnection + "\r\n\r\n";
 			header_size = http_response.size();
 			readyToResponed = true;
-			
-
-			// 			std::cout<< worker->getRoot() + worker->getPath()<< std::endl;
-			// printf("%d\n",std::remove((worker->getRoot() + worker->getPath()).c_str()));
-			// // perror("remove : ");
-			// // this must be deleted
-			// std::string Hconnection = "Connection: " + ConnectionType(req);
-			
-			// header_size = http_response.size();
-			// body_string = "";
-			// readyToResponed = true;
+			req.setStatus(204);
 		}
 	}
 }
@@ -528,6 +516,7 @@ void	response::Get(std::map<unsigned int, std::string> &status_codes)
 	file = NormilisePath(file);
 	header_size = http_response.size();
 }
+
 
 
 void    response::RedirectionResponse(std::map<unsigned int, std::string> &status_codes, std::string &path)

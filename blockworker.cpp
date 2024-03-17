@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/16 05:50:30 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/16 16:33:01 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,8 +140,6 @@ bool Worker::prefix_match(const ServerBlocks &block,std::string &path)
 		{
 			location_prefix = "/" + location_prefix;
 		}
-		printf("prefix %s\n",location_prefix.c_str());
-		printf("path %s\n",path.c_str());
 		if (prefix(location_prefix,path))
 		{
 			this->locationworker = block.getLocations()[i];

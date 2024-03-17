@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/16 05:44:59 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/16 23:02:30 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ CgiResponse::CgiResponse() : scriptData(NULL)
     responseOnProcess = false;
     processSpawned = 0;
     socket_fd = -1;
-    tmp_socket= -1;
+    tmp_fd= -1;
     processId= -1;
 }
 CgiResponse::~CgiResponse()
@@ -58,7 +58,7 @@ CgiResponse &CgiResponse::operator=(const CgiResponse &obj)
         status_codes = obj.status_codes;
         processSpawned = obj.processSpawned;
         processTime = obj.processTime;
-        tmp_socket = obj.tmp_socket;
+        tmp_fd = obj.tmp_fd;
         processId = obj.processId;
         responseStr = obj.responseStr;
         responseOnProcess = obj.responseOnProcess;
@@ -77,8 +77,6 @@ CgiResponse &CgiResponse::operator=(const CgiResponse &obj)
             delete [] scriptData;
             scriptData = NULL;
         }
-        Env = obj.Env;
-        // printf("from cgi resp copy\n");
         // constructScriptEnv();
     }
     return (*this);
@@ -103,25 +101,21 @@ void CgiResponse::creatCgiResponse()
         {
             // printf("%s\n", Env.getCgiScriptName().c_str());
             // exit(1);
-            int trackerPipeReturn = pipe(trackerPipe);
             int errorPipeReturn = pipe(errorpipe);
             fcntl(errorpipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             fcntl(errorpipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-            fcntl(trackerPipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-            fcntl(trackerPipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             std::string path_bin = Env.getScriptBin();
             char **args;
             // int status;
             // tmp_socket = dup(socket_fd);
-            printf("===> %s\n", Env.getCgiScriptName().c_str());
             args = new char *[3];
             args[0] = (char *)path_bin.c_str();
             args[1] = (char *)Env.getCgiScriptName().c_str();
-            printf("%s\n", args[1]);
+
             args[2] = NULL;
             // processSpawned = true;
             int pid = fork();
-            if (errorPipeReturn == -1 || pid == -1 || trackerPipeReturn == -1)
+            if (errorPipeReturn == -1 || pid == -1)
             {
                 Env.setStatusCode(500);
                 Env.setErrorpage();
@@ -133,37 +127,30 @@ void CgiResponse::creatCgiResponse()
             {
                 if (pid == 0)
                 {
-                    printf("gg\n");
+                    int outfd = open("/tmp/outfile", O_CREAT | O_RDWR,0644);
                     bool flag = false;
                     int fd;
                     std::map<std::string, std::string> tmp = Env.getEnvMap();
                     if (!tmp["REQUEST_METHOD"].compare("POST"))
                     {
                         std::string str = Env.getInputFromBody();
-                        printf("%lu\n", strlen(str.data()));
-                        printf("%lu\n", str.size());
                         const char *data = str.data();
                         fd = open("/tmp/tmpFile", O_CREAT | O_RDWR,0644);
-                        if (fd == -1)
+                        if (fd == -1 || outfd == -1)
                             perror("open :");
-                              int bytes  = write(fd, data, str.size());
-                            if (bytes == -1)
-                                perror("write :");
-                        //    char tmp[CHUNK_SIZE];
-                        //    int c = read(fd, tmp, CHUNK_SIZE);
-                        close(fd);
-                        // lseek(fd, 0 , SEEK_SET);
-                        //    printf("%d ===\n%s\n", c,tmp);
-                              
+                        int bytes  = write(fd, data, str.size());
+                        if (bytes == -1)
+                            perror("write :");
+                        close(fd);  
                         flag = true;
                     }
                     close (STDOUT_FILENO);
                     close (STDERR_FILENO);
                     close (errorpipe[0]);
-                    close (trackerPipe[0]);
                     // close (trackerPipe[0]);
                     dup2 (errorpipe[1], 2);
-                    dup2(trackerPipe[1], 1);
+                    dup2(outfd, 1);
+                    close(outfd);
                     if (flag)
                     {
                         close(STDIN_FILENO);
@@ -175,7 +162,6 @@ void CgiResponse::creatCgiResponse()
                         std::cerr<<errno;
                         // perror("execve");
                     close(errorpipe[1]);
-                    close(trackerPipe[1]);
                 }
                 
                 else
@@ -188,7 +174,6 @@ void CgiResponse::creatCgiResponse()
                         // close(inputPipe[0]);
                         // close(inputPipe[1]);
                         close(errorpipe[1]);
-                        close(trackerPipe[1]);
                         processSpawned = true;
                         delete [] args;
                         // dup2(socket_fd, tmp_socket);
@@ -265,33 +250,57 @@ void CgiResponse::handleRedirection()
     send(socket_fd, response.c_str(), response.size(), 0);
     responseSent=true;
 }
+bool CgiResponse::isPostMethod()
+{
+    std::map<std::string, std::string> tmp = Env.getEnvMap();
+    if (!tmp["REQUEST_METHOD"].compare("POST"))
+            return true;
+    return false;
+}
 void CgiResponse::processResponse()
 {
-    // static int i;
-    char buff_resp[CHUNK_SIZE];
-    int bytesRead  = read(trackerPipe[0], buff_resp, 1);
-    // exit(1);
+    static int i;
+    char buff_resp[CHUNK_SIZE + 1];
+    if (tmp_fd == -1)
+    {
+        tmp_fd = open("/tmp/outfile", O_RDONLY);
+        fcntl(tmp_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+        if (tmp_fd == -1)
+        {
+            Env.setStatusCode(500);
+            Env.setErrorpage();
+            isErrorResponse = true;
+            handleError();
+            return;
+        }
+    }
+    int bytesRead  = read(tmp_fd, buff_resp, CHUNK_SIZE);
+    i += bytesRead;
     if (bytesRead != -1)
     {
         if (bytesRead == 0)
        {
-            std::map<std::string, std::string> tmp = Env.getEnvMap();
-            send(socket_fd, responseStr.c_str(), responseStr.size(), 0);
             responseSent = true;
-            close(trackerPipe[0]);
-            if (!tmp["REQUEST_METHOD"].compare("POST"))
+            if (Env.getStatus() == 0)
+                Env.setStatusCode(200);
+            close(tmp_fd);
+            std::remove("/tmp/outfile");
+            if (isPostMethod())
                 std::remove("/tmp/tmpFile");
        }
         else
         {
             buff_resp[bytesRead] = 0;
-            responseStr += buff_resp;
+            send(socket_fd, buff_resp, bytesRead, 0);
+            for (int i = 0; i < bytesRead; i++)
+                responseStr += buff_resp[i];
         }
         
     }
 }
 void CgiResponse::setCgiEnvObject(CgiEnv &obj)
 {
+    
     Env = obj;
     isEnvObjectSet = true;
     setErrorResponseState();
@@ -328,8 +337,6 @@ void CgiResponse::handleError()
 {
     if (Env.isAutoIndexReq() || Env.getStatus())
     {
-        printf("Autoindex : %d, status : %d\n", Env.isAutoIndexReq() ,Env.getStatus());
-            printf("%s\n", Env.getErrorPage().c_str());
         if (Env.getErrorPage().size() && Env.getErrorPage().compare("valid request"))
         {
             errorResponse += "HTTP/1.1 302 Found\r\n";

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/14 00:05:42 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/16 23:08:48 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,6 +198,6 @@ void   init_worker_block(Worker &worker, std::string &host ,std::string &path,st
     }
     if (worker.getPathUpload().empty())
     {
-        worker.setPathUpload("Uploads");
+        worker.setPathUpload("Uploads/");
     }
 }

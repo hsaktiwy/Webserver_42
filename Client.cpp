@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/13 23:55:15 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/16 23:35:44 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,12 +66,10 @@ void	Client::ParseRequest( void )
     http_request.CheckRequest(worker, this->get_cgi_status());
 	if (get_cgi_status()) // check if the request is a cgi request
 	{
-		printf("is cgi req\n");
 			std::string http_cookie;
 		cgiRequest.setCgiWorker(worker); //set the worker of the cgi request
 		cgiRequest.setRequest(this->getHttp_request().getMethod()); //init the method 
 		http_request.getHeaderValue("Cookie", http_cookie);
-		std::cout<<RED<<"COOKIES: "<<http_cookie<<RESET<<std::endl;
 		cgiRequest.setHttpCookies(http_cookie);
 		if (!this->getHttp_request().getMethod().compare("POST"))
 		{
@@ -187,4 +185,8 @@ void			Client::setInProcess( bool value)
 void			Client::setFdServer(int fd_s)
 {	
 	fd_server = fd_s;
+}
+void			Client::setCgiResponse(CgiResponse &obj)
+{
+	cgiResponse = obj;
 }

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/15 23:45:39 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/16 20:22:16 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "request.hpp"
 #include "./cgi/cgi.hpp"
 
-request::request(): redirect(false), RequestRead(false), Parsed_StartLine(false), R_Method(false), R_URI(false), R_PROTOCOL(false), R_FUll_HEADERS(false),  Parsed_Header(false),  R_FULL_BODY(false), Body_Exist(false),  HandleRequest(false)
+request::request(): display(false), redirect(false), RequestRead(false), Parsed_StartLine(false), R_Method(false), R_URI(false), R_PROTOCOL(false), R_FUll_HEADERS(false),  Parsed_Header(false),  R_FULL_BODY(false), Body_Exist(false),  HandleRequest(false)
 {
 	BodyLimiterType = 0;
 	FillingBuffer = false;
@@ -714,10 +714,8 @@ void	request::CheckRequest(Worker& worker, bool &cgiStat)
 		// chekc if the method is supported bye the server
 		AllowedMethod(worker, method, error, status);
 		worker.setQuery(uri.query);
-		std::cout<<"location : "<<worker.getLocationWorker().getPath()<<std::endl;
 		if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/") || isCgiLocationMatched(worker))
 		{
-			printf("Ffff\n");
 			worker.setCgiStatus(true);
 			isCgiRequest = 1;
 			cgiStat = true;
@@ -779,6 +777,7 @@ request& request::operator=(const request& obj)
 		RequestRead = obj.RequestRead;
 		FillingBuffer = obj.FillingBuffer;
 		Parsed_StartLine = obj.Parsed_StartLine;
+		display = obj.display;
 		SLValidity = obj.SLValidity;
 		R_Method = obj.R_Method;
 		R_URI = obj.R_URI;
@@ -910,4 +909,19 @@ void							request::setHandleRequest(bool value)
 int ::request::getCgiStatus() const
 {
 	return isCgiRequest;
+}
+
+bool 							request::getStartLine( void ) const
+{
+	return (Parsed_StartLine);
+}
+
+bool							request::getDisplay( void ) const
+{
+	return (display);
+}
+
+void							request::setDisplay(bool value)
+{
+	display = value;
 }

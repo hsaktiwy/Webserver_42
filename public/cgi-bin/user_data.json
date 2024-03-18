@@ -113,5 +113,15 @@
     "username": "abc",
     "password": "123",
     "email": "zzz@ffssxc"
+  },
+  {
+    "username": "test33",
+    "password": "123",
+    "email": "33@s"
+  },
+  {
+    "username": "hsaktiwy",
+    "password": "Dragon1234?1234",
+    "email": "hsaktiwy@gmail.com"
   }
 ]

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/16 23:02:30 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/18 05:52:51 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,10 +64,6 @@ CgiResponse &CgiResponse::operator=(const CgiResponse &obj)
         responseOnProcess = obj.responseOnProcess;
         errorpipe[0] = obj.errorpipe[0];
         errorpipe[0] = obj.errorpipe[0];
-        trackerPipe[0] = obj.trackerPipe[0];
-        trackerPipe[1] = obj.trackerPipe[1];
-        inputPipe[0] = obj.inputPipe[0];
-        inputPipe[1] = obj.inputPipe[1];
         if (scriptData != NULL)
         {
             size_t size = Env.getEnvMap().size();
@@ -77,7 +73,6 @@ CgiResponse &CgiResponse::operator=(const CgiResponse &obj)
             delete [] scriptData;
             scriptData = NULL;
         }
-        // constructScriptEnv();
     }
     return (*this);
 }
@@ -99,21 +94,17 @@ void CgiResponse::creatCgiResponse()
     {
         if(!processSpawned)
         {
-            // printf("%s\n", Env.getCgiScriptName().c_str());
-            // exit(1);
+                printf("ola %s\n", Env.getScriptBin().c_str());
+                exit(1);
             int errorPipeReturn = pipe(errorpipe);
             fcntl(errorpipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             fcntl(errorpipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             std::string path_bin = Env.getScriptBin();
             char **args;
-            // int status;
-            // tmp_socket = dup(socket_fd);
             args = new char *[3];
             args[0] = (char *)path_bin.c_str();
             args[1] = (char *)Env.getCgiScriptName().c_str();
-
             args[2] = NULL;
-            // processSpawned = true;
             int pid = fork();
             if (errorPipeReturn == -1 || pid == -1)
             {
@@ -147,7 +138,6 @@ void CgiResponse::creatCgiResponse()
                     close (STDOUT_FILENO);
                     close (STDERR_FILENO);
                     close (errorpipe[0]);
-                    // close (trackerPipe[0]);
                     dup2 (errorpipe[1], 2);
                     dup2(outfd, 1);
                     close(outfd);
@@ -158,10 +148,8 @@ void CgiResponse::creatCgiResponse()
                         dup2(fd, 0);
                         close (fd);
                     }
-                    if (execve(Env.getCgiScriptName().c_str(), args, scriptData) == -1)
-                        std::cerr<<errno;
-                        // perror("execve");
-                    close(errorpipe[1]);
+                    if (execve(path_bin.c_str(), args, scriptData) == -1)
+                        close(errorpipe[1]);
                 }
                 
                 else
@@ -170,13 +158,9 @@ void CgiResponse::creatCgiResponse()
                     processId = pid;
                     if (!processSpawned)
                     {
-                        
-                        // close(inputPipe[0]);
-                        // close(inputPipe[1]);
                         close(errorpipe[1]);
                         processSpawned = true;
                         delete [] args;
-                        // dup2(socket_fd, tmp_socket);
                     }
                 }
             }
@@ -185,18 +169,12 @@ void CgiResponse::creatCgiResponse()
         {
             if (!responseOnProcess)
             {
-                char buffer[CHUNK_SIZE];
-                // char processBuffer[CHUNK_SIZE];
+                char buffer[CHUNK_SIZE + 1];
                 int errorchecker = read(errorpipe[0], buffer, CHUNK_SIZE);
-                // int processchecker = read(trackerPipe[0], processBuffer, CHUNK_SIZE);
-                // printf("waaaaaa %d %s\n", errorchecker ,processBuffer);
                 if (errorchecker != -1 )
                 {
                     if (errorchecker == 0)
-                    {
                         responseOnProcess = true;
-                        // responseSent = true;
-                    }
                     else
                     {
                         Env.setStatusCode(500);
@@ -204,7 +182,6 @@ void CgiResponse::creatCgiResponse()
                         isErrorResponse = true;
                         handleError();
                         close(errorpipe[0]);
-                        close(trackerPipe[0]);
                         return;
                     }
                     close(errorpipe[0]);
@@ -213,7 +190,6 @@ void CgiResponse::creatCgiResponse()
                 {
                     clock_t current = clock();
                     double timeSpent = static_cast<double>(current - processTime) / CLOCKS_PER_SEC;
-                    // printf("current = %ld processTime = %ld fd = %d\n ", current / CLOCKS_PER_SEC, processTime / CLOCKS_PER_SEC, socket_fd);
                     if (timeSpent >= RESP_TIMEOUT)
                     {
                         kill(processId, SIGINT);
@@ -222,7 +198,6 @@ void CgiResponse::creatCgiResponse()
                         isErrorResponse = true;
                         handleError();
                         close(errorpipe[0]);
-                        close(trackerPipe[0]);
                         return;
                     }
                     
@@ -304,7 +279,6 @@ void CgiResponse::setCgiEnvObject(CgiEnv &obj)
     Env = obj;
     isEnvObjectSet = true;
     setErrorResponseState();
-    // constructScriptEnv();
 }
 void CgiResponse::setErrorResponseState()
 {
@@ -348,17 +322,23 @@ void CgiResponse::handleError()
         {
             std::stringstream stream;
             std::string body;
-            stream << Env.getStatus() << " "<< status_codes[Env.getStatus()];
+            stream << Env.getStatus();
             errorResponse += "HTTP/1.1 "+ stream.str() + "\r\n";
             errorResponse += "Content-Type: text/html\r\n";
             body += "<!DOCTYPE html>\r\n";
             body += "<html lang=\"en\">\r\n";
             body += "<head>\r\n";
             body += "    <meta charset=\"UTF-8\">\r\n";
-            body += "    <title>" + stream.str() + "</title>\r\n";
+            body += "    <title>Error Page</title>\r\n";
+            body += "<style>\r\nbody {\r\n";
+            body += "font-family: Arial, sans-serif;\r\ntext-align: center;\r\n";
+            body += "padding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\n";
+            body += "margin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\n";
+            body += "margin-bottom: 50px;\r\n}\r\n</style>\r\n";
             body += "</head>\r\n";
             body += "<body>\r\n";
-            body += "    <h1>" + stream.str() + "</h1>\r\n";
+            body += "    <h1> Error " + stream.str() + "(" + status_codes[Env.getStatus()]+")"+"</h1>\r\n";
+            body += "<p>Unable to reserve a propore response.</p>\r\n";
             body += "</body>\r\n";
             body += "</html>";
             stream.str("");
@@ -366,10 +346,7 @@ void CgiResponse::handleError()
             errorResponse += "Content-Length: " + stream.str() +"\r\n\r\n";
             errorResponse += body;
         }
-        // if (processSpawned)
-        //     {send(tmp_socket, errorResponse.c_str(), errorResponse.size(), 0); close(tmp_socket);}
-        // else
-            send(socket_fd, errorResponse.c_str(), errorResponse.size(), 0);
+        send(socket_fd, errorResponse.c_str(), errorResponse.size(), 0);
         responseSent=true;
     }
 }

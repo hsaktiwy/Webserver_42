@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/16 20:29:05 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/18 04:35:25 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,6 @@ void    count_files(int *number_dir,int *number_file,const std::string & root)
             }
             else
                 (*number_file)++;
-			// closedir(subdir);
         }
         closedir(dir);
     }
@@ -94,13 +93,14 @@ void autoIndexing(request &req, Worker &wk, std::string &response_head, std::str
     std::string path = uri.authority + "/" + uri.path;
     std::string File_name, Last_modification, Size, Link, Path;
     Path = wk.getRoot() + "/" + req.getUri().path;
-	printf("%s\n", Path.c_str());
     DIR *dir = opendir(Path.c_str());
     struct dirent *dirent;
     int number_dir = 0;
     int number_file = 0;
 
     count_files(&number_dir, &number_file, Path);
+	std::string Directory = wk.getRoot() + "/" + req.getUri().path;
+	Directory = NormilisePath(Directory);
     response_head = "HTTP/1.1 200 OK\r\nContent-Type: text/html;charset=UTF-8\r\n";
     body = "<html><head><style>"
            "body { font-family: Arial, sans-serif; margin: 0; padding: 0; }"
@@ -114,7 +114,7 @@ void autoIndexing(request &req, Worker &wk, std::string &response_head, std::str
            ".file { color: #28a745; }"
            "</style></head>"
            "<body>"
-           "<h1>Directory listing of " + wk.getRoot() + "</h1>\n"
+           "<h1>Directory listing of " + Directory + "</h1>\n"
            "<p style=\"margin-left:18px;\">directories <span class=\"folder\">" + convertToString(number_dir) + "</span> files <span class=\"file\">" + convertToString(number_file) + "</span></p><hr style=\"margin-bottom:30px;\">\n"
            "<table>\n<thead>\n<tr>\n<th style=\"width: 40%;\">File Name</th>\n<th style=\"width: 30%;\">Last modification</th>\n<th style=\"width: 30%;\">Size</th>\n</tr>\n</thead>\n<tbody>";
 
@@ -170,15 +170,24 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 	request &req = *http_request;
 	Worker &wk = *worker;
 
-	// Redirection Case
-	if (!wk.getRedirect().empty() || req.isRedirect())
+	if (!wk.getRedirect().empty() || req.isRedirect() || req.isIndexDir())
 	{
 		std::string path;
 
+		// if (req.isRedirect())
+		// 	path = "http://" + req.getHost() + "/" + req.getUri().path + "/";
+		// else
+		// 	path =  wk.getRedirect();
 		if (req.isRedirect())
-			path = "http://" + req.getHost() + "/" + req.getUri().path + "/";
-		else
-			path =  wk.getRedirect();
+            path = "http://" + req.getHost() + ((req.getUri().path[0] != '/') ? "/" : "")+ req.getUri().path + "/";
+        else if (req.isIndexDir())
+        {
+            std::string subpath = req.getUri().path;
+            subpath = NormilisePath(subpath);
+            path = "http://" + req.getHost() + ((subpath[0] != '/') ? "/" : "")+ subpath;
+        }
+        else
+            path =  wk.getRedirect();
 		RedirectionResponse(status_codes, path);
 		readyToResponed = true;
 		return ;
@@ -189,7 +198,6 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 		{
 			if (req.getMethod() == "GET" && req.getIs_dir() == 1 &&  wk.getAutoIndex() == "on")
 			{
-				// autoindexing
 				autoIndexing(req, wk,http_response, body_string);
 				header_size = http_response.size();
 				body_size = body_string.size();
@@ -202,10 +210,8 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 		else
 			req.setError(true), req.setStatus(404);
 	}
-	// responed using error pages if  (error  == true)
 	if (req.getError() == true)
 	{
-		// response for Error handling
 		errorresponse(status_codes);
 		readyToResponed = true;
 	}
@@ -242,7 +248,6 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 			}
 			
 			std::remove((worker->getRoot() + worker->getPath()).c_str());
-			// this must be deleted
 			body_string = "";
 			body_size = body_string.size();
 			std::string Hconnection = "Connection: " + ConnectionType(req);
@@ -292,7 +297,6 @@ std::string	getFilenameExp(std::string &stream, size_t &index, std::string &boun
 					{
 						npos2 += Format.size();
 						ExtractValues(buff, filename, npos2);
-						// adjust the stream this will surpace any line untell it get a empty line or in our case a line with only \r
 						while (ft_getline(stream, index, buff, '\n'))
 						{
 							if (buff == "\r")
@@ -312,15 +316,12 @@ std::string	getFilenameExp(std::string &stream, size_t &index, std::string &boun
 	return ("");
 }
 
-// this function will try to fill our file with the data from the body untell
-// it reach the end (boundary) and return (1) mean it finished or it return 0 meaning it
-// just get to the MaxWriteSize defined, else -1 for any error case
 int	fillFile(int fd, std::string &stream, size_t &index, std::string &boundary, size_t MaxWriteSize)
 {
 	size_t		writtenBytes = 0;
 	bool		finished = false;
 	std::string boundary2 = "--" + boundary, boundaryEnd = "--" + boundary + "--";
-	char *buff = (char *)malloc(sizeof(char) * MaxWriteSize);
+	char *buff = (char *)std::malloc(sizeof(char) * MaxWriteSize);
 	if (!buff)
 		return (-1);
 	while (index < stream.size() && writtenBytes < MaxWriteSize)
@@ -343,8 +344,8 @@ int	fillFile(int fd, std::string &stream, size_t &index, std::string &boundary, 
 		index++;
 	}
 	if (write(fd, buff, writtenBytes) == -1)
-		return (free(buff), -1);
-	return (free(buff), finished);
+		return (std::free(buff), -1);
+	return (std::free(buff), finished);
 }
 
 void	Post_no_body(request &req, std::string &http_response, long long &header_size, long long &body_size)
@@ -374,7 +375,6 @@ bool	response::PostInit(std::map<unsigned int, std::string> &status_codes, reque
 		}
 		else
 		{
-			// Not impemented
 			req.setStatus(501); req.setError(true);
 			errorresponse(status_codes);
 			readyToResponed = true;
@@ -433,7 +433,6 @@ bool	response::PostFileFilling(std::map<unsigned int, std::string> &status_codes
 	int result = fillFile(fd, body, body_index, boundary, UPLOADCHUNK_SIZE);
 	if (result == -1)
 	{
-		// handle error 500 in the server;
 		req.setStatus(500); req.setError(true);
 		errorresponse(status_codes);
 		readyToResponed = true;
@@ -464,7 +463,6 @@ void	response::Post(std::map<unsigned int, std::string> &status_codes)
 
 	if (POST_Init == false)
 	{
-		// check first for the Content-Type  == multipart/form-data then define the boundary value
 		if (!PostInit(status_codes, req, body))
 			return ;
 	}
@@ -555,18 +553,59 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 	if (iter != status_codes.end())
 		HumanRead = iter->second;
 	if (wk.get_track_status() == 0 || (wk.get_track_status() == 1 && wk.getPathError().empty()))
-		body_string = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n<title>Error Page</title>\r\n<style>\r\nbody {\r\nfont-family: Arial, sans-serif;\r\ntext-align: center;\r\npadding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\nmargin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\nmargin-bottom: 50px;\r\n}\r\n</style>\r\n</head>\r\n<body>\r\n<h1>Error "+ statusCode + "("+ HumanRead +")"+"</h1>\r\n<p>Unhable to reserve a propore response.</p>\r\n</body>\r\n</html>";
+	{
+		    body_string += "<!DOCTYPE html>\r\n";
+            body_string += "<html lang=\"en\">\r\n";
+            body_string += "<head>\r\n";
+            body_string += "    <meta charset=\"UTF-8\">\r\n";
+            body_string += "    <title>Error Page</title>\r\n";
+            body_string += "<style>\r\nbody {\r\n";
+            body_string += "font-family: Arial, sans-serif;\r\ntext-align: center;\r\n";
+            body_string += "padding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\n";
+            body_string += "margin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\n";
+            body_string += "margin-bottom: 50px;\r\n}\r\n</style>\r\n";
+            body_string += "</head>\r\n";
+            body_string += "<body>\r\n";
+            body_string += "    <h1> Error " + statusCode + "(" + HumanRead +")"+"</h1>\r\n";
+            body_string += "<p>Unable to reserve a propore response.</p>\r\n";
+            body_string += "</body>\r\n";
+            body_string += "</html>";
+	}
 	else
 	{
-		std::string path = wk.getRoot() + "/" + wk.getLocationWorker().getPath() + "/" + worker->getPathError();
+		std::string path = wk.getRoot() + "/" + worker->getPathError();
 		if (access(path.c_str(), F_OK | R_OK) == 0)
 		{
+			if (Is_Directory(path) == 0) 
+			{
+				std::string path = "/" + worker->getPathError();
+				path = NormilisePath(path);
+				RedirectionResponse(status_codes, path);
+				return ;
+			}
 			FileType = GetFileType(path);
 			file = path;
 			errorDefault = false;
 		}
 		else
-			body_string = "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n<title>Error Page</title>\r\n<style>\r\nbody {\r\nfont-family: Arial, sans-serif;\r\ntext-align: center;\r\npadding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\nmargin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\nmargin-bottom: 50px;\r\n}\r\n</style>\r\n</head>\r\n<body>\r\n<h1>Error "+ statusCode + "("+ HumanRead +")"+"</h1>\r\n<p>Unhable to reserve a propore response.</p>\r\n</body>\r\n</html>";
+		{
+		    body_string += "<!DOCTYPE html>\r\n";
+            body_string += "<html lang=\"en\">\r\n";
+            body_string += "<head>\r\n";
+            body_string += "    <meta charset=\"UTF-8\">\r\n";
+            body_string += "    <title>Error Page</title>\r\n";
+            body_string += "<style>\r\nbody {\r\n";
+            body_string += "font-family: Arial, sans-serif;\r\ntext-align: center;\r\n";
+            body_string += "padding-top: 50px;\r\n}\r\nh1 {\r\nfont-size: 3em;\r\ncolor: #990000;\r\n";
+            body_string += "margin-bottom: 20px;\r\n}\r\np {\r\nfont-size: 1.5em;\r\ncolor: #666666;\r\n";
+            body_string += "margin-bottom: 50px;\r\n}\r\n</style>\r\n";
+            body_string += "</head>\r\n";
+            body_string += "<body>\r\n";
+            body_string += "    <h1> Error " + statusCode + "(" + HumanRead +")"+"</h1>\r\n";
+            body_string += "<p>Unable to reserve a propore response.</p>\r\n";
+            body_string += "</body>\r\n";
+            body_string += "</html>";
+		}
 	}
 	http_response += "HTTP/1.1 " + statusCode + " " + HumanRead + "\r\n";
 	http_response += "Connection: close\r\nContent-Type: "+ FileType +"\r\n";
@@ -635,8 +674,6 @@ std::string response::Status(unsigned int status, std::map<unsigned int, std::st
 	} 
 	return (result);
 }
-
-// GETTERS
 
 std::string response::getHttp_response( void ) const
 {
@@ -707,8 +744,6 @@ size_t	response::getSeeker( void ) const
 	return (Seeker);
 }
 
-
-// SETTERS
 void        response::setHeader_index(size_t value)
 {
 	header_index = value;

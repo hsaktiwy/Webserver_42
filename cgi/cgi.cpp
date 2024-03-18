@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/17 00:01:55 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/18 05:57:39 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,7 +149,7 @@ void CgiEnv::processAndSetSessions(std::string &value)
             if (!access((sessions_path + "/" + val).c_str(), F_OK | R_OK))
                 envMap["SID"]=val;
             else
-                status = 500;
+              status = 500;
             closedir(Dir);
             return;
         }
@@ -178,7 +178,6 @@ void CgiEnv::setPathUriVector()
 {
     std::string path = worker.getPath();
     std::string value;
-
     if (!path.compare("/cgi-bin"))
         path.push_back('/');
     // exit(1);
@@ -228,7 +227,7 @@ void CgiEnv::setCgiRoot() //this function check if the root directive set for th
             std::string root = worker.getRoot();
             if (root[root.size() - 1] != '/')
                 root.push_back('/');
-            cgiRoot = root + cgiDirecitory ;
+            cgiRoot = root + cgiDirecitory;
             accessDir = access(cgiRoot.c_str(), F_OK | X_OK);
             isValidDir = Is_Directory(cgiRoot);
             if (!isValidDir && !accessDir)
@@ -475,13 +474,27 @@ void CgiEnv::findScript()
                 entryString = entry->d_name;
                 if(!entryString.compare(worker.getIndex()))
                 {
-                    if (!access((currentDir  + "/" + entryString).c_str(), F_OK | R_OK | X_OK))
+                    if (!Is_Directory(currentDir  + "/" + entryString))
+                        status = 403;
+                    isHandledScript = isValidscript(entryString);
+                    int access_ret = access((currentDir  + "/" + entryString).c_str(), F_OK | R_OK | X_OK);
+                    if (isHandledScript && !access_ret)
                     {
                         cgiScript = true;
                         envMap["SCRIPT_NAME"] = currentDir  + "/" + entryString;
                     }
-                    else
-                        errno == EACCES ? status = 403 : status = 404;
+                else if(!isHandledScript)
+                    status = 501;
+                else
+                    errno == EACCES ? status = 403 : status = 404;
+                //     else if (!access((currentDir  + "/" + entryString).c_str(), F_OK | R_OK | X_OK))
+                //     {
+                //         printf("script name  = %s\n", (currentDir  + "/" + entryString).c_str());
+                //         cgiScript = true;
+                //         envMap["SCRIPT_NAME"] = currentDir  + "/" + entryString;
+                //     }
+                //     else
+                //         errno == EACCES ? status = 403 : status = 404;
                     closedir(Dir);
                     return;
                 }
@@ -491,6 +504,7 @@ void CgiEnv::findScript()
         }
         if (!cgiScript && worker.getAutoIndex().size() && !worker.getAutoIndex().compare("on"))
         {
+            closedir(Dir);
             autoIndex = true;
             status = 403;
         }
@@ -561,8 +575,17 @@ void CgiEnv::setErrorpage()
 void CgiEnv::setRedirection()
 {
     std::string redir = worker.getRedirect();
+    std::string path = worker.getPath();
+    if (autoIndex && !path.empty() && path[path.size() - 1] != '/' && !cgiScript)
     if (redir.size())
     {
+        redirection = redir;
+        isRedir = true;
+        return;
+    }
+    if (autoIndex && !path.empty() && path[path.size() - 1] != '/' && !cgiScript)
+    {
+        redir = path + '/';
         redirection = redir;
         isRedir = true;
     }

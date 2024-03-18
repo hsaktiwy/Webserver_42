@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   start_serving.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 14:43:51 by adardour          #+#    #+#             */
-/*   Updated: 2024/02/13 14:26:13 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/03/17 21:32:17 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,8 +64,7 @@ void start_serving(const Worker &worker,std::string &response,std::string &human
 		read_content(worker.getIndex(),response,type,mime_type);
 	}
 	else
-	{
-		// printf("not found\n");   
+	{ 
 		*status = 404;
 		human_status = "Not Found";
 		response += "<h1>Not found</h1>";

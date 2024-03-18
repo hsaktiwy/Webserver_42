@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/13 15:21:48 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/16 16:33:01 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/18 00:03:09 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,15 +177,11 @@ void    Worker::setLocationWorker(const ServerBlocks& block,std::string &path)
 		return ;
 }
 
-void Worker::setIndex(const std::vector<std::string>&   args,const std::string &root)//, const std::string &path)
+void Worker::setIndex(const std::vector<std::string>&   args,const std::string &root)
 {
-	std::string path_tmp = path;
-	
-	if (!path_tmp.empty() && path_tmp[path_tmp.size() - 1] != '/')
-		path_tmp.push_back('/');
 	for (size_t i = 0; i < args.size(); i++)
 	{
-		if (access(((root + path ) + args[i]).c_str(),F_OK) == 0)
+		if (access(((root + path) + args[i]).c_str(),F_OK) == 0)
 		{
 			this->index = args[i];
 			break;

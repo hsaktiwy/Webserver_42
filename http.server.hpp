@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/13 01:24:50 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/17 21:51:11 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 #include <string.h>
 #include <iostream>
 #include <fstream>
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
 #include <list>
 #include <sstream>
@@ -219,7 +219,7 @@ public:
     bool    exact_match(const ServerBlocks &block,std::string &path);
     bool    prefix_match(const ServerBlocks &block,std::string &path);
     bool    find_root(const ServerBlocks &block);
-    void    found_index_file(const std::string &root);//, const std::string &path);// modified bye hamza 
+    void    found_index_file(const std::string &root);
     void    setPathError(const std::vector<std::vector<std::string> > &error_page, int status);
     void    setQuery(std::string const &query);
     void    setPathUpload(std::string const &path);
@@ -245,15 +245,12 @@ void            check_duplications(std::vector<ServerBlocks> serverBlocks);
 const std::string convertToString(long long line);
 
 
-// Tools
-void	        stringStreamRest(std::stringstream &ss);
 std::string     NormilisePath(std::string &Path);
 long long       ft_atoll(const char* str);
 void	        *ft_memset(void *b, int c, size_t len);
 void	        ExtractValues(std::string &str, std::string  &holder, size_t &index);
 long	        CurrentTime( void );
 
-// Template Function
 template <typename T> std::string ToString(T &data)
 {
 	std::string result;

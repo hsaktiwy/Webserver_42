@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:40 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/15 00:45:26 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/17 21:15:33 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ void show_info(std::vector<ServerBlocks> &blocks) {
             }
             if (!blocks[i].getDirectives()[j].getDirective().compare("listen"))
             {
-                std::cout << "\t\x1B[1;32m";  // Set text color to green
+                std::cout << "\t\x1B[1;32m";
                 printf("Host:Port %s\n", blocks[i].getDirectives()[j].getArgument()[0].c_str());
                 std::cout << "\x1B[0m"; 
             }

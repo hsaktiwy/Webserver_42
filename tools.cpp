@@ -1,19 +1,12 @@
 #include "http.server.hpp"
 
 
-void	stringStreamRest(std::stringstream &ss)
-{
-	ss.str("");
-	ss.clear();
-}
-
 
 long long ft_atoll(const char* str)
 {
 	size_t		i = 0;
 	bool		Psign = true;
 	long long	result = 0;
-	// surpace all the space
 
 	while (str[i] == ' ')
 		i++;

@@ -6,14 +6,13 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:04 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/16 21:41:45 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/17 21:15:12 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 #include "request.hpp"
-// #include "WorkerInit.hpp"
 #include "cgi/cgi.hpp"
 #include "cgi/cgiResponse.hpp"
 #include "response.hpp"
@@ -37,12 +36,10 @@ class Client {
 		~Client();
 		Client(const Client& copy);
 		Client& operator=(const Client& obj);
-		// this function will int http_request and worker plus parse the request
 		void			ParseRequest( void );
 		void			CreateResponse(std::map<unsigned int, std::string> &status_codes);
 		void			BufferingRequest(std::vector<ServerBlocks> &serverBlocks, char *buff,std::map<int, int> &matched_server_block  ,size_t bytes);
 
-		//getter
 		int				getClientSocket() const;
 		bool			getClientResponseSate() const;
 		bool			getClientRequestSate() const;
@@ -56,7 +53,6 @@ class Client {
 		int				getFdServer( void );
 		void			set_cgi_status(bool val);
 		bool			&get_cgi_status();
-		//setter
 		void			setClientSocket(int fd);
 		void			setClientRequestState(bool state);
 		void			setClientResponseState(bool state);

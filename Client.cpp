@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/16 23:35:44 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/17 21:14:51 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,11 +64,11 @@ bool	&Client::get_cgi_status()
 void	Client::ParseRequest( void )
 {
     http_request.CheckRequest(worker, this->get_cgi_status());
-	if (get_cgi_status()) // check if the request is a cgi request
+	if (get_cgi_status())
 	{
 			std::string http_cookie;
-		cgiRequest.setCgiWorker(worker); //set the worker of the cgi request
-		cgiRequest.setRequest(this->getHttp_request().getMethod()); //init the method 
+		cgiRequest.setCgiWorker(worker);
+		cgiRequest.setRequest(this->getHttp_request().getMethod());
 		http_request.getHeaderValue("Cookie", http_cookie);
 		cgiRequest.setHttpCookies(http_cookie);
 		if (!this->getHttp_request().getMethod().compare("POST"))
@@ -85,7 +85,7 @@ void	Client::ParseRequest( void )
 		}
 		else if (this->getHttp_request().getMethod().compare("GET"))
 			cgiRequest.setStatusCode(405);
-		cgiRequest.setEnvironementData(); // fill the map of the env needed by the script process and check errors
+		cgiRequest.setEnvironementData();
 	}	
 }
 

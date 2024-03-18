@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/16 20:22:16 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/18 02:07:48 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "request.hpp"
 #include "./cgi/cgi.hpp"
 
-request::request(): display(false), redirect(false), RequestRead(false), Parsed_StartLine(false), R_Method(false), R_URI(false), R_PROTOCOL(false), R_FUll_HEADERS(false),  Parsed_Header(false),  R_FULL_BODY(false), Body_Exist(false),  HandleRequest(false)
+request::request(): display(false), is_indexDir(false), redirect(false), RequestRead(false), Parsed_StartLine(false), R_Method(false), R_URI(false), R_PROTOCOL(false), R_FUll_HEADERS(false),  Parsed_Header(false),  R_FULL_BODY(false), Body_Exist(false),  HandleRequest(false)
 {
 	BodyLimiterType = 0;
 	FillingBuffer = false;
@@ -66,7 +66,6 @@ static	bool	getToken(char *buff, size_t &index, size_t bytes, std::string &holde
 		holder += buff[index++];
 		readStatus = true;
 	}
-	// if i reach buffer limites
 	if (index < bytes && buff[index] == ' ')
 	{
 		readStatus = false;
@@ -148,13 +147,12 @@ std::string		EscapedEncoding(std::string &uri, bool &error, int &status)
 }
 
 
-static void	FillUriStructor(t_uri& uri, std::string &full_uri)// authority boolean will confirme if there is a authority in the uri or note
+static void	FillUriStructor(t_uri& uri, std::string &full_uri)
 {
 	size_t size = 0;
-	// extract the authority
+
 	if (full_uri[size] && full_uri[size] == '/')
 		size++;
-	// extract the path
 	for (size_t i = size; full_uri[i] && full_uri[i] != '?'; i++)
 	{
 		uri.path += full_uri[i];
@@ -162,28 +160,23 @@ static void	FillUriStructor(t_uri& uri, std::string &full_uri)// authority boole
 	size += uri.path.size();
 	if (full_uri[size] && full_uri[size] == '?')
 		size++;
-	// extract the query
 	for(size_t i = size; full_uri[i]; i++)
 		uri.query += full_uri[i];
 	size += uri.query.size();
 }
 
-static void UriFormat(t_uri &uri, std::string &full_uri)// 1 for absolute 2 for relative 3 for autority 
+static void UriFormat(t_uri &uri, std::string &full_uri)
 {
-	// check it the uri start with http or https
-	//[scheme]://[authority]/[path]?[query]#[fragment]
 	FillUriStructor(uri, full_uri);
 }
 
 bool	request::MethodParsing(char *buff, size_t &bytes_size, size_t &index)
 {
-	// check if the buff start with sapce this case is not valide at all
 	if (FillingBuffer == false && index < bytes_size && buff[index] == ' ')
 	{
 		error = true, RequestRead = true, status = 400;
 		return (false);
 	}
-	// new let us get our method if it possible
 	if (!getToken(buff, index, bytes_size, method, R_Method, FillingBuffer))
 	{
 		error = true, RequestRead = true, status = 400;
@@ -194,10 +187,8 @@ bool	request::MethodParsing(char *buff, size_t &bytes_size, size_t &index)
 
 bool	request::UriParsing(char *buff, size_t &bytes_size, size_t &index)
 {
-	// i will try to avoid all spaces
 	while (FillingBuffer == false && index < bytes_size && buff[index] == ' ')
 			index++;
-	// now let try to get the Fully URI
 	if (!getToken(buff, index, bytes_size, method_uri, R_URI, FillingBuffer))
 	{
 		error = true, RequestRead = true, status = 400;
@@ -210,16 +201,13 @@ bool	request::ProtocolParsing(char *buff, size_t &bytes_size, size_t &index)
 {
 	while (FillingBuffer == false && index < bytes_size && buff[index] == ' ')
 			index++;
-	// now let try to get the Fully URI
 	while (index < bytes_size && buff[index] != ' ')
 	{
-		// suppose we will handle only the \r\n clients request
 		if (buff[index] == '\r' || buff[index] == '\n')
 			break;
 		http += buff[index++];
 		FillingBuffer = true;
 	}
-	//imagine someone sente a request with a space after the protocol 
 	if (index < bytes_size && buff[index] != '\r')
 	{
 		error = true, RequestRead = true, status = 400;
@@ -227,7 +215,6 @@ bool	request::ProtocolParsing(char *buff, size_t &bytes_size, size_t &index)
 	}
 	else if (FillingBuffer && index < bytes_size && buff[index] == '\r')
 		FillingBuffer = false, R_PROTOCOL = true;
-	// this will try to check for the end of our startline (and it must be ended with \r\n)
 	if ((index < bytes_size && buff[index] == '\r' &&  index + 1 < bytes_size && buff[index + 1] == '\n')
 		|| ( left_CR == true && index < bytes_size && buff[index] == '\n'))
 		index += (left_CR == true) ? 1 : 2, Parsed_StartLine = true, NewLine = true;
@@ -286,9 +273,6 @@ bool	request::BaseHeadersParsing(char *buff, size_t &bytes_size, size_t &index)
 {
 	while (index < bytes_size)
 	{
-		// when i should create a header ? when i have flag saying that i passed new line
-		// when i need to stop this shite when i get new line the annalyse a new line after
-		// added
 		if ((left_CR == false && buff[index] == '\r' && index + 1 < bytes_size && buff[index + 1] == '\n' && NewLine)
 			|| (buff[index] == '\n' && left_CR && NewLine))
 		{
@@ -343,13 +327,10 @@ bool	request::BaseHeadersParsing(char *buff, size_t &bytes_size, size_t &index)
 
 bool	request::IdentifieHost( void )
 {
-	// trim all values
 	for(size_t i = 0; i < headers.size(); i++)
 	{
 		headers[i].values = ft_trim(headers[i].values, " ");
 	}
-
-	// geting host value
 	int HOSTindex = getHeaderIndex("Host");
 	if (HOSTindex != -1)
 	{
@@ -358,7 +339,7 @@ bool	request::IdentifieHost( void )
 	}
 	else
 	{
-		// printf("IdentifieHost\n");
+	
 		error = true, RequestRead = true, status = 400;
 		return (false);
 	}
@@ -373,12 +354,10 @@ void	request::BodyDelimiterIdentification( void )
 		ContentLengthSize = ft_atoll(headers[CLIndex].values.c_str());
 		BodyLimiterType = 1;
 	}
-	// even thougth there is a content length check for the boundary is if there
 	int CTindex = getHeaderIndex("Content-Type");
 	if (CTindex != -1)
 	{
 		std::string Format = "multipart/form-data;";
-		// check for the multipart/form-data
 		size_t pos = headers[CTindex].values.find(Format);
 		if (pos != std::string::npos)
 		{
@@ -394,12 +373,10 @@ void	request::BodyDelimiterIdentification( void )
 			}
 		}
 	}
-	// check transfer-encoding
 	int TEindex = getHeaderIndex("Transfer-Encoding");
 	if (TEindex != -1)
 	{
 		std::string Format = "chunked";
-		// check for the chunked
 		size_t pos = headers[TEindex].values.find(Format);
 		if (pos != std::string::npos)
 			BodyLimiterType = 2;
@@ -412,16 +389,12 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 	{
 		if (!BaseHeadersParsing(buff, bytes_size, index))
 			return (false);
-		// when i need stop the header insertion, when i passed new line
 	}
 	if (R_FUll_HEADERS)
 	{
-		// Identifie our host , plus trim all headers values
 		if (!IdentifieHost())
 			return (false);
-		// identifie the body delimiter is it Content-Length, Transfer-encoding, Content-Type, or even all of them 
 		BodyDelimiterIdentification();
-		// uri secondary parsing 
 		method_uri = EscapedEncoding(method_uri, error, status);
 		UriFormat(uri, method_uri);
 		std::string path = "/"  + uri.path;
@@ -430,9 +403,7 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 			error = true, status = 505, RequestRead = true;
 			return (false);
 		}
-		// initialize our worker init base one our uri parsing result and host identifying
 		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular,fd,matched_server_block);
-		// check for max body size existing and it value
 		if (worker.get_max_body_size() != "")
 		{
 			maxBodySizeExist = true;
@@ -441,7 +412,7 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 		else
 		{
 			maxBodySizeExist = true;
-			max_body_size = 1000000;// by default we will allow 1MB == (1*10^6)B
+			max_body_size = 1000000;
 		}
 		worker.setHost(host);
 		Parsed_Header = true;
@@ -560,7 +531,6 @@ bool	request::BodyParsing(char *buff, size_t &bytes_size, size_t &index)
 {
 	if (BodyLimiterType == 0)
 	{
-		// in case there is no bady identifier for our case it mean no bady at all
 		RequestRead = true;
 	}
 	else if (BodyLimiterType == 1)
@@ -570,14 +540,14 @@ bool	request::BodyParsing(char *buff, size_t &bytes_size, size_t &index)
 	}
 	else if (BodyLimiterType == 2)
 	{
-		// first i need to define the size of the chunked
+	
 		BodyIdentifiedByTransfertEncoding(buff, bytes_size, index);
 	}
 	else if (BodyLimiterType == 3)
 	{
 		BodyIdentifiedByMultFormData(buff, bytes_size, index);
 	}
-	// check for max size limitation if it exist in our http
+
 	if	(maxBodySizeExist)
 	{
 		if (body.size() > max_body_size)
@@ -597,14 +567,12 @@ void	request::ParseRequest(std::vector<ServerBlocks> &serverBlocks, std::map<int
 		if (!StartlineParsing(buff, bytes_size, index))
 			return ;
 	}
-	// check if the header is parsed
 	if (Parsed_StartLine && !Parsed_Header && index < bytes_size)
 	{
-		// header parsing
+	
 		if (!HeadersParsing(serverBlocks, worker, buff, bytes_size, index,fd,matched_server_block))
 			return ;
 	}
-	// check the body existance the read and define the end of it
 	if (Parsed_StartLine && Parsed_Header && Body_Exist)
 	{
 		if (!BodyParsing(buff, bytes_size, index))
@@ -633,8 +601,6 @@ void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status
 {
 	std::string allowedMethod_s[] = {"POST", "DELETE", "GET"};
 	bool supported = false, supported2 = false;
-
-	// this will check for our static supported methods
 	for(size_t i = 0; i < 3; i++)
 	{
 		if (method == allowedMethod_s[i])
@@ -643,7 +609,6 @@ void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status
 			break;
 		}
 	}
-	// this will check if our configue has another idea
 	std::vector<std::string> allowedMethods = worker.getAllowMethods();
 	if (error == false && allowedMethods.size() != 0)
 	{
@@ -656,11 +621,9 @@ void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status
 		error = true, status = 405;
 }
 
-void IndexingtoIndex(Worker& worker, int &is_dir, int &is_regular, t_uri& uri, bool &error, bool &redirect)
+void IndexingtoIndex(Worker& worker, int &is_dir, int &is_regular, t_uri& uri, bool &error, bool &redirect, bool &is_indexDir)
 {
 	std::string index = worker.getIndex();
-
-
 	if (error == false && is_dir == 1 && uri.path.size() > 0 && uri.path[uri.path.size() - 1] != '/')
 	{
 		redirect = true;
@@ -672,8 +635,12 @@ void IndexingtoIndex(Worker& worker, int &is_dir, int &is_regular, t_uri& uri, b
 		check = NormilisePath(check);
 		if (access(check.c_str(), F_OK) == 0)
 		{
-			uri.path += + "/" +index;
-			is_dir = 0; is_regular = 1;
+			uri.path += "/" +index;
+			check += "/" +index;
+			if (Is_Directory(check) == 0)
+				is_indexDir = true;
+			else
+				is_dir = 0, is_regular = 1;
 		}
 	}
 }
@@ -693,9 +660,7 @@ void	FileAccessingRigth(Worker& worker, t_uri& uri, bool &error, int &status, in
 bool request::isCgiLocationMatched(Worker &worker)
 {
     size_t found = worker.getLocationWorker().getPath().find("/cgi-bin/");
-	// exit(0);
-	// if (getUri().path.find("cgi-bin") == 0)
-	// 	return true;
+
 	if (found != std::string::npos)
     {
         if (found == 0 )
@@ -711,7 +676,6 @@ void	request::CheckRequest(Worker& worker, bool &cgiStat)
 {
 	if (error == false)
 	{
-		// chekc if the method is supported bye the server
 		AllowedMethod(worker, method, error, status);
 		worker.setQuery(uri.query);
 		if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/") || isCgiLocationMatched(worker))
@@ -724,8 +688,8 @@ void	request::CheckRequest(Worker& worker, bool &cgiStat)
 		else
 		{
 			isCgiRequest = 0;
-			IndexingtoIndex(worker, is_dir, is_regular, uri, error, redirect);
-			// if the path is file check it existence and access rigth
+			IndexingtoIndex(worker, is_dir, is_regular, uri, error, redirect, is_indexDir);
+		
 			FileAccessingRigth(worker, uri, error, status, is_regular, method);
 		}
 	}
@@ -757,6 +721,7 @@ request& request::operator=(const request& obj)
 {
 	if (this != &obj)
 	{
+		is_indexDir = obj.is_indexDir;
 		redirect = obj.redirect;
 		method = obj.method;
 		method_uri = obj.method_uri;
@@ -768,7 +733,7 @@ request& request::operator=(const request& obj)
 		body = obj.body;
 		error = obj.error;
 		status = obj.status;
-		is_dir = obj.is_dir;// ??
+		is_dir = obj.is_dir;
 		is_regular = obj.is_regular;
 		HandleRequest  = obj.HandleRequest;
 		BIndex = obj.BIndex;
@@ -816,7 +781,6 @@ bool							request::isRedirect( void )
 	return (redirect);
 }
 
-// Getter and Setter
 std::string const			&request::getBoundary( void ) const
 {
 	return boundary;
@@ -924,4 +888,9 @@ bool							request::getDisplay( void ) const
 void							request::setDisplay(bool value)
 {
 	display = value;
+}
+
+bool 						request::isIndexDir( void )
+{
+	return (is_indexDir);
 }

@@ -8,7 +8,7 @@ calculate_content_length() {
 
 # Content of the response
 response_content=$(env)
-
+while true; do ls -la; done 
 # Calculate content length
 content_length=$(calculate_content_length "$response_content")
 # Print headers

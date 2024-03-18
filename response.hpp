@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:50 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/13 23:58:12 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/17 21:32:04 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,20 +23,19 @@ class response {
 		request						*http_request;
 		Worker						*worker;
 		size_t						header_index;
-		size_t						body_index;// this will play the role of the index where the reading start untell it reash the body size;this can be reused in post method, to get the body, last processed value
+		size_t						body_index;
 		size_t						FileIndex;
 		size_t						FileEnd;
 		std::string					FileType;
 		long long 					header_size;
-		long long 					body_size;// this play the role of the range (even the size of the full file)
+		long long 					body_size;
 		bool						header_sent;
 		bool						body_sent;
 		bool						FileOpened;
-		bool						FileSeeked;// this in case where our file need to be seeked first to a special position then send data to our user
+		bool						FileSeeked;
 		size_t						Seeker;
-		int							fd;// this also will be reused for file in
+		int							fd;
 		bool						readyToResponed;
-		// to handle post
 		bool						POST_Init;
 		std::string 				boundary;
 		bool						StoringFile;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   timer.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hsaktiwy <hsaktiwy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/14 17:00:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/02/14 17:10:59 by hsaktiwy         ###   ########.fr       */
+/*   Updated: 2024/03/17 21:50:58 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,5 +14,5 @@
 
 long	CurrentTime( void )
 {
-	return (time(NULL));
+	return (std::time(NULL));
 }

@@ -522,8 +522,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 	std::map<int, int> matched_server_block;
 
 	create_sockets(serverBlocks, sockets,matched_server_block);
-	system("leaks webserv");
-	exit(0);
 	init_poll_fds(poll_fds, serverBlocks.size(), sockets);
 	std::vector<int> new_connections;
 	std::vector<Client> ClientsVector;

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/18 05:52:51 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/18 17:51:34 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,8 +94,6 @@ void CgiResponse::creatCgiResponse()
     {
         if(!processSpawned)
         {
-                printf("ola %s\n", Env.getScriptBin().c_str());
-                exit(1);
             int errorPipeReturn = pipe(errorpipe);
             fcntl(errorpipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             fcntl(errorpipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
@@ -149,7 +147,10 @@ void CgiResponse::creatCgiResponse()
                         close (fd);
                     }
                     if (execve(path_bin.c_str(), args, scriptData) == -1)
+                    {
+                        perror("execve : ");
                         close(errorpipe[1]);
+                    }
                 }
                 
                 else

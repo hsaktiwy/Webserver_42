@@ -1,19 +1,15 @@
 #!/usr/local/bin/python3
-
 import os
 import datetime
 import time
 import cgitb
 cgitb.enable()
-# Print the CGI header
 print("HTTP/1.1 200 OK")
 print("Content-Length: 156")
 print("Content-Type: text/html\n")
 
-# Get the current time
 current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-# Print the HTML content
 print("<html>")
 print("<head>")
 print("<title>Simple CGI Script</title>")

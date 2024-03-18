@@ -94,8 +94,8 @@ void CgiResponse::creatCgiResponse()
     {
         if(!processSpawned)
         {
-                printf("ola %s\n", Env.getScriptBin().c_str());
-                exit(1);
+                // printf("ola %s\n", Env.getScriptBin().c_str());
+                // exit(1);
             int errorPipeReturn = pipe(errorpipe);
             fcntl(errorpipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             fcntl(errorpipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);

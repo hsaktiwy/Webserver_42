@@ -79,7 +79,7 @@ void    create_sockets(std::vector<ServerBlocks> &serverBlocks,std::vector<int> 
 	int status;
 	for (size_t i = 0; i < serverBlocks.size(); i++)
 	{
-		ft_memset(&hints,0,sizeof(hints));
+		std::memset(&hints,0,sizeof(hints));
 		hints.ai_family = AF_INET;
 		hints.ai_socktype = SOCK_STREAM;
 		get_port_host(serverBlocks[i],port_host);
@@ -121,12 +121,11 @@ void    create_sockets(std::vector<ServerBlocks> &serverBlocks,std::vector<int> 
 									
 			}
 			sockets.push_back(socket_fd);
-			ft_memset(&port_host,0,sizeof(port_host));
+			std::memset(&port_host,0,sizeof(port_host));
 			matched_server_block.insert(std::make_pair(socket_fd,i));
 		}
+		freeaddrinfo(result);
 	}
-	freeaddrinfo(result);
-	
 }
 
 void    init_poll_fds(std::vector<struct pollfd> &poll_fds,int size,std::vector<int> &sockets)
@@ -523,6 +522,8 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 	std::map<int, int> matched_server_block;
 
 	create_sockets(serverBlocks, sockets,matched_server_block);
+	system("leaks webserv");
+	exit(0);
 	init_poll_fds(poll_fds, serverBlocks.size(), sockets);
 	std::vector<int> new_connections;
 	std::vector<Client> ClientsVector;
@@ -559,7 +560,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				{   perror("fctnl");
 					continue;
 				}
-				ft_memset(&tmp, 0, sizeof(tmp));
+				std::memset(&tmp, 0, sizeof(tmp));
 				tmp.fd = acceptRet;
 				tmp.events = POLLIN;
 				poll_fds.push_back(tmp); 

@@ -16,7 +16,7 @@ CFLAGS = -Wall -Werror -Wextra
 
 SANI = #-fsanitize=address
 
-SRC = Client.cpp            ft_memset.cpp         http.server.cpp       main.cpp              proccess_tokens.cpp   response.cpp          start_serving.cpp \
+SRC = Client.cpp       http.server.cpp       main.cpp              proccess_tokens.cpp   response.cpp          start_serving.cpp \
 blockworker.cpp       handle_errors.cpp     init_worker_block.cpp mime_types.cpp        request.cpp           start_listening.cpp   tools.cpp cgi/cgi.cpp    cgi/cgiResponse.cpp timer.cpp
 
 HPP = Client.hpp      http.server.hpp request.hpp     response.hpp cgi/cgi.hpp cgi/cgiResponse.hpp \

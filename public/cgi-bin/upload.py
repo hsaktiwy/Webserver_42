@@ -55,7 +55,7 @@ if request_method:
             </body>
             </html>
             """.format(data)
-        print("HTTP/1.1 200 OK");
+        print("HTTP/1.1 200 OK")
         print("Content-type: text/html")
         print("Content-length: {}\n".format(calculate_content_length(dynamic_content)))
         print(dynamic_content)

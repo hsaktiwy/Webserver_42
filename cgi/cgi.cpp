@@ -267,7 +267,7 @@ void CgiEnv::setCgiQueryString()
 }
 void CgiEnv::setInputFromBody()
 {
-    exit(1);
+    // exit(1);
     std::string body;
     if (boundary.size())
     {

@@ -617,7 +617,7 @@ void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status
 	}
 	else if (error == false && allowedMethods.size() == 0)
 		supported2 = true;
-	if (supported == false || supported2 == false)
+	if (error == false && (supported == false || supported2 == false))
 		error = true, status = 405;
 }
 
@@ -676,6 +676,8 @@ void	request::CheckRequest(Worker& worker, bool &cgiStat)
 {
 	if (error == false)
 	{
+		if (error == false && worker.getRoot().empty())
+			error = true, status = 404;
 		AllowedMethod(worker, method, error, status);
 		worker.setQuery(uri.query);
 		if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/") || isCgiLocationMatched(worker))

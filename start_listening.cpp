@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/18 04:42:07 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/19 01:58:47 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ void    create_sockets(std::vector<ServerBlocks> &serverBlocks,std::vector<int> 
 	int status;
 	for (size_t i = 0; i < serverBlocks.size(); i++)
 	{
-		ft_memset(&hints,0,sizeof(hints));
+		std::memset(&hints,0,sizeof(hints));
 		hints.ai_family = AF_INET;
 		hints.ai_socktype = SOCK_STREAM;
 		get_port_host(serverBlocks[i],port_host);
@@ -121,12 +121,11 @@ void    create_sockets(std::vector<ServerBlocks> &serverBlocks,std::vector<int> 
 									
 			}
 			sockets.push_back(socket_fd);
-			ft_memset(&port_host,0,sizeof(port_host));
+			std::memset(&port_host,0,sizeof(port_host));
 			matched_server_block.insert(std::make_pair(socket_fd,i));
 		}
+		freeaddrinfo(result);
 	}
-	freeaddrinfo(result);
-	
 }
 
 void    init_poll_fds(std::vector<struct pollfd> &poll_fds,int size,std::vector<int> &sockets)
@@ -153,7 +152,7 @@ void	ShowLogs(Client &client)
     std::cout << " " << time_info->tm_hour << ':' << time_info->tm_min << ':' << time_info->tm_sec << " ";
 	std::cout << "[REQUEST]  " ;
 	printf("%s ",method.c_str());
-	printf("/%s   ==> %d\n",path.c_str(), client.getClientSocket());
+	printf("/%s\n",path.c_str());
 	((request &)client.getHttp_request()).setDisplay(true);
 }
 
@@ -175,8 +174,8 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i, std::vector<
 		if (bytes_read > 0)
 			buffer[bytes_read] = '\0';
 	}
-	if (client.getHttp_request().getStartLine() && !client.getHttp_request().getDisplay())
-		ShowLogs(client);
+	// if (client.getHttp_request().getStartLine() && !client.getHttp_request().getDisplay())
+	// 	ShowLogs(client);
 	if (client.getHttp_request().getRequestRead())
 	{
 		client.ParseRequest();
@@ -559,7 +558,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				{   perror("fctnl");
 					continue;
 				}
-				ft_memset(&tmp, 0, sizeof(tmp));
+				std::memset(&tmp, 0, sizeof(tmp));
 				tmp.fd = acceptRet;
 				tmp.events = POLLIN;
 				poll_fds.push_back(tmp); 
@@ -624,7 +623,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				}
 				else
 				{
-					if (ClientsVector[client_it].getInProcess() == false && CurrentTime() - ClientsVector[client_it].getTime() > C_TIMEOUT)
+					if (ClientsVector[client_it].getInProcess() == false  && CurrentTime() - ClientsVector[client_it].getTime() > C_TIMEOUT)
 					{
 						if (ClientsVector[client_it].getHttp_response().getFd() != -1)
 							close(ClientsVector[client_it].getHttp_response().getFd());

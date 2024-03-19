@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/18 02:07:48 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/18 22:44:12 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -617,7 +617,7 @@ void	AllowedMethod(Worker& worker, std::string &method, bool &error, int &status
 	}
 	else if (error == false && allowedMethods.size() == 0)
 		supported2 = true;
-	if (supported == false || supported2 == false)
+	if (error == false && (supported == false || supported2 == false))
 		error = true, status = 405;
 }
 
@@ -676,6 +676,8 @@ void	request::CheckRequest(Worker& worker, bool &cgiStat)
 {
 	if (error == false)
 	{
+		if (error == false && worker.getRoot().empty())
+			error = true, status = 404;
 		AllowedMethod(worker, method, error, status);
 		worker.setQuery(uri.query);
 		if (!worker.getLocationWorker().getPath().compare("/cgi-bin") || !worker.getLocationWorker().getPath().compare("/cgi-bin/") || isCgiLocationMatched(worker))

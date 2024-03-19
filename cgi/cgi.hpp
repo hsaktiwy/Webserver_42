@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/16 23:09:49 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/19 04:14:56 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,6 @@
 #include "../request.hpp"
 #include <sstream>
 
-
-//script-URI = <scheme> "://" <server-name> ":" <server-port><script-path> <extra-path> "?" <query-string>
 class CgiEnv
 {
 private:
@@ -59,7 +57,6 @@ public:
     void setCgiServePort();
     void setRequest(const std::string &req);
     void setRedirection();
-    // void setCgiScriptName();
     void setCgiPATHINFO();
     void setCgiQueryString();
     void setRequestBody(const std::string &body);
@@ -67,11 +64,8 @@ public:
     void findScript();
     void setErrorpage();
     void setStatusCode(int code);
-    void setInputFromBody();
     void setUploadPath();
     void setHttpCookies(std::string &value);
-    // void setRequestMethod();
-    // void constructScriptEnv();
     void processAndSetSessions(std::string &value);
     void setEnvironementData();
     bool isDirectoryRequest();

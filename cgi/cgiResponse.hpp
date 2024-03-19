@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 14:12:57 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/18 01:19:23 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/19 03:22:30 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include "../http.server.hpp"
 #include <sstream>
 #include<ctime>
-#define RESP_TIMEOUT 40
+#define RESP_TIMEOUT 10
 
 class CgiResponse
 {

@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/18 05:57:39 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/19 04:25:55 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,17 +24,6 @@ CgiEnv::CgiEnv(const Worker &workerObj) : worker(workerObj)
     status = 0;
     isRedir = false;
     extraPathIndex = -1;
-    // setPathUriVector();
-    // setCgiRoot();
-    // findScript();
-    // setCgiPATHINFO();
-    // setCgiQueryString();
-    // setCgiServerName();
-    // setCgiServePort();
-    // setRequestMethod();
-    // constructScriptEnv();
-    // std::cout<<RED<<envMap["SCRIPT_NAME"]<<" "<<status <<RESET<<std::endl;
-    // std::cout<<RED<<envMap["PATH_INFO"]<<" "<<status <<RESET<<std::endl;
 }
 CgiEnv::CgiEnv()
 {
@@ -111,7 +100,6 @@ void CgiEnv::processAndSetSessions(std::string &value)
     std::string str;
     std::string key;
     std::string val;
-    // std::getline(stream, str, ';');
     if (value.find(';') !=  std::string::npos)
     {
         while(getline(stream, str, ';'))
@@ -164,12 +152,8 @@ void CgiEnv::setHttpCookies(std::string &value)
         envMap["HTTP_COOKIE"] = value;
         processAndSetSessions(value);
     }
-        
 }
-// void CgiEnv::setRequestMethod()
-// {
-//     envMap["REQUEST_METHOD"]="GET";
-// }
+
 void CgiEnv::setBoundry(const std::string &bodyBoundary)
 {
     boundary = bodyBoundary;
@@ -180,7 +164,6 @@ void CgiEnv::setPathUriVector()
     std::string value;
     if (!path.compare("/cgi-bin"))
         path.push_back('/');
-    // exit(1);
     size_t delimIndex = path.find('/', 0);
     while (delimIndex != std::string::npos)
     {
@@ -201,9 +184,8 @@ void CgiEnv::setPathUriVector()
             break;
         delimIndex = path.find('/', i);
     }
-    // exit(1);
 }
-void CgiEnv::setCgiRoot() //this function check if the root directive set for the appropriate cgi request have a "cgi-bin" subdirectory 
+void CgiEnv::setCgiRoot()
 {
     std::string cgiDirecitory = "cgi-bin";
     DIR *rootPath = opendir(worker.getRoot().c_str());
@@ -265,65 +247,6 @@ void CgiEnv::setCgiQueryString()
 {
     envMap["QUERY_STRING"] = worker.getQuery();
 }
-void CgiEnv::setInputFromBody()
-{
-    exit(1);
-    std::string body;
-    if (boundary.size())
-    {
-        std::string delimiter = boundary.substr(0, boundary.size() - 2);
-        std::stringstream stream(reqBody);
-        std::string line;
-        bool value = false;
-        while(getline(stream, line))
-        {
-            if (!line.compare(delimiter))
-                continue;
-            else if (line.size() && line[0] == '\r' && value == false)
-            {
-                value = true;
-                continue;
-            }
-            else if (value)
-            {
-                body.push_back('=');
-                for (size_t i = 0; i < line.size(); i++)
-                {
-                    if (line[i] != '\n' && line[i] != '\r')
-                        body.push_back(line[i]);
-                }
-                body.push_back('&');
-                value = false;
-            }
-            else if (line.find("Content-Disposition") != std::string::npos)
-            {
-                size_t index = line.find("name=");
-                if (index == std::string::npos)
-                {
-                    index = line.find("filename=");
-                }
-                if (index != std::string::npos)
-                {
-                    std::string tmp = line.substr(index);
-                    size_t i = tmp.find("\"");
-                    if (i != std::string::npos)
-                    {
-                        while (tmp[++i] != '\"')
-                        {
-                            body.push_back(tmp[i]);
-                            // i++;
-                        }
-                    }
-                    
-                }
-            }
-        }
-        body.pop_back();
-        // std::cout<<YELLOW<<body<<RESET<<std::endl;
-        // exit(1);
-        reqBody = body;
-    }
-}
 void CgiEnv::setCgiPATHINFO()
 {
     std::string root;
@@ -340,13 +263,7 @@ void CgiEnv::setCgiPATHINFO()
                 extraPath += "/"; 
                 extraPath += pathUri[i];
             }
-            // if (!access(extraPath.c_str(), F_OK | R_OK | X_OK))
-            // {
-            //     extraPath = true;
-            // }
-            // else
-            //     errno == EACCES ? status = 403 : status = 404;
-                envMap["PATH_INFO"] = extraPath;
+            envMap["PATH_INFO"] = extraPath;
         }
     }
 }
@@ -487,14 +404,6 @@ void CgiEnv::findScript()
                     status = 501;
                 else
                     errno == EACCES ? status = 403 : status = 404;
-                //     else if (!access((currentDir  + "/" + entryString).c_str(), F_OK | R_OK | X_OK))
-                //     {
-                //         printf("script name  = %s\n", (currentDir  + "/" + entryString).c_str());
-                //         cgiScript = true;
-                //         envMap["SCRIPT_NAME"] = currentDir  + "/" + entryString;
-                //     }
-                //     else
-                //         errno == EACCES ? status = 403 : status = 404;
                     closedir(Dir);
                     return;
                 }
@@ -511,32 +420,8 @@ void CgiEnv::findScript()
         else
             status = 404;
     }
-
 }
 
-// void CgiEnv::constructScriptEnv()
-// {
-//     size_t env_size = envMap.size();
-//     std::map<std::string, std::string>::iterator it;
-//     std::string data;
-//     int count = 0;
-//     if (env_size)
-//     {
-//         cgiMetaData = new char* [env_size + 1];
-//         for (it = envMap.begin(); it != envMap.end(); it++)
-//         {
-//             data = it->first + "=" + it->second;
-//             cgiMetaData[count] = strdup(data.c_str());
-//             count++;
-//         }
-//         cgiMetaData[count] = NULL;
-//     }
-//     for (size_t i = 0; cgiMetaData[i] != NULL; i++)
-//     {
-//         printf("%s\n", cgiMetaData[i]);
-//     }
-    
-// }
 void CgiEnv::setStatusCode(int code)
 {
     status = code;
@@ -558,6 +443,10 @@ void CgiEnv::setErrorpage()
         status = 404;
     if (!isAllowedMethod() && status != 501)
         status = 405;
+    if (envMap["REQUEST_METHOD"].empty())
+        status = 500;
+    if (reqBody.empty() && !envMap["REQUEST_METHOD"].compare("POST"))
+        status = 400;
     unsigned int error_status = 0;
     if (autoIndex)
         error_status = 403;
@@ -603,79 +492,12 @@ void CgiEnv::setEnvironementData()
         setErrorpage();
         envMap["SERVER_PROTOCOL"] = "HTTP/1.1";
         setRedirection();
-
-
-        // exit(1);
-        
-
-    // std::cerr <<envMap["CONTENT_TYPE"]<<std::endl;
-    // std::cerr <<envMap["CONTENT_LENGTH"]<<std::endl;
-    // std::cerr<<reqBody<<std::endl;
 }
 void CgiEnv::setRequest(const std::string &req)
 {
     envMap["REQUEST_METHOD"] = req;
 }
-// bool CgiEnv::isDirectoryRequest()
-// {
-//     DIR *cgiDir;
-//     std::string currentDir = cgiRoot;
-    
 
-//     if (validRoot && cgiDir)
-//     {
-//         for (size_t i = 1; i < pathUri.size() - 1; i++) // we started from 1 because the first element in vector is the cgi-bin dir
-//         {            
-//             cgiDir = opendir(currentDir.c_str());
-//             if (cgiDir != NULL)
-//             {
-//                 struct dirent *entry = readdir(cgiDir);
-//                 while (readdir)
-//                 {
-//                     if(!pathUri[i + 1].compare(entry->d_name))
-//                     {
-//                         if(access((cgiRoot )))
-//                     }
-//                 }
-//             }
-            
-//         }
-        
-//     }
-   
-// }
-// void CgiEnv::setCgiScriptName()
-// {
-//     std::string root;
-//     std::string path;
-//     std::string fullPath; // include extra infos
-//     std::string cgiRoot;
-//     cgiRoot = getCgiRoot();
-//     if (validRoot && cgiDir)
-//     {
-//         if(!worker.getPath().compare("/cgi-bin") || !worker.getPath().compare("/cgi-bin/"))
-//         {
-//             isDir = true;
-//             if (worker.getIndex().size())
-//             {
-//                 if (access((cgiRoot + worker.getIndex()).c_str(), R_OK | X_OK | F_OK))
-//                     envMap["SCRIPT_NAME"] = worker.getIndex();
-//                 else
-//                     autoIndex = true;
-//             }
-//         }
-//         else
-        
-//     }
-//     std::stringstream stream;
-//     root = worker.getRoot();
-//     if (root[root.size() - 1] == '/')
-//         root.pop_back();
-//     path = worker.getPath().substr(1, worker.getPath().size() - 1);
-//     path =
-//     fullPath = root + path;
-    
-// }
 std::string &CgiEnv::getCgiPATHINFO()
 {
     return envMap["PATH_INFO"];
@@ -716,10 +538,7 @@ bool CgiEnv::isScriptFound()
 {
     return cgiScript;
 }
-// char **CgiEnv::getenvArray()
-// {
-//     return cgiMetaData;
-// }
+
 bool CgiEnv::isAutoIndexReq()
 {
     return autoIndex;

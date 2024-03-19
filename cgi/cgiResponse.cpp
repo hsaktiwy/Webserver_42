@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/18 17:51:34 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/19 04:20:06 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,8 @@ CgiResponse::CgiResponse() : scriptData(NULL)
     socket_fd = -1;
     tmp_fd= -1;
     processId= -1;
+    errorpipe[0]= -1;
+    errorpipe[1] = -1;
 }
 CgiResponse::~CgiResponse()
 {
@@ -90,22 +92,29 @@ void CgiResponse::setSocket(int fd)
 }
 void CgiResponse::creatCgiResponse()
 {
+
     if (!Env.getStatus() && !isErrorResponse && !Env.getRedirectionStatus())
     {
         if(!processSpawned)
         {
             int errorPipeReturn = pipe(errorpipe);
-            fcntl(errorpipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-            fcntl(errorpipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+            int error_re = fcntl(errorpipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+            int error_we = fcntl(errorpipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             std::string path_bin = Env.getScriptBin();
             char **args;
+            tmp_fd = open("/tmp/outfile", O_CREAT | O_RDWR,0644);
             args = new char *[3];
             args[0] = (char *)path_bin.c_str();
             args[1] = (char *)Env.getCgiScriptName().c_str();
             args[2] = NULL;
-            int pid = fork();
-            if (errorPipeReturn == -1 || pid == -1)
+            int pid;
+            if (errorPipeReturn == -1 ||  error_re == -1 || error_we == -1 || tmp_fd == -1)
             {
+                if (!access("/tmp/outfile", F_OK | W_OK | X_OK))
+                    std::remove("/tmp/outfile");
+                delete [] args;
+                close(errorpipe[0]);
+                close(errorpipe[1]);
                 Env.setStatusCode(500);
                 Env.setErrorpage();
                 isErrorResponse = true;
@@ -114,8 +123,29 @@ void CgiResponse::creatCgiResponse()
             }
             else
             {
+                close(tmp_fd);
+                tmp_fd = -1;
+                pid = fork();
+                if (pid == -1)
+                {
+                    if (!access("/tmp/outfile", F_OK | W_OK | X_OK))
+                        std::remove("/tmp/outfile");
+                    delete [] args;
+                    close(errorpipe[0]);
+                    close(errorpipe[1]);
+                    Env.setStatusCode(500);
+                    Env.setErrorpage();
+                    isErrorResponse = true;
+                    handleError();
+                    return;
+                    
+                }
                 if (pid == 0)
                 {
+                    close (STDERR_FILENO);
+                    close (errorpipe[0]);
+                    dup2 (errorpipe[1], 2);
+                    close(errorpipe[1]);
                     int outfd = open("/tmp/outfile", O_CREAT | O_RDWR,0644);
                     bool flag = false;
                     int fd;
@@ -125,18 +155,19 @@ void CgiResponse::creatCgiResponse()
                         std::string str = Env.getInputFromBody();
                         const char *data = str.data();
                         fd = open("/tmp/tmpFile", O_CREAT | O_RDWR,0644);
-                        if (fd == -1 || outfd == -1)
-                            perror("open :");
                         int bytes  = write(fd, data, str.size());
-                        if (bytes == -1)
-                            perror("write :");
+                        if (bytes == -1 || fd == -1 || outfd == -1)
+                        {
+                            perror("error :");
+                            if (!access("/tmp/outfile", F_OK | W_OK | X_OK))
+                                std::remove("/tmp/outfile");
+                            if (!access("/tmp/tmpFile", F_OK | W_OK | X_OK))
+                                std::remove("/tmp/tmpFile");
+                        }
                         close(fd);  
                         flag = true;
                     }
                     close (STDOUT_FILENO);
-                    close (STDERR_FILENO);
-                    close (errorpipe[0]);
-                    dup2 (errorpipe[1], 2);
                     dup2(outfd, 1);
                     close(outfd);
                     if (flag)
@@ -175,7 +206,10 @@ void CgiResponse::creatCgiResponse()
                 if (errorchecker != -1 )
                 {
                     if (errorchecker == 0)
+                    {
                         responseOnProcess = true;
+                        close(errorpipe[0]);
+                    }
                     else
                     {
                         Env.setStatusCode(500);
@@ -185,7 +219,6 @@ void CgiResponse::creatCgiResponse()
                         close(errorpipe[0]);
                         return;
                     }
-                    close(errorpipe[0]);
                 }
                 else
                 {
@@ -197,6 +230,7 @@ void CgiResponse::creatCgiResponse()
                         Env.setStatusCode(504);
                         Env.setErrorpage();
                         isErrorResponse = true;
+                        std::remove("/tmp/outfile");
                         handleError();
                         close(errorpipe[0]);
                         return;
@@ -240,9 +274,10 @@ void CgiResponse::processResponse()
     if (tmp_fd == -1)
     {
         tmp_fd = open("/tmp/outfile", O_RDONLY);
-        fcntl(tmp_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-        if (tmp_fd == -1)
+        int ss = fcntl(tmp_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+        if (tmp_fd == -1 || ss == -1)
         {
+            perror("ss : ");
             Env.setStatusCode(500);
             Env.setErrorpage();
             isErrorResponse = true;
@@ -324,6 +359,8 @@ void CgiResponse::handleError()
             std::stringstream stream;
             std::string body;
             stream << Env.getStatus();
+
+            std::map<std::string, std::string> a = Env.getEnvMap();
             errorResponse += "HTTP/1.1 "+ stream.str() + "\r\n";
             errorResponse += "Content-Type: text/html\r\n";
             body += "<!DOCTYPE html>\r\n";
@@ -338,7 +375,7 @@ void CgiResponse::handleError()
             body += "margin-bottom: 50px;\r\n}\r\n</style>\r\n";
             body += "</head>\r\n";
             body += "<body>\r\n";
-            body += "    <h1> Error " + stream.str() + "(" + status_codes[Env.getStatus()]+")"+"</h1>\r\n";
+            body += "    <h1> Error " + stream.str() + "(" + status_codes[Env.getStatus()]+ ")"+"</h1>\r\n";
             body += "<p>Unable to reserve a propore response.</p>\r\n";
             body += "</body>\r\n";
             body += "</html>";

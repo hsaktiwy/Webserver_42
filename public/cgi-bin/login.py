@@ -15,10 +15,8 @@ root = os.environ.get('ROOT')
 users_data_path = root + "/user_data.json"
 sessions_path = "sessions/"
 
-# Function to generate a random session ID
 
 def create_session_id(username):
-    # Hash the username using SHA-256 (you can choose a different hash algorithm)
     data_to_hash = username + str(time.time())
     hashed_username = hashlib.sha256(data_to_hash.encode('utf-8')).hexdigest()
     return hashed_username
@@ -26,31 +24,22 @@ def create_session_id(username):
 def generate_session_id():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=32))
 
-# Function to validate user credentials
 def validate_user(username, password):
-    # Load user data from a JSON file (replace with your actual file path)
     with open(users_data_path, 'r') as file:
         users = json.load(file)
-
-    # Check if the provided username and password match any user in the data
     for user in users:
         if user['username'] == username and user['password'] == password:
             return True
 
     return False
 
-# Function to render a page for the logged-in user
 def read_and_decode_from_session(filename):
-    # Read the encoded data from the file
     with open(filename, 'r') as file:
         encoded_data = file.read()
-
-    # Decode the data using base64
     decoded_data = base64.b64decode(encoded_data).decode('utf-8')
 
     return decoded_data
 def render_hello_page(existing_session_id):
-    # Load user data from JSON file
     sid_path = sessions_path + existing_session_id
     username = read_and_decode_from_session(sid_path)
 
@@ -67,7 +56,6 @@ def render_hello_page(existing_session_id):
         print("Content-Length: ", len(html_content))
         print("\n" + html_content)
 def redirect_profile(existing_session_id):
-    # Load user data from JSON file
     sid_path = sessions_path + existing_session_id
     username = read_and_decode_from_session(sid_path)
 
@@ -94,6 +82,7 @@ def encode_and_write_to_session(data, filename):
     # Write the encoded data to the file
     with open(filename, 'w') as file:
         file.write(encoded_data)
+
 def handle_login():
 
     request_method = os.environ.get('REQUEST_METHOD','')
@@ -140,13 +129,10 @@ def handle_login():
         if session_cookie:
             redirect_profile(session_cookie)
         else:
-            # Get input from the user
             username = form.getvalue('username')
             password = form.getvalue('password')
 
-            # Validate user credentials
             if validate_user(username, password):
-                # Generate a new session ID
                 new_session_id = create_session_id(username)
                 sid_path = sessions_path + new_session_id
                 encode_and_write_to_session(username, sid_path)

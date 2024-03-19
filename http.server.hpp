@@ -247,7 +247,6 @@ const std::string convertToString(long long line);
 
 std::string     NormilisePath(std::string &Path);
 long long       ft_atoll(const char* str);
-void	        *ft_memset(void *b, int c, size_t len);
 void	        ExtractValues(std::string &str, std::string  &holder, size_t &index);
 long	        CurrentTime( void );
 

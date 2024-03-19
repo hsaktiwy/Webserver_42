@@ -13,14 +13,11 @@ import time
 
 sessions_path = "sessions/"
 def read_and_decode_from_session(filename):
-    # Read the encoded data from the file
     with open(filename, 'r') as file:
         encoded_data = file.read()
-
-    # Decode the data using base64
     decoded_data = base64.b64decode(encoded_data).decode('utf-8')
-
     return decoded_data
+
 def render_hello_page(existing_session_id):
     sid_path = sessions_path + existing_session_id
     username = read_and_decode_from_session(sid_path)

@@ -6,13 +6,13 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/18 22:44:12 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/19 22:09:39 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
-#include "request.hpp"
-#include "./cgi/cgi.hpp"
+#include "../includes/request.hpp"
+#include "../includes/cgi.hpp"
 
 request::request(): display(false), is_indexDir(false), redirect(false), RequestRead(false), Parsed_StartLine(false), R_Method(false), R_URI(false), R_PROTOCOL(false), R_FUll_HEADERS(false),  Parsed_Header(false),  R_FULL_BODY(false), Body_Exist(false),  HandleRequest(false)
 {

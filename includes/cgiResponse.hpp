@@ -6,14 +6,14 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 14:12:57 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/19 03:22:30 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/19 22:11:52 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CGI_RESPONSE
 #define CGI_RESPONSE
 #include "cgi.hpp"
-#include "../http.server.hpp"
+#include "http.server.hpp"
 #include <sstream>
 #include<ctime>
 #define RESP_TIMEOUT 10

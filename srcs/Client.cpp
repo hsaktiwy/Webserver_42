@@ -6,11 +6,11 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/18 22:28:05 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/19 22:07:46 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Client.hpp"
+#include "../includes/Client.hpp"
 
 Client::Client() : http_response(http_request, worker) , cgiRequest(worker)
 {

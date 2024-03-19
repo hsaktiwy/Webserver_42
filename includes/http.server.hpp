@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:00 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/17 21:51:11 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/19 22:44:06 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,12 +49,12 @@
 #define CYAN    "\033[36m"
 #define WHITE   "\033[37m"
 #define SERVERNAME "Jhin"
-#define TIME_OUT 30000
+#define TIME_OUT 10000
 #define C_TIMEOUT 10
 #define UPLOADCHUNK_SIZE 1000000
 #define CHUNK_SIZE 1024
 
-const std::string DEFAULT_CONFIG_PATH = "/Users/adardour/Desktop/www/configs/default.conf";
+const std::string DEFAULT_CONFIG_PATH = "configs/http.conf";
 
 typedef struct 
 {
@@ -235,7 +235,6 @@ void            parse_config(tokens_iterator  &lines, tokens_map &tokens);
 void            getarguments(vectors_type::iterator &it,Directives &directive);
 void            proccess_tokens(tokens_map &tokens,std::vector<ServerBlocks> &serverBlocks);
 void            handle_errors(tokens_map tokens);
-void            print_tokens(std::multimap<int,std::vector<std::pair<std::string, std::string> > > &tokens);
 std::string     getTokenType(const std::string& token);
 std::string     trim(const std::string& str);
 std::string     ft_trim(const std::string& str, const std::string& targets);

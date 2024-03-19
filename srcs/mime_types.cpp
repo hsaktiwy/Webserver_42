@@ -1,4 +1,4 @@
-#include "response.hpp"
+#include "../includes/response.hpp"
 
 std::string	mime_types(std::string &extension)
 {

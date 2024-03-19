@@ -6,11 +6,11 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/18 21:56:41 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/19 22:09:47 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "response.hpp"
+#include "../includes/response.hpp"
 
 const std::string convertToString(long long line)
 {
@@ -567,7 +567,7 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
             body_string += "</head>\r\n";
             body_string += "<body>\r\n";
             body_string += "    <h1> Error " + statusCode + "(" + HumanRead +")"+"</h1>\r\n";
-            body_string += "<p>Unable to reserve a propore response  mn end hamza.</p>\r\n";
+            body_string += "<p>Unable to reserve a propore response.</p>\r\n";
             body_string += "</body>\r\n";
             body_string += "</html>";
 	}
@@ -602,7 +602,7 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
             body_string += "</head>\r\n";
             body_string += "<body>\r\n";
             body_string += "    <h1> Error " + statusCode + "(" + HumanRead +")"+"</h1>\r\n";
-            body_string += "<p>Unable to reserve a propore response mn end hamza.</p>\r\n";
+            body_string += "<p>Unable to reserve a propore response.</p>\r\n";
             body_string += "</body>\r\n";
             body_string += "</html>";
 		}

@@ -6,15 +6,15 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:04 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/17 21:15:12 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/19 22:08:27 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 #include "request.hpp"
-#include "cgi/cgi.hpp"
-#include "cgi/cgiResponse.hpp"
+#include "cgi.hpp"
+#include "cgiResponse.hpp"
 #include "response.hpp"
 #include "http.server.hpp"
 class Client {

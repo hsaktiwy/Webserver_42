@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   http.server.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:44:24 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/11 11:14:14 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/19 22:43:51 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "http.server.hpp"
+#include "../includes/http.server.hpp"
 
 std::string trimString(const std::string& str)
 {
@@ -55,22 +55,6 @@ void    print_(std::vector<std::pair<std::string, std::string> > &tokens_vector)
     
 }
 
-void    print_tokens(std::multimap<int,std::vector<std::pair<std::string, std::string> > > &tokens)
-{
-    std::multimap<int, std::vector<std::pair<std::string, std::string> > >::iterator it = tokens.begin();
-    std::multimap<int, std::vector<std::pair<std::string, std::string> > >::iterator ite = tokens.end();
-    std::vector<std::pair<std::string, std::string> > tokens_vector;
-    std::stack<std::string> closed;
-    
-    int value;
-    while (it != ite)
-    {
-        tokens_vector = it->second;
-        value = it->first; 
-        print_(tokens_vector);
-        it++;
-    }
-}
 
 void    parse_config(tokens_iterator  &lines, tokens_map &tokens)
 {

@@ -6,11 +6,11 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/09 12:17:44 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/14 00:16:50 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/19 22:08:38 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "http.server.hpp"
+#include "../includes/http.server.hpp"
 
 void    proccess_error_page(std::vector<std::string> error_page_token, int line)
 {
@@ -188,8 +188,6 @@ void    handle_errors(tokens_map tokens)
     int argument = 0;
     int listen_directive = 0;
 
-
-
     long long line = 0;
     
     for (tokens_map::iterator it = tokens.begin(); it != tokens.end(); it++)
@@ -221,6 +219,7 @@ void    handle_errors(tokens_map tokens)
                             throw error;
                         }
                         insideServerBlock = 1;
+                        listen_directive = 0;
                     }
                     else
                     {
@@ -277,6 +276,11 @@ void    handle_errors(tokens_map tokens)
                     }
                     else if (insideServerBlock)
                     {
+                        if (listen_directive == 0)
+                        {
+                            std::string error = "config file must include listen directive";
+                            throw error;
+                        }
                         insideServerBlock = 0;
                         is_not_semi_colone = 0;
                         is_location_block = 0;
@@ -334,11 +338,6 @@ void    handle_errors(tokens_map tokens)
             }
             it_v++;
         }
-    }
-    if (listen_directive == 0)
-    {
-        std::string error = "config file must include listen directive";
-        throw error;
     }
     if (insideServerBlock)
     {

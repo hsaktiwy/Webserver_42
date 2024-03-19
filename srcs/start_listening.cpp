@@ -6,16 +6,16 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/19 01:58:47 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/19 22:10:05 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "http.server.hpp"
-#include "Client.hpp"
+#include "../includes/http.server.hpp"
+#include "../includes/Client.hpp"
 #include <map>
 #include <unistd.h>
-#include "cgi/cgi.hpp"
-#include "cgi/cgiResponse.hpp"
+#include "../includes/cgi.hpp"
+#include "../includes/cgiResponse.hpp"
 
 bool valid_port(const std::string &port)
 {
@@ -174,8 +174,8 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i, std::vector<
 		if (bytes_read > 0)
 			buffer[bytes_read] = '\0';
 	}
-	// if (client.getHttp_request().getStartLine() && !client.getHttp_request().getDisplay())
-	// 	ShowLogs(client);
+	if (client.getHttp_request().getStartLine() && !client.getHttp_request().getDisplay())
+		ShowLogs(client);
 	if (client.getHttp_request().getRequestRead())
 	{
 		client.ParseRequest();

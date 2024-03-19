@@ -6,11 +6,11 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/19 04:20:06 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/19 22:07:17 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "cgiResponse.hpp"
+#include "../../includes/cgiResponse.hpp"
 #include <fstream>
 
 CgiResponse::CgiResponse() : scriptData(NULL)
@@ -110,8 +110,11 @@ void CgiResponse::creatCgiResponse()
             int pid;
             if (errorPipeReturn == -1 ||  error_re == -1 || error_we == -1 || tmp_fd == -1)
             {
-                if (!access("/tmp/outfile", F_OK | W_OK | X_OK))
+                if (!access("/tmp/outfile", F_OK))
+                {
+                    close(tmp_fd);
                     std::remove("/tmp/outfile");
+                }
                 delete [] args;
                 close(errorpipe[0]);
                 close(errorpipe[1]);
@@ -128,8 +131,11 @@ void CgiResponse::creatCgiResponse()
                 pid = fork();
                 if (pid == -1)
                 {
-                    if (!access("/tmp/outfile", F_OK | W_OK | X_OK))
+                    if (!access("/tmp/outfile", F_OK))
+                    {
+                        close(tmp_fd);
                         std::remove("/tmp/outfile");
+                    }
                     delete [] args;
                     close(errorpipe[0]);
                     close(errorpipe[1]);
@@ -142,9 +148,13 @@ void CgiResponse::creatCgiResponse()
                 }
                 if (pid == 0)
                 {
-                    close (STDERR_FILENO);
-                    close (errorpipe[0]);
-                    dup2 (errorpipe[1], 2);
+                    
+                    if (close (errorpipe[0]) == -1 || dup2 (errorpipe[1], 2) == -1)
+                    {
+                        perror("error ");
+                        close(errorpipe[1]);
+                        exit(EXIT_FAILURE);
+                    }   
                     close(errorpipe[1]);
                     int outfd = open("/tmp/outfile", O_CREAT | O_RDWR,0644);
                     bool flag = false;
@@ -159,28 +169,42 @@ void CgiResponse::creatCgiResponse()
                         if (bytes == -1 || fd == -1 || outfd == -1)
                         {
                             perror("error :");
-                            if (!access("/tmp/outfile", F_OK | W_OK | X_OK))
+                            if (!access("/tmp/outfile", F_OK))
+                            {
+                                close(outfd);
                                 std::remove("/tmp/outfile");
-                            if (!access("/tmp/tmpFile", F_OK | W_OK | X_OK))
+                            }
+                            if (!access("/tmp/tmpFile", F_OK))
+                            {
+                                close(fd);
                                 std::remove("/tmp/tmpFile");
+                            }
+                            exit(EXIT_FAILURE);
                         }
-                        close(fd);  
+                        close(fd);
                         flag = true;
                     }
-                    close (STDOUT_FILENO);
-                    dup2(outfd, 1);
-                    close(outfd);
                     if (flag)
                     {
-                        close(STDIN_FILENO);
-                        open("/tmp/tmpFile", O_RDWR);
-                        dup2(fd, 0);
+                        fd = open("/tmp/tmpFile", O_RDWR, 0644);
+                        if (dup2(fd, 0) == -1)
+                        {
+                            perror("dup2 ");
+                            exit(EXIT_FAILURE);
+                        }
                         close (fd);
                     }
+                    if (dup2(outfd, 1) == -1)
+                    {
+                        perror("dup2 ");
+                        exit(EXIT_FAILURE);
+                    }
+                    close(outfd);
                     if (execve(path_bin.c_str(), args, scriptData) == -1)
                     {
                         perror("execve : ");
                         close(errorpipe[1]);
+                        exit(EXIT_FAILURE);
                     }
                 }
                 
@@ -212,6 +236,10 @@ void CgiResponse::creatCgiResponse()
                     }
                     else
                     {
+                        if (!access("/tmp/outfile", F_OK))
+                            std::remove("/tmp/outfile");
+                        if (!access("/tmp/tmpFile", F_OK))
+                            std::remove("/tmp/tmpFile");
                         Env.setStatusCode(500);
                         Env.setErrorpage();
                         isErrorResponse = true;
@@ -230,12 +258,14 @@ void CgiResponse::creatCgiResponse()
                         Env.setStatusCode(504);
                         Env.setErrorpage();
                         isErrorResponse = true;
-                        std::remove("/tmp/outfile");
+                        if (!access("/tmp/outfile", F_OK))
+                            std::remove("/tmp/outfile");
+                        if (!access("/tmp/tmpFile", F_OK))
+                            std::remove("/tmp/tmpFile");
                         handleError();
                         close(errorpipe[0]);
                         return;
                     }
-                    
                 }
             }
             else
@@ -274,10 +304,14 @@ void CgiResponse::processResponse()
     if (tmp_fd == -1)
     {
         tmp_fd = open("/tmp/outfile", O_RDONLY);
-        int ss = fcntl(tmp_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-        if (tmp_fd == -1 || ss == -1)
+        int fc = fcntl(tmp_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+        if (tmp_fd == -1 || fc == -1)
         {
-            perror("ss : ");
+            if (!access("/tmp/outfile", F_OK | X_OK | W_OK))
+            {
+                close(tmp_fd);
+                std::remove("/tmp/outfile");
+            }
             Env.setStatusCode(500);
             Env.setErrorpage();
             isErrorResponse = true;

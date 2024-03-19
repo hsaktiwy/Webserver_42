@@ -6,14 +6,14 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/19 04:14:56 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/19 22:06:33 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CGI_HPP
 #define CGI_HPP
-#include "../http.server.hpp"
-#include "../request.hpp"
+#include "http.server.hpp"
+#include "request.hpp"
 #include <sstream>
 
 class CgiEnv

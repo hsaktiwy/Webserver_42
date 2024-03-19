@@ -6,11 +6,11 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/19 04:25:55 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/19 23:24:58 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "cgi.hpp"
+#include "../../includes/cgi.hpp"
 
 CgiEnv::CgiEnv(const Worker &workerObj) : worker(workerObj)
 {
@@ -465,7 +465,6 @@ void CgiEnv::setRedirection()
 {
     std::string redir = worker.getRedirect();
     std::string path = worker.getPath();
-    if (autoIndex && !path.empty() && path[path.size() - 1] != '/' && !cgiScript)
     if (redir.size())
     {
         redirection = redir;

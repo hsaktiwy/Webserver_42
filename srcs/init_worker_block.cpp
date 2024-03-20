@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/19 22:08:59 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/20 03:49:44 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,6 +117,27 @@ void    get_port(std::vector<Directives> &directives,std::string &port)
     }
     
 }
+int match_by_host(std::string &hostname,std::vector<ServerBlocks> &blocks,Worker &worker)
+{
+    const size_t size_blocks = blocks.size();
+    for (size_t i = 0; i < size_blocks; i++)
+    {
+        const size_t size_directives = blocks[i].getDirectives().size();
+        for (size_t j = 0; j <  size_directives; j++)
+        {
+            if (!blocks[i].getDirectives()[j].getDirective().compare("listen"))
+            {
+                std::string listen = blocks[i].getDirectives()[j].getArgument()[0];
+                if (!listen.compare(hostname))
+                {
+                    worker.setBlockWorker(blocks[i]);
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
 void    get_matched_server_block(std::string &host_name,std::vector<ServerBlocks> &blocks,Worker &worker,int fd_server,std::map<int, int> &matched_server_block)
 {
     const size_t size_blocks = blocks.size();
@@ -146,6 +167,8 @@ void    get_matched_server_block(std::string &host_name,std::vector<ServerBlocks
             }
         }
     }
+    if (match_by_host(host_name,blocks,worker))
+        return;
     std::map<int, int>::iterator it = matched_server_block.begin();
     std::map<int, int>::iterator ite = matched_server_block.end();
     while (it != ite)

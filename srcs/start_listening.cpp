@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/19 22:10:05 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/20 02:17:24 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@ void    create_sockets(std::vector<ServerBlocks> &serverBlocks,std::vector<int> 
 				exit(1);
 			}
 			int opt = 1;
-			if (setsockopt(socket_fd, SOL_SOCKET,  SO_REUSEPORT, &opt, sizeof(opt)) == -1)
+			if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)) == -1)
 			{
 				perror("set sockopt ");
 				exit(1);

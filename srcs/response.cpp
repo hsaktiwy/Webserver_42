@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/19 22:09:47 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/20 01:03:38 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -351,7 +351,7 @@ int	fillFile(int fd, std::string &stream, size_t &index, std::string &boundary, 
 void	Post_no_body(request &req, std::string &http_response, long long &header_size, long long &body_size)
 {
 	std::string Hconnection = "Connection: " + ConnectionType(req);
-	http_response = "HTTP/1.1 200 OK\r\n" + Hconnection + "\r\nContent-Type: text/html\r\nServer: " + ((std::string)SERVERNAME) + "Content-Length: " + ToString(body_size) + "\r\n\r\n";
+	http_response = "HTTP/1.1 200 OK\r\n" + Hconnection + "\r\nContent-Type: text/html\r\nServer: " + ((std::string)SERVERNAME) + "\r\nContent-Length: 0\r\n\r\n";
 	header_size = http_response.size();
 	body_size = 0;
 }
@@ -385,6 +385,7 @@ bool	response::PostInit(std::map<unsigned int, std::string> &status_codes, reque
 	{
 		Post_no_body(req, http_response, header_size, body_size);
 		readyToResponed = true;
+		return (false);
 	}
 	if (MFD_index == -1)
 	{
@@ -612,8 +613,13 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 	size_t size = body_string.size();
 	if (errorDefault == true)
 		http_response += "Content-Length: " + ToString(size) + "\r\nServer: " + ((std::string)SERVERNAME) + "\r\n\r\n";
-	body_size = body_string.size();
-	header_size = http_response.size();
+	body_size = 0;
+    header_size = http_response.size();
+    if (body_string.size() > 0)
+    {
+        header_size += body_string.size();
+        http_response += body_string;
+    }
 }
 
 response::response():http_request(NULL), worker(NULL),  header_index(0), body_index(0), header_size(-1), body_size(-1), header_sent(0), body_sent(0), FileOpened(false), fd(-1)

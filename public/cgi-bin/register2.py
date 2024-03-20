@@ -87,7 +87,7 @@ def handle_register():
                 user_data.append(new_user)
                 save_user_data(user_data)
 
-                print("HTTP/1.1 200 OK");
+                print("HTTP/1.1 201 Created");
                 print("Content-type: text/html")
                 html_content = "<html><body><h2>Registration successful you can login now!</h2><p> <a href=\"login.py\"> Login </a> </p></body></html>"
                 print("Content-length:", len(html_content))

@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/10 19:33:06 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/23 03:54:02 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/24 01:22:01 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,7 +157,8 @@ void    get_matched_server_block(std::string &host_name,std::vector<ServerBlocks
                     {
                         std::string port;
                         get_port(blocks[i].getDirectives(),port);
-                        // printf("dd %s\n",blocks[i].getDirectives()[j].getArgument()[k].c_str());
+                        if (port.empty())
+                            port = "8080";
                         if (!port.compare(host_name.substr(host_name.find(':') + 1)))
                         {   
                             worker.setBlockWorker(blocks[i]);

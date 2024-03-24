@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="cookie.css">
+<title>CGI Cookie Test</title>
+</head>
+<body>
+
+<h2>Set Cookie</h2>
+<form action="cgi-bin/cookies_test.py" method="post">
+  <label for="cookie_name">Cookie Name:</label><br>
+  <input type="text" id="cookie_name" name="cookie_key"><br>
+  <label for="cookie_value">Cookie Value:</label><br>
+  <input type="text" id="cookie_value" name="cookie_value"><br><br>
+  <input type="submit" value="Set Cookie">
+</form>
+
+<h2>Get Cookie</h2>
+<form action="cgi-bin/cookies_test.py" method="post">
+  <label for="get_cookie_name">Cookie Name:</label><br>
+  <input type="text" id="get_cookie_name" name="cookie_key_getter"><br><br>
+  <input type="submit" value="Get Cookie">
+</form>
+
+</body>
+</html>

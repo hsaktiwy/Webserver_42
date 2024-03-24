@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/24 00:57:59 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/24 01:14:03 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,7 +170,7 @@ void    create_sockets(std::vector<ServerBlocks> &serverBlocks,std::vector<int> 
 
 void    init_poll_fds(std::vector<struct pollfd> &poll_fds,std::vector<int> &sockets)
 {
-	for (int i = 0; i < sockets.size(); i++)
+	for (size_t i = 0; i < sockets.size(); i++)
 	{
 		if (sockets[i] != -1)
 		{

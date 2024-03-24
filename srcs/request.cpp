@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/20 20:19:18 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/24 01:11:22 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -694,6 +694,7 @@ void	request::CheckRequest(Worker& worker, bool &cgiStat)
 			{
 				IndexingtoIndex(worker, is_dir, is_regular, uri, error, redirect, is_indexDir);
 			}
+		
 			FileAccessingRigth(worker, uri, error, status, is_regular, method);
 		}
 	}
@@ -892,6 +893,10 @@ bool							request::getDisplay( void ) const
 void							request::setDisplay(bool value)
 {
 	display = value;
+}
+void							request::setCgiStatus(int value)
+{
+	isCgiRequest = value;
 }
 
 bool 						request::isIndexDir( void )

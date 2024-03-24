@@ -6,7 +6,7 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/20 20:32:03 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/24 01:08:48 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,11 +173,6 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 	if (!wk.getRedirect().empty() || req.isRedirect() || req.isIndexDir())
 	{
 		std::string path;
-
-		// if (req.isRedirect())
-		// 	path = "http://" + req.getHost() + "/" + req.getUri().path + "/";
-		// else
-		// 	path =  wk.getRedirect();
 		if (req.isRedirect())
             path = "http://" + req.getHost() + ((req.getUri().path[0] != '/') ? "/" : "")+ req.getUri().path + "/";
         else if (req.isIndexDir())
@@ -247,9 +242,8 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 					return;	
 				}
 			}
-			
 			std::string removed = "rm -rf " + worker->getRoot() + worker->getPath();
-			std::system(removed.c_str());
+			system(removed.c_str());
 			body_string = "";
 			body_size = body_string.size();
 			std::string Hconnection = "Connection: " + ConnectionType(req);

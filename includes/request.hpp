@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/18 01:52:52 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/24 01:04:47 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,6 +134,7 @@ class request {
 		bool 							getStartLine( void ) const;
 		bool							getDisplay( void ) const;
 		void							setDisplay(bool value);
+		void							setCgiStatus(int value);
 
 };
 std::string get_root(std::vector<Directives> &directives, t_uri &uri);

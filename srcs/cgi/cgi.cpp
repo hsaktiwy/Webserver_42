@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/19 23:24:58 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/24 01:35:33 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -253,7 +253,6 @@ void CgiEnv::setCgiPATHINFO()
     std::string path;
     std::string currentDir = cgiRoot;
     std::string extraPath;
-    // extraPath += cgiRoot;
     if (extraPathIndex != -1)
     {
         if (validRoot && cgiDir && cgiScript)
@@ -429,6 +428,12 @@ void CgiEnv::setStatusCode(int code)
 bool CgiEnv::isAllowedMethod()
 {
     std::vector<std::string> allowed = worker.getAllowMethods();
+    if (allowed.size() == 0)
+    {
+       if (!envMap["REQUEST_METHOD"].compare("GET") || !envMap["REQUEST_METHOD"].compare("POST"))
+            return true;
+        return false;
+    }
     for (size_t i = 0; i < allowed.size(); i++)
     {
         if (!allowed[i].compare(envMap["REQUEST_METHOD"]))
@@ -441,12 +446,12 @@ void CgiEnv::setErrorpage()
 {
     if (!cgiDir )
         status = 404;
+    if (reqBody.empty() && !envMap["REQUEST_METHOD"].compare("POST"))
+        status = 400;
     if (!isAllowedMethod() && status != 501)
         status = 405;
     if (envMap["REQUEST_METHOD"].empty())
         status = 500;
-    if (reqBody.empty() && !envMap["REQUEST_METHOD"].compare("POST"))
-        status = 400;
     unsigned int error_status = 0;
     if (autoIndex)
         error_status = 403;

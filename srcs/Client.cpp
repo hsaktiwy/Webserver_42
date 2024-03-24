@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/19 22:07:46 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/24 01:10:48 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ void	Client::ParseRequest( void )
 	{
 			std::string http_cookie;
 		cgiRequest.setCgiWorker(worker);
+		// cgiRequest.setHttpRequest(&this->getHttp_request())
 		cgiRequest.setRequest(this->getHttp_request().getMethod());
 		http_request.getHeaderValue("Cookie", http_cookie);
 		cgiRequest.setHttpCookies(http_cookie);
@@ -84,7 +85,7 @@ void	Client::ParseRequest( void )
 			cgiRequest.setContentLength(content_length);
 		}
 		else if (this->getHttp_request().getMethod().compare("GET"))
-			cgiRequest.setStatusCode(405);
+			 cgiRequest.setStatusCode(405);		
 		cgiRequest.setEnvironementData();
 	}	
 }

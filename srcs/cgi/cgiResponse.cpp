@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgiResponse.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
+/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/19 22:07:17 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/24 01:05:09 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -236,6 +236,7 @@ void CgiResponse::creatCgiResponse()
                     }
                     else
                     {
+                        kill(processId, SIGKILL);
                         if (!access("/tmp/outfile", F_OK))
                             std::remove("/tmp/outfile");
                         if (!access("/tmp/tmpFile", F_OK))
@@ -254,7 +255,7 @@ void CgiResponse::creatCgiResponse()
                     double timeSpent = static_cast<double>(current - processTime) / CLOCKS_PER_SEC;
                     if (timeSpent >= RESP_TIMEOUT)
                     {
-                        kill(processId, SIGINT);
+                        kill(processId, SIGKILL);
                         Env.setStatusCode(504);
                         Env.setErrorpage();
                         isErrorResponse = true;

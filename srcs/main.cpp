@@ -6,26 +6,11 @@
 /*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/04 12:03:40 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/23 22:10:17 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/24 01:18:32 by adardour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/http.server.hpp"
-
-bool check_quote(const std::string &line, char &qoute)
-{
-    int i = 0;
-    while (line[i])
-    {
-        if (line[i] == '\'' || line[i] == '\"')
-        {
-            qoute = line[i];
-            return true;
-        }
-        i++;
-    }
-    return false;
-}
 
 void    readAndParseConfig(int c, char **argv,tokens_iterator &lines)
 {

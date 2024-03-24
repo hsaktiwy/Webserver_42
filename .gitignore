@@ -15,5 +15,10 @@ a.out
 pipe.cpp
 venv
 myenv
-/Uploads
-sessions/
+# Ignore everything in folder1 and folder2
+Uploads/*
+sessions/*
+
+# But don't ignore the folders themselves
+!Uploads/
+!sessions/

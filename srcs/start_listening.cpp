@@ -633,7 +633,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				}
 				else if (poll_fds[i].revents & POLLOUT)
 				{
-					
 					if (ClientsVector[client_it].get_cgi_status() && !ClientsVector[client_it].getcgiResponse().isResponseSent() )
 						handleCgiResponse(ClientsVector[client_it], status_codes);
 					else
@@ -642,6 +641,8 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 					{
 						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError() || ClientsVector[client_it].getcgiResponse().isError())
 						{
+							if (ClientsVector[client_it].getHttp_response().getFd() != -1)
+								close(ClientsVector[client_it].getHttp_response().getFd());
 							ClientsVector.erase(ClientsVector.begin() + client_it);
 							close(poll_fds[i].fd);
 							poll_fds.erase(poll_fds.begin() + i);

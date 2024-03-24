@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/19 23:24:58 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/23 22:37:05 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -253,7 +253,6 @@ void CgiEnv::setCgiPATHINFO()
     std::string path;
     std::string currentDir = cgiRoot;
     std::string extraPath;
-    // extraPath += cgiRoot;
     if (extraPathIndex != -1)
     {
         if (validRoot && cgiDir && cgiScript)
@@ -441,12 +440,12 @@ void CgiEnv::setErrorpage()
 {
     if (!cgiDir )
         status = 404;
+    if (reqBody.empty() && !envMap["REQUEST_METHOD"].compare("POST"))
+        status = 400;
     if (!isAllowedMethod() && status != 501)
         status = 405;
     if (envMap["REQUEST_METHOD"].empty())
         status = 500;
-    if (reqBody.empty() && !envMap["REQUEST_METHOD"].compare("POST"))
-        status = 400;
     unsigned int error_status = 0;
     if (autoIndex)
         error_status = 403;

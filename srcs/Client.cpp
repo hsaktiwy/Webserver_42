@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:16:02 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/19 22:07:46 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/22 22:45:34 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ void	Client::ParseRequest( void )
 	{
 			std::string http_cookie;
 		cgiRequest.setCgiWorker(worker);
+		// cgiRequest.setHttpRequest(&this->getHttp_request())
 		cgiRequest.setRequest(this->getHttp_request().getMethod());
 		http_request.getHeaderValue("Cookie", http_cookie);
 		cgiRequest.setHttpCookies(http_cookie);
@@ -84,8 +85,22 @@ void	Client::ParseRequest( void )
 			cgiRequest.setContentLength(content_length);
 		}
 		else if (this->getHttp_request().getMethod().compare("GET"))
-			cgiRequest.setStatusCode(405);
+			 cgiRequest.setStatusCode(405);
+		// {
+		// 	CgiEnv req;
+		// 	cgiRequest = req;
+		// 	CgiResponse resp;
+		// 	cgiResponse = resp;
+		// 	http_request.setError(true);
+		// 	http_request.setStatus(405);
+		// 	iscgi = false;
+		// 	http_request.setCgiStatus(0);
+		// 	worker.setCgiStatus(false);
+		// 	return;
+		// }
+			
 		cgiRequest.setEnvironementData();
+		// gggg
 	}	
 }
 

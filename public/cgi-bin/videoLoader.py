@@ -2,11 +2,10 @@
 import os
 print("HTTP/1.1 200 OK");
 
-print("Content-type: text/html")  # CGI header
-print("Content-Length: 392\n")  # CGI header
+print("Content-type: text/html")
+print("Content-Length: 392\n")
 
-# Replace with the actual path to your video file
-video_path = "../video/ss.mp4"
+video_path = "../assets/videos/video.mp4"
 
 print("<html>")
 print("<head>")

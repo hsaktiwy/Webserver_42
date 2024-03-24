@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 12:14:06 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/19 22:06:33 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/20 20:13:14 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,17 +23,17 @@ private:
     std::vector<std::string> pathUri;
     Worker worker;
     std::string errorPage;
-    std::string cgiRoot; //full path to the Root dir of cgi "cgi-bin"
+    std::string cgiRoot;
     std::string reqBody;
     std::string boundary;
     std::string scriptBin;
     std::string contentType;
     std::string contentLength;
     std::string redirection;
-    bool validRoot; //check if the root of the request is present and could be opened
-    bool cgiDir; //is the Dir of cgi ("cgi-bin") is present
-    bool cgiScript; //is the cgi script found
-    bool extrapath; //is the cgi script found
+    bool validRoot;
+    bool cgiDir;
+    bool cgiScript;
+    bool extrapath;
     bool autoIndex;
     bool isDir;
     bool isFile;
@@ -88,7 +88,6 @@ public:
     std::string &getRedirectionpage();
     bool isScriptFound();
     std::string &getErrorPage();
-    // char **getenvArray();
     const std::map<std::string, std::string> &getEnvMap() const;
 };
 

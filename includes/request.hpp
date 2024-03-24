@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:48 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/18 01:52:52 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/21 03:27:34 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,6 +134,7 @@ class request {
 		bool 							getStartLine( void ) const;
 		bool							getDisplay( void ) const;
 		void							setDisplay(bool value);
+		void							setCgiStatus(int value);
 
 };
 std::string get_root(std::vector<Directives> &directives, t_uri &uri);

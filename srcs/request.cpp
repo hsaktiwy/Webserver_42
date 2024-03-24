@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:46 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/19 22:09:39 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/21 03:27:01 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -690,7 +690,10 @@ void	request::CheckRequest(Worker& worker, bool &cgiStat)
 		else
 		{
 			isCgiRequest = 0;
-			IndexingtoIndex(worker, is_dir, is_regular, uri, error, redirect, is_indexDir);
+			if (method == "GET")
+			{
+				IndexingtoIndex(worker, is_dir, is_regular, uri, error, redirect, is_indexDir);
+			}
 		
 			FileAccessingRigth(worker, uri, error, status, is_regular, method);
 		}
@@ -890,6 +893,10 @@ bool							request::getDisplay( void ) const
 void							request::setDisplay(bool value)
 {
 	display = value;
+}
+void							request::setCgiStatus(int value)
+{
+	isCgiRequest = value;
 }
 
 bool 						request::isIndexDir( void )

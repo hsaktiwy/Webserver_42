@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 11:15:52 by hsaktiwy          #+#    #+#             */
-/*   Updated: 2024/03/20 01:03:38 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/22 22:44:21 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,11 +173,6 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 	if (!wk.getRedirect().empty() || req.isRedirect() || req.isIndexDir())
 	{
 		std::string path;
-
-		// if (req.isRedirect())
-		// 	path = "http://" + req.getHost() + "/" + req.getUri().path + "/";
-		// else
-		// 	path =  wk.getRedirect();
 		if (req.isRedirect())
             path = "http://" + req.getHost() + ((req.getUri().path[0] != '/') ? "/" : "")+ req.getUri().path + "/";
         else if (req.isIndexDir())
@@ -237,6 +232,7 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 					errno ==  EACCES ? req.setStatus(403) : req.setStatus(404);
 					return;
 				}
+				closedir(dirent);
 			}
 			else
 			{
@@ -246,8 +242,8 @@ void    response::responed(std::map<unsigned int, std::string> &status_codes)
 					return;	
 				}
 			}
-			
-			std::remove((worker->getRoot() + worker->getPath()).c_str());
+			std::string removed = "rm -rf " + worker->getRoot() + worker->getPath();
+			system(removed.c_str());
 			body_string = "";
 			body_size = body_string.size();
 			std::string Hconnection = "Connection: " + ConnectionType(req);
@@ -553,6 +549,7 @@ void    response::errorresponse(std::map<unsigned int, std::string> &status_code
 	FileType = "text/html";
 	if (iter != status_codes.end())
 		HumanRead = iter->second;
+		printf("%s\n", (wk.getRoot() + "/" + worker->getPathError()).c_str());
 	if (wk.get_track_status() == 0 || (wk.get_track_status() == 1 && wk.getPathError().empty()))
 	{
 		    body_string += "<!DOCTYPE html>\r\n";

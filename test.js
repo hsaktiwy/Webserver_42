@@ -1,30 +1,26 @@
-const axios = require('axios');
-
-const url = 'http://127.0.0.1:8080/';
-const numRequests = 100000;
-
-async function sendRequest(url) {
-    try {
-        const response = await axios.get(url);
-        console.log(response.data)
-    } catch (error) {
-        console.error(`Error sending request to ${url}:`, error);
-        return null;
+let server = `server 
+{
+    listen 127.0.0.1:PORT;
+    server_names exemple;
+    client_max_body_size 1;
+    location /
+    {
+        root public/;
+        index index.html;
+        autoindex off;
     }
+    autoindex on;
+}
+`
+
+let i = 1024
+
+let result = "";
+
+while (i < 8830) {
+    let server_modefied = server.replace("PORT", i);
+    result += server_modefied;
+    i++;
 }
 
-async function runTests() {
-    const promises = [];
-    for (let i = 0; i < numRequests; i++) {
-        promises.push(sendRequest(url));
-    }
-
-    try {
-        const results = await Promise.all(promises);
-        console.log(`Successfully sent ${results.length} requests concurrently.`);
-    } catch (error) {
-        console.error('Error sending requests:', error);
-    }
-}
-
-runTests();
+console.log(result)

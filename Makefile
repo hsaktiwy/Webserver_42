@@ -6,20 +6,19 @@
 #    By: adardour <adardour@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/13 12:12:25 by adardour          #+#    #+#              #
-#    Updated: 2024/03/07 12:56:15 by adardour         ###   ########.fr        #
+#    Updated: 2024/03/23 19:55:56 by adardour         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC = c++ -std=c++98
 
-CFLAGS = -Wall -Wextra -Werror -fsanitize=address
+CFLAGS = -Wall -Werror -Wextra
 
-SANI = #-fsanitize=address
+SRC = srcs/Client.cpp       srcs/http.server.cpp       srcs/main.cpp              srcs/proccess_tokens.cpp   srcs/response.cpp \
+srcs/blockworker.cpp       srcs/handle_errors.cpp     srcs/init_worker_block.cpp srcs/mime_types.cpp        srcs/request.cpp           srcs/start_listening.cpp   srcs/tools.cpp srcs/cgi/cgi.cpp    srcs/cgi/cgiResponse.cpp srcs/timer.cpp
 
-SRC = Client.cpp            ft_memset.cpp         http.server.cpp       main.cpp              proccess_tokens.cpp   response.cpp          start_serving.cpp \
-blockworker.cpp       handle_errors.cpp     init_worker_block.cpp mime_types.cpp        request.cpp           start_listening.cpp   tools.cpp cgi/cgi.cpp    cgi/cgiResponse.cpp timer.cpp
-
-HPP = Client.hpp      http.server.hpp request.hpp     response.hpp cgi/cgi.hpp cgi/cgiResponse.hpp \
+INC = ./includes
+HPP = $(INC)/Client.hpp      $(INC)/http.server.hpp $(INC)/request.hpp     $(INC)/response.hpp $(INC)/cgi.hpp $(INC)/cgiResponse.hpp \
 
 
 OBJ = $(SRC:.cpp=.o)
@@ -29,10 +28,10 @@ TARGET = webserv
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
-	$(CC) $(SANI) $(OBJ) -o $@
+	$(CC) $(OBJ) -o $@
 
-%.o : %.cpp Client.hpp      http.server.hpp request.hpp     response.hpp cgi/cgi.hpp cgi/cgiResponse.hpp
-	$(CC) $(SANI) -c $< -o $@
+%.o : %.cpp $(HPP)
+	$(CC)  -c $< -o $@
 
 clean:
 	rm -f $(OBJ) 

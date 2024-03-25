@@ -181,7 +181,7 @@ void Worker::setIndex(const std::vector<std::string>&   args,const std::string &
 {
 	for (size_t i = 0; i < args.size(); i++)
 	{
-		if (access(((root + path) + args[i]).c_str(),F_OK) == 0)
+		if (access(((root + path) +  "/" + args[i]).c_str(),F_OK) == 0)
 		{
 			this->index = args[i];
 			break;

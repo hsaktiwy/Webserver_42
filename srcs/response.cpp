@@ -87,6 +87,51 @@ void    count_files(int *number_dir,int *number_file,const std::string & root)
     }
 }
 
+bool	mark(char c)
+{
+	if ( c == '-' || c == '_' || c == '.' || c == '!'
+		|| c == '~' || c == '*' || c == '\''
+		|| c == '(' || c == ')')
+		return (true);
+	return (false);
+}
+
+bool	unreserved(char c)
+{
+	if (std::isalnum(c) || mark(c))
+		return (true);
+	return (false);
+}
+
+bool	should_Encode_it(char c)
+{
+	if (unreserved(c) || c == ':' || c == '@'
+		|| c == '&' || c == '=' || c == '+'
+		|| c == '$' || c == ',')
+		return (false);
+	return (true);
+}
+
+std::string	Encoding(std::string const &path)
+{
+	std::string result;
+
+	for (size_t i  = 0; path[i]; i++)
+	{
+		if (should_Encode_it(path[i]))
+		{
+			std::string enco;
+			std::stringstream ss;
+			ss <<  std::hex << (unsigned int)path[i];
+			ss >> enco;
+			result += "%" + enco;
+		}
+		else
+			result += path[i];
+	}
+	return (result);
+}
+
 void autoIndexing(request &req, Worker &wk, std::string &response_head, std::string &body)
 {
     Uri const &uri = req.getUri();
@@ -124,7 +169,8 @@ void autoIndexing(request &req, Worker &wk, std::string &response_head, std::str
         {
             if (std::strcmp(dirent->d_name, ".") != 0)
             {
-                Link = "/" + req.getUri().path + "/" + dirent->d_name;
+				std::string d_name = Encoding(dirent->d_name);
+                Link = "/" + req.getUri().path + "/" + d_name;
 
                 File_name = dirent->d_name, Size = "-", Last_modification = "-";
                 Link = NormilisePath(Link);

@@ -17,23 +17,6 @@
 #include "../includes/cgi.hpp"
 #include "../includes/cgiResponse.hpp"
 
-// bool valid_port(const std::string &port)
-// {
-// 	std::istringstream string(port);
-// 	unsigned long long result;
-
-// 	int i = 0;
-// 	while (port[i] != '\0')
-// 	{
-// 		if (!isdigit(port[i]))
-// 			return false;
-// 		i++;
-// 	}
-// 	string >> result;
-// 	if (result < 1024 || result > 65535)
-// 		return false;
-// 	return true;
-// }
 void    get_port_host(ServerBlocks &serverBlocks,t_port_host &port_host)
 {
 	size_t i = 0;
@@ -144,6 +127,14 @@ void    create_sockets(std::vector<ServerBlocks> &serverBlocks,std::vector<int> 
 				perror("set socket ");
 				exit(1);
 			}
+
+			int opt = 1;
+			if (setsockopt(socket_fd, SOL_SOCKET,  SO_REUSEADDR, &opt, sizeof(opt)) == -1)
+			{
+				perror("set sockopt ");
+				exit(1);						
+			}
+			//
 			if(bind(socket_fd,p->ai_addr,p->ai_addrlen) < 0)
 			{
 				std::cerr << "Error binding socket: Address already in use ." << std::endl;
@@ -566,7 +557,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 
 	create_sockets(serverBlocks, sockets,matched_server_block);
 	init_poll_fds(poll_fds, sockets);
-	// printf("dd\n");
 	std::vector<int> new_connections;
 	std::vector<Client> ClientsVector;
 	
@@ -615,7 +605,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				client_it = findClientBySocketFd(ClientsVector, poll_fds[i].fd);
 				if (client_it == ClientsVector.size())
 					continue;
-				if (poll_fds[i].revents & POLLIN)
+				if (poll_fds[i].revents & POLLIN && !(poll_fds[i].revents & POLLHUP))
 				{
 					handle_request(poll_fds,i,serverBlocks, ClientsVector[client_it],matched_server_block);
 					if (ClientsVector[client_it].getHttp_request().getHandleRequest())
@@ -631,7 +621,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 						i--;
 					}
 				}
-				else if (poll_fds[i].revents & POLLOUT)
+				else if (poll_fds[i].revents & POLLOUT && !(poll_fds[i].revents & POLLHUP))
 				{
 					if (ClientsVector[client_it].get_cgi_status() && !ClientsVector[client_it].getcgiResponse().isResponseSent() )
 						handleCgiResponse(ClientsVector[client_it], status_codes);

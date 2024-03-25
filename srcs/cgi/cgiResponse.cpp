@@ -102,7 +102,10 @@ void CgiResponse::creatCgiResponse()
             int error_we = fcntl(errorpipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             std::string path_bin = Env.getScriptBin();
             char **args;
-            tmp_fd = open("/tmp/outfile", O_CREAT | O_RDWR,0644);
+            if(!access("/tmp/outfile", F_OK))
+                std::remove("/tmp/outfile");
+            tmp_fd = open("/tmp/outfile", O_CREAT, 0644);
+            printf("%d\n", tmp_fd);
             args = new char *[3];
             args[0] = (char *)path_bin.c_str();
             args[1] = (char *)Env.getCgiScriptName().c_str();
@@ -308,7 +311,7 @@ void CgiResponse::processResponse()
         int fc = fcntl(tmp_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
         if (tmp_fd == -1 || fc == -1)
         {
-            if (!access("/tmp/outfile", F_OK | X_OK | W_OK))
+            if (!access("/tmp/outfile", F_OK))
             {
                 close(tmp_fd);
                 std::remove("/tmp/outfile");

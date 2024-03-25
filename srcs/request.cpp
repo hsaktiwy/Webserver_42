@@ -91,14 +91,6 @@ bool	is_seperator(char c)
 	return (false);
 }
 
-bool	ishexa(char c)
-{
-	if (std::isdigit(c) || c == 'A' || c == 'B' || c == 'C' || c == 'D' || c == 'E' || c == 'F'
-    || c == 'a' || c == 'b' || c == 'c' || c == 'd' || c == 'e' || c == 'f')
-		return (true);
-	return (false);
-}
-
 size_t	hexaToDecimal(const std::string &str)
 {
 	std::stringstream ss(str);
@@ -395,12 +387,18 @@ bool	request::HeadersParsing(std::vector<ServerBlocks> &serverBlocks, Worker& wo
 		if (!IdentifieHost())
 			return (false);
 		BodyDelimiterIdentification();
-		method_uri = EscapedEncoding(method_uri, error, status);
 		UriFormat(uri, method_uri);
+		uri.path = EscapedEncoding(uri.path, error, status);
+		uri.query = EscapedEncoding(uri.query, error, status);
 		std::string path = "/"  + uri.path;
 		if (http != "HTTP/1.1")
 		{
 			error = true, status = 505, RequestRead = true;
+			return (false);
+		}
+		if (check_uri(path) == false)
+		{
+			error = true, status = 400, RequestRead = true;
 			return (false);
 		}
 		init_worker_block(worker, host, path, serverBlocks, is_dir, is_regular,fd,matched_server_block);
@@ -691,10 +689,7 @@ void	request::CheckRequest(Worker& worker, bool &cgiStat)
 		{
 			isCgiRequest = 0;
 			if (method == "GET")
-			{
 				IndexingtoIndex(worker, is_dir, is_regular, uri, error, redirect, is_indexDir);
-			}
-		
 			FileAccessingRigth(worker, uri, error, status, is_regular, method);
 		}
 	}

@@ -59,3 +59,11 @@ void	ExtractValues(std::string &str, std::string  &holder, size_t &index)
 		index++;
 	}
 }
+
+bool	ishexa(char c)
+{
+	if (std::isdigit(c) || c == 'A' || c == 'B' || c == 'C' || c == 'D' || c == 'E' || c == 'F'
+    || c == 'a' || c == 'b' || c == 'c' || c == 'd' || c == 'e' || c == 'f')
+		return (true);
+	return (false);
+}

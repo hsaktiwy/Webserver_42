@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/25 00:53:17 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/25 23:15:46 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -544,6 +544,41 @@ bool	isAlive(Client & client)
 	return (false);
 }
 
+std::vector<Client> *getClients(std::vector<Client> *holder)
+{
+	static std::vector<Client> *clients;
+	if (holder !=  NULL)
+		clients = holder;
+	return (clients);	
+}
+
+void  SignalHandler(int sig)
+{
+	if (sig == SIGINT)
+	{
+		std::vector<Client> *vec = getClients(NULL);
+		
+		if (vec == NULL)
+			return ;
+		std::vector<Client> &a = *vec;
+		for (size_t i = 0; i < a.size(); i++)
+		{
+			if (a[i].get_cgi_status())
+			{
+				if (a[i].getcgiResponse().getoutfilename().size() && !access(a[i].getcgiResponse().getoutfilename().c_str(), F_OK))
+					std::remove(a[i].getcgiResponse().getoutfilename().c_str());
+				close(a[i].getcgiResponse().getoutfilesocket());
+				close(a[i].getcgiResponse().getpipeReadEnd());
+				close(a[i].getcgiResponse().getpipeWriteEnd());
+				if (a[i].getcgiResponse().getprocessId() > 0)
+					kill(a[i].getcgiResponse().getprocessId(), SIGKILL);
+			}
+			if (a[i].getHttp_response().getFd() != -1)
+				close(a[i].getHttp_response().getFd());
+		}
+		exit(1);
+	}
+}
 
 void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,std::map<unsigned int, std::string> &status_codes)
 {
@@ -562,7 +597,8 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 	init_poll_fds(poll_fds, sockets);
 	std::vector<int> new_connections;
 	std::vector<Client> ClientsVector;
-	
+	getClients(&ClientsVector);
+	signal(SIGINT, SignalHandler);
 	if (poll_fds.size() <= 0)
 		exit(0);
 	std::cout<<GREEN<<"Waiting for an incoming request... "<<RESET<<std::endl;
@@ -640,6 +676,16 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 						handle_response(poll_fds,i, ClientsVector[client_it], status_codes);
 					if ((ClientsVector[client_it].getHttp_response().getBody_sent() && ClientsVector[client_it].getHttp_response().getHeader_sent()) || ClientsVector[client_it].getcgiResponse().isResponseSent())
 					{
+						if (ClientsVector[client_it].get_cgi_status())
+						{
+							if (ClientsVector[client_it].getcgiResponse().getoutfilename().size() && !access(ClientsVector[client_it].getcgiResponse().getoutfilename().c_str(), F_OK))
+								std::remove(ClientsVector[client_it].getcgiResponse().getoutfilename().c_str());
+							close(ClientsVector[client_it].getcgiResponse().getoutfilesocket());
+							close(ClientsVector[client_it].getcgiResponse().getpipeReadEnd());
+							close(ClientsVector[client_it].getcgiResponse().getpipeWriteEnd());
+							if (ClientsVector[client_it].getcgiResponse().getprocessId() > 0)
+								kill(ClientsVector[client_it].getcgiResponse().getprocessId(), SIGKILL);
+						}
 						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError() || ClientsVector[client_it].getcgiResponse().isError())
 						{
 							if (ClientsVector[client_it].getHttp_response().getFd() != -1)
@@ -664,6 +710,16 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				{
 					if (ClientsVector[client_it].getHttp_response().getFd() != -1)
 						close(ClientsVector[client_it].getHttp_response().getFd());
+					else if (ClientsVector[client_it].get_cgi_status())
+					{
+						if (ClientsVector[client_it].getcgiResponse().getoutfilename().size() && !access(ClientsVector[client_it].getcgiResponse().getoutfilename().c_str(), F_OK))
+							std::remove(ClientsVector[client_it].getcgiResponse().getoutfilename().c_str());
+						close(ClientsVector[client_it].getcgiResponse().getoutfilesocket());
+						close(ClientsVector[client_it].getcgiResponse().getpipeReadEnd());
+						close(ClientsVector[client_it].getcgiResponse().getpipeWriteEnd());
+						if (ClientsVector[client_it].getcgiResponse().getprocessId() > 0)
+							kill(ClientsVector[client_it].getcgiResponse().getprocessId(), SIGKILL);
+					}
 					ClientsVector.erase(ClientsVector.begin() + client_it);
 					close(poll_fds[i].fd);
 					poll_fds.erase(poll_fds.begin() + i);
@@ -673,6 +729,16 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				{
 					if (ClientsVector[client_it].getInProcess() == false  && CurrentTime() - ClientsVector[client_it].getTime() > C_TIMEOUT)
 					{
+						if (ClientsVector[client_it].get_cgi_status())
+						{
+							if (ClientsVector[client_it].getcgiResponse().getoutfilename().size() && !access(ClientsVector[client_it].getcgiResponse().getoutfilename().c_str(), F_OK))
+								std::remove(ClientsVector[client_it].getcgiResponse().getoutfilename().c_str());
+							close(ClientsVector[client_it].getcgiResponse().getoutfilesocket());
+							close(ClientsVector[client_it].getcgiResponse().getpipeReadEnd());
+							close(ClientsVector[client_it].getcgiResponse().getpipeWriteEnd());
+							if (ClientsVector[client_it].getcgiResponse().getprocessId() > 0)
+								kill(ClientsVector[client_it].getcgiResponse().getprocessId(), SIGKILL);
+						}
 						if (ClientsVector[client_it].getHttp_response().getFd() != -1)
 							close(ClientsVector[client_it].getHttp_response().getFd());
 						ClientsVector.erase(ClientsVector.begin() + client_it);

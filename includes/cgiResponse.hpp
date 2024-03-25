@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 14:12:57 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/25 00:54:19 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/25 22:49:27 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,11 @@ public:
     bool isProcessSpawned();
     void processResponse();
     int getsocket();
+    int getprocessId();
+    int getoutfilesocket();
+    std::string &getoutfilename();
+    int getpipeReadEnd();
+    int getpipeWriteEnd();
     bool isPostMethod();
 };
 

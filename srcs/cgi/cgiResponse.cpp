@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/25 02:48:23 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/25 23:22:24 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,13 +106,12 @@ void CgiResponse::creatCgiResponse()
             int error_we = fcntl(errorpipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             std::string path_bin = Env.getScriptBin();
             char **args;
-            tmp_fd = open(outfile.c_str(), O_CREAT, 0777);
             args = new char *[3];
             args[0] = (char *)path_bin.c_str();
             args[1] = (char *)Env.getCgiScriptName().c_str();
             args[2] = NULL;
             int pid;
-            if (errorPipeReturn == -1 ||  error_re == -1 || error_we == -1 || tmp_fd == -1)
+            if (errorPipeReturn == -1 ||  error_re == -1 || error_we == -1)
             {
                 if (!access(outfile.c_str(), F_OK))
                 {
@@ -130,8 +129,6 @@ void CgiResponse::creatCgiResponse()
             }
             else
             {
-                close(tmp_fd);
-                tmp_fd = -1;
                 pid = fork();
                 if (pid == -1)
                 {
@@ -447,4 +444,25 @@ bool CgiResponse::isError()
 bool CgiResponse::isProcessSpawned()
 {
     return processSpawned;
+}
+
+int CgiResponse::getoutfilesocket()
+{
+    return tmp_fd;
+}
+std::string &CgiResponse::getoutfilename()
+{
+    return outfile;
+}
+int CgiResponse::getpipeReadEnd()
+{
+    return errorpipe[0];
+}
+int CgiResponse::getpipeWriteEnd()
+{
+    return errorpipe[1];
+}
+int CgiResponse::getprocessId()
+{
+    return processId;
 }

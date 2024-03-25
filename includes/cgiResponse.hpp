@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 14:12:57 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/24 22:56:57 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/25 00:54:19 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@ private:
     std::map<unsigned int, std::string> status_codes;
     int errorpipe[2];
     std::string errorResponse;
+    std::string outfile;
+    std::string infile;
 public:
     CgiResponse();
     ~CgiResponse();

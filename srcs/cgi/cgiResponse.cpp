@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/10 16:13:26 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/24 22:48:28 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/25 02:48:23 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,8 @@ CgiResponse &CgiResponse::operator=(const CgiResponse &obj)
         responseOnProcess = obj.responseOnProcess;
         errorpipe[0] = obj.errorpipe[0];
         errorpipe[0] = obj.errorpipe[0];
+        outfile = obj.outfile;
+        infile = obj.infile;
         if (scriptData != NULL)
         {
             size_t size = Env.getEnvMap().size();
@@ -97,12 +99,14 @@ void CgiResponse::creatCgiResponse()
     {
         if(!processSpawned)
         {
+            outfile = "/tmp/out" + convertToString(socket_fd);
+            infile = "/tmp/in" + convertToString(socket_fd);
             int errorPipeReturn = pipe(errorpipe);
             int error_re = fcntl(errorpipe[0], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             int error_we = fcntl(errorpipe[1], F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             std::string path_bin = Env.getScriptBin();
             char **args;
-            tmp_fd = open("/tmp/outfile", O_CREAT | O_RDWR,0644);
+            tmp_fd = open(outfile.c_str(), O_CREAT, 0777);
             args = new char *[3];
             args[0] = (char *)path_bin.c_str();
             args[1] = (char *)Env.getCgiScriptName().c_str();
@@ -110,10 +114,10 @@ void CgiResponse::creatCgiResponse()
             int pid;
             if (errorPipeReturn == -1 ||  error_re == -1 || error_we == -1 || tmp_fd == -1)
             {
-                if (!access("/tmp/outfile", F_OK))
+                if (!access(outfile.c_str(), F_OK))
                 {
                     close(tmp_fd);
-                    std::remove("/tmp/outfile");
+                    std::remove(outfile.c_str());
                 }
                 delete [] args;
                 close(errorpipe[0]);
@@ -131,10 +135,10 @@ void CgiResponse::creatCgiResponse()
                 pid = fork();
                 if (pid == -1)
                 {
-                    if (!access("/tmp/outfile", F_OK))
+                    if (!access(outfile.c_str(), F_OK))
                     {
                         close(tmp_fd);
-                        std::remove("/tmp/outfile");
+                        std::remove(outfile.c_str());
                     }
                     delete [] args;
                     close(errorpipe[0]);
@@ -156,7 +160,7 @@ void CgiResponse::creatCgiResponse()
                         exit(EXIT_FAILURE);
                     }   
                     close(errorpipe[1]);
-                    int outfd = open("/tmp/outfile", O_CREAT | O_RDWR,0644);
+                    int outfd = open(outfile.c_str(), O_CREAT | O_RDWR,0644);
                     bool flag = false;
                     int fd;
                     std::map<std::string, std::string> tmp = Env.getEnvMap();
@@ -164,20 +168,20 @@ void CgiResponse::creatCgiResponse()
                     {
                         std::string str = Env.getInputFromBody();
                         const char *data = str.data();
-                        fd = open("/tmp/tmpFile", O_CREAT | O_RDWR,0644);
+                        fd = open(infile.c_str(), O_CREAT | O_RDWR,0644);
                         int bytes  = write(fd, data, str.size());
                         if (bytes == -1 || fd == -1 || outfd == -1)
                         {
                             perror("error :");
-                            if (!access("/tmp/outfile", F_OK))
+                            if (!access(outfile.c_str(), F_OK))
                             {
                                 close(outfd);
-                                std::remove("/tmp/outfile");
+                                std::remove(outfile.c_str());
                             }
-                            if (!access("/tmp/tmpFile", F_OK))
+                            if (!access(infile.c_str(), F_OK))
                             {
                                 close(fd);
-                                std::remove("/tmp/tmpFile");
+                                std::remove(infile.c_str());
                             }
                             exit(EXIT_FAILURE);
                         }
@@ -186,7 +190,7 @@ void CgiResponse::creatCgiResponse()
                     }
                     if (flag)
                     {
-                        fd = open("/tmp/tmpFile", O_RDWR, 0644);
+                        fd = open(infile.c_str(), O_RDWR, 0644);
                         if (dup2(fd, 0) == -1)
                         {
                             perror("dup2 ");
@@ -237,10 +241,10 @@ void CgiResponse::creatCgiResponse()
                     else
                     {
                         kill(processId, SIGKILL);
-                        if (!access("/tmp/outfile", F_OK))
-                            std::remove("/tmp/outfile");
-                        if (!access("/tmp/tmpFile", F_OK))
-                            std::remove("/tmp/tmpFile");
+                        if (!access(outfile.c_str(), F_OK))
+                            std::remove(outfile.c_str());
+                        if (!access(infile.c_str(), F_OK))
+                            std::remove(infile.c_str());
                         Env.setStatusCode(500);
                         Env.setErrorpage();
                         isErrorResponse = true;
@@ -259,10 +263,10 @@ void CgiResponse::creatCgiResponse()
                         Env.setStatusCode(504);
                         Env.setErrorpage();
                         isErrorResponse = true;
-                        if (!access("/tmp/outfile", F_OK))
-                            std::remove("/tmp/outfile");
-                        if (!access("/tmp/tmpFile", F_OK))
-                            std::remove("/tmp/tmpFile");
+                        if (!access(outfile.c_str(), F_OK))
+                            std::remove(outfile.c_str());
+                        if (!access(infile.c_str(), F_OK))
+                            std::remove(infile.c_str());
                         handleError();
                         close(errorpipe[0]);
                         return;
@@ -304,15 +308,16 @@ void CgiResponse::processResponse()
     char buff_resp[CHUNK_SIZE + 1];
     if (tmp_fd == -1)
     {
-        tmp_fd = open("/tmp/outfile", O_RDONLY);
+        tmp_fd = open(outfile.c_str(), O_RDONLY);
         int fc = fcntl(tmp_fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
         if (tmp_fd == -1 || fc == -1)
         {
-            if (!access("/tmp/outfile", F_OK | X_OK | W_OK))
+            if (!access(outfile.c_str(), F_OK))
             {
                 close(tmp_fd);
-                std::remove("/tmp/outfile");
+                std::remove(outfile.c_str());
             }
+            kill(processId, SIGKILL);
             Env.setStatusCode(500);
             Env.setErrorpage();
             isErrorResponse = true;
@@ -330,9 +335,9 @@ void CgiResponse::processResponse()
             if (Env.getStatus() == 0)
                 Env.setStatusCode(200);
             close(tmp_fd);
-            std::remove("/tmp/outfile");
+            std::remove(outfile.c_str());
             if (isPostMethod())
-                std::remove("/tmp/tmpFile");
+                std::remove(infile.c_str());
        }
         else
         {

@@ -68,7 +68,6 @@ void	Client::ParseRequest( void )
 	{
 			std::string http_cookie;
 		cgiRequest.setCgiWorker(worker);
-		// cgiRequest.setHttpRequest(&this->getHttp_request())
 		cgiRequest.setRequest(this->getHttp_request().getMethod());
 		http_request.getHeaderValue("Cookie", http_cookie);
 		cgiRequest.setHttpCookies(http_cookie);

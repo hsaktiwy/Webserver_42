@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/26 16:49:20 by aalami            #+#    #+#             */
-/*   Updated: 2024/03/24 21:48:21 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/25 01:31:48 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,6 @@ void CgiEnv::setCgiWorker(const Worker &obj)
 void CgiEnv::setUploadPath()
 {
     std::string path = worker.getPathUpload();
-    printf("%s\n", path.c_str());
     if(!path.empty() && path[path.size() - 1] != '/')
         path.push_back('/');
     if (!path.empty())

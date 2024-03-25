@@ -13,5 +13,35 @@
     "username": "aa",
     "password": "123",
     "email": "az@d"
+  },
+  {
+    "username": "hsaktiwy",
+    "password": "Dragon1234?1234",
+    "email": "hsaktiwy@gmail.com"
+  },
+  {
+    "username": "testrest",
+    "password": "test",
+    "email": "test@test"
+  },
+  {
+    "username": "anas",
+    "password": "1234",
+    "email": "aaaa@s"
+  },
+  {
+    "username": "asd",
+    "password": "aa",
+    "email": "aa@a"
+  },
+  {
+    "username": "xx",
+    "password": "xxx",
+    "email": "xxx@x"
+  },
+  {
+    "username": "aadx",
+    "password": "123",
+    "email": "az@dw"
   }
 ]

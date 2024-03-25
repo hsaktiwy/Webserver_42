@@ -243,7 +243,8 @@ void            init_worker_block(Worker &worker, std::string &host ,std::string
 void            check_duplications(std::vector<ServerBlocks> serverBlocks);
 const std::string convertToString(long long line);
 
-
+bool	        ishexa(char c);
+bool            check_uri(const std::string &uri);
 std::string     NormilisePath(std::string &Path);
 long long       ft_atoll(const char* str);
 void	        ExtractValues(std::string &str, std::string  &holder, size_t &index);

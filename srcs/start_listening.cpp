@@ -6,7 +6,7 @@
 /*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/24 20:30:47 by aalami           ###   ########.fr       */
+/*   Updated: 2024/03/25 00:53:17 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,23 +17,6 @@
 #include "../includes/cgi.hpp"
 #include "../includes/cgiResponse.hpp"
 
-// bool valid_port(const std::string &port)
-// {
-// 	std::istringstream string(port);
-// 	unsigned long long result;
-
-// 	int i = 0;
-// 	while (port[i] != '\0')
-// 	{
-// 		if (!isdigit(port[i]))
-// 			return false;
-// 		i++;
-// 	}
-// 	string >> result;
-// 	if (result < 1024 || result > 65535)
-// 		return false;
-// 	return true;
-// }
 void    get_port_host(ServerBlocks &serverBlocks,t_port_host &port_host)
 {
 	size_t i = 0;
@@ -148,9 +131,9 @@ void    create_sockets(std::vector<ServerBlocks> &serverBlocks,std::vector<int> 
 			if (setsockopt(socket_fd, SOL_SOCKET,  SO_REUSEADDR, &opt, sizeof(opt)) == -1)
 			{
 				perror("set sockopt ");
-				exit(1);
-									
+				exit(1);						
 			}
+			//
 			if(bind(socket_fd,p->ai_addr,p->ai_addrlen) < 0)
 			{
 				std::cerr << "Error binding socket: Address already in use ." << std::endl;
@@ -625,7 +608,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				client_it = findClientBySocketFd(ClientsVector, poll_fds[i].fd);
 				if (client_it == ClientsVector.size())
 					continue;
-				if (poll_fds[i].revents & POLLIN)
+				if (poll_fds[i].revents & POLLIN && !(poll_fds[i].revents & POLLHUP))
 				{
 					if (poll_fds[i].revents & POLLHUP)
 					{
@@ -649,7 +632,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 						i--;
 					}
 				}
-				else if (poll_fds[i].revents & POLLOUT)
+				else if (poll_fds[i].revents & POLLOUT && !(poll_fds[i].revents & POLLHUP))
 				{
 					if (ClientsVector[client_it].get_cgi_status() && !ClientsVector[client_it].getcgiResponse().isResponseSent() )
 						handleCgiResponse(ClientsVector[client_it], status_codes);
@@ -659,7 +642,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 					{
 						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError() || ClientsVector[client_it].getcgiResponse().isError())
 						{
-							printf("close3 %d\n", ClientsVector[client_it].getClientSocket());
 							if (ClientsVector[client_it].getHttp_response().getFd() != -1)
 								close(ClientsVector[client_it].getHttp_response().getFd());
 							ClientsVector.erase(ClientsVector.begin() + client_it);
@@ -680,7 +662,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				}
 				else if (poll_fds[i].revents & POLLHUP)
 				{
-					printf("close %d\n", ClientsVector[client_it].getClientSocket());
 					if (ClientsVector[client_it].getHttp_response().getFd() != -1)
 						close(ClientsVector[client_it].getHttp_response().getFd());
 					ClientsVector.erase(ClientsVector.begin() + client_it);
@@ -692,7 +673,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				{
 					if (ClientsVector[client_it].getInProcess() == false  && CurrentTime() - ClientsVector[client_it].getTime() > C_TIMEOUT)
 					{
-						printf("close2 %d\n", ClientsVector[client_it].getClientSocket());
 						if (ClientsVector[client_it].getHttp_response().getFd() != -1)
 							close(ClientsVector[client_it].getHttp_response().getFd());
 						ClientsVector.erase(ClientsVector.begin() + client_it);

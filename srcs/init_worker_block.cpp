@@ -186,12 +186,38 @@ void    get_matched_server_block(std::string &host_name,std::vector<ServerBlocks
 }
 
 
+bool check_uri(const std::string &uri)
+{
+    std::stringstream object(uri);
+
+    int flag = 0;
+    std::string string;
+    while(std::getline(object,string,'/'))
+    {
+        if (string.empty())
+        {
+            continue;
+        }
+        if (string.compare("..") == 0)
+        {
+            if (--flag < 0)
+            return false;
+        }
+        else
+        {
+            flag++;
+        }
+    }
+    return (true);
+}
+
 void   init_worker_block(Worker &worker, std::string &host ,std::string &path,std::vector<ServerBlocks> &serverBlocks, int &is_dir, int &is_regular,int fd,std::map<int, int> &matched_server_block)
 {
     std::string port;
     int found_index = 0;
 
     std::string host_name;
+    
     worker.setPath(path);
     get_matched_server_block(host,serverBlocks,worker,fd,matched_server_block);
 

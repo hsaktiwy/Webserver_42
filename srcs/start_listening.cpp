@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   start_listening.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: adardour <adardour@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aalami < aalami@student.1337.ma>           +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/14 13:26:32 by adardour          #+#    #+#             */
-/*   Updated: 2024/03/24 01:14:03 by adardour         ###   ########.fr       */
+/*   Updated: 2024/03/24 20:30:47 by aalami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,6 +144,13 @@ void    create_sockets(std::vector<ServerBlocks> &serverBlocks,std::vector<int> 
 				perror("set socket ");
 				exit(1);
 			}
+			int opt = 1;
+			if (setsockopt(socket_fd, SOL_SOCKET,  SO_REUSEADDR, &opt, sizeof(opt)) == -1)
+			{
+				perror("set sockopt ");
+				exit(1);
+									
+			}
 			if(bind(socket_fd,p->ai_addr,p->ai_addrlen) < 0)
 			{
 				std::cerr << "Error binding socket: Address already in use ." << std::endl;
@@ -206,6 +213,10 @@ void    handle_request(std::vector<struct pollfd> &poll_fds, int i, std::vector<
 	if (!client.getHttp_request().getRequestRead())
 	{
 		bytes_read = read(poll_fds[i].fd, buffer, CHUNK_SIZE);
+		// if (bytes_read == 0)
+		// {
+		// 	close(poll_fds[i].fd);
+		// }
 		if (bytes_read > 0)
 			client.BufferingRequest(serverBlocks, buffer, matched_server_block, bytes_read);
 		if (bytes_read < 0)
@@ -566,7 +577,6 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 
 	create_sockets(serverBlocks, sockets,matched_server_block);
 	init_poll_fds(poll_fds, sockets);
-	// printf("dd\n");
 	std::vector<int> new_connections;
 	std::vector<Client> ClientsVector;
 	
@@ -617,6 +627,14 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 					continue;
 				if (poll_fds[i].revents & POLLIN)
 				{
+					if (poll_fds[i].revents & POLLHUP)
+					{
+						ClientsVector.erase(ClientsVector.begin() + client_it);
+						close(poll_fds[i].fd);
+						poll_fds.erase(poll_fds.begin() + i);
+						i--;
+						continue;
+					}
 					handle_request(poll_fds,i,serverBlocks, ClientsVector[client_it],matched_server_block);
 					if (ClientsVector[client_it].getHttp_request().getHandleRequest())
 						poll_fds[i].events = POLLOUT;
@@ -641,6 +659,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 					{
 						if(!isAlive(ClientsVector[client_it]) || ClientsVector[client_it].getHttp_request().getError() || ClientsVector[client_it].getcgiResponse().isError())
 						{
+							printf("close3 %d\n", ClientsVector[client_it].getClientSocket());
 							if (ClientsVector[client_it].getHttp_response().getFd() != -1)
 								close(ClientsVector[client_it].getHttp_response().getFd());
 							ClientsVector.erase(ClientsVector.begin() + client_it);
@@ -661,6 +680,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				}
 				else if (poll_fds[i].revents & POLLHUP)
 				{
+					printf("close %d\n", ClientsVector[client_it].getClientSocket());
 					if (ClientsVector[client_it].getHttp_response().getFd() != -1)
 						close(ClientsVector[client_it].getHttp_response().getFd());
 					ClientsVector.erase(ClientsVector.begin() + client_it);
@@ -672,6 +692,7 @@ void start_listening_and_accept_request(std::vector<ServerBlocks> &serverBlocks,
 				{
 					if (ClientsVector[client_it].getInProcess() == false  && CurrentTime() - ClientsVector[client_it].getTime() > C_TIMEOUT)
 					{
+						printf("close2 %d\n", ClientsVector[client_it].getClientSocket());
 						if (ClientsVector[client_it].getHttp_response().getFd() != -1)
 							close(ClientsVector[client_it].getHttp_response().getFd());
 						ClientsVector.erase(ClientsVector.begin() + client_it);
